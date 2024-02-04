@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 from datasets import load_dataset
 
-from .ickd_sst2_prompt import PROMPT
+from ickd_sst2_prompt import PROMPT
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -58,12 +58,12 @@ def get_probs(sentence):
 
 def main(
     start_idx: int = 0,
-    max_num: int = 10000,
+    max_num: int = 1000,
 ):
     dataset = load_dataset('glue', 'sst2')
 
     end_idx = start_idx + max_num
-    with open(f'ickd_sst2_probs_n{max_num}_s{start_idx}_e{end_idx}.csv', 'w', newline='', encoding='utf-8') as file:
+    with open(f'poc/openai_api/ickd_sst2_probs_n{max_num}_s{start_idx}_e{end_idx}.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["index", "sentence", "label", "positive_prob", "negative_prob"])
 
