@@ -20,7 +20,7 @@ Sentence: A warm, funny, engaging film.
 Sentiment: positive
 
 Example2)
-Sentence: A three-hour cinema master class.
+Sentence: Terrible acting and a ridiculous plot.
 Sentiment: negative
 
 Example3)
@@ -83,9 +83,6 @@ def get_probs(sentence):
         print(f"Error processing sentence: {sentence}. Error: {e}")
         return None, None
     
-
-prob_positive, prob_negative = get_probs("great movie")
-prob_positive, prob_negative
 
 start_idx = 0
 max_num = 10000
