@@ -25,7 +25,7 @@ async def get_probs(sentence):
                 "content": PROMPT.format(sentence=sentence)
             }
         ]
-        response = await penai.ChatCompletion.create(
+        response = await openai.ChatCompletion.create(
             model="gpt-4-turbo-preview",
             messages=messages,
             max_tokens=1,
