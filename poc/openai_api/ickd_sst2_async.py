@@ -1,5 +1,6 @@
 import os
 import csv
+import asyncio
 
 import fire
 import openai
@@ -12,7 +13,7 @@ from .ickd_sst2_prompt import PROMPT
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def get_probs(sentence):
+async def get_probs(sentence):
     try:
         messages = [
             {
@@ -24,7 +25,7 @@ def get_probs(sentence):
                 "content": PROMPT.format(sentence=sentence)
             }
         ]
-        response = openai.ChatCompletion.create(
+        response = await penai.ChatCompletion.create(
             model="gpt-4-turbo-preview",
             messages=messages,
             max_tokens=1,
@@ -47,37 +48,59 @@ def get_probs(sentence):
             else:
                 token_prob_dict[token] += np.exp(logprob)
 
-        prob_positive = token_prob_dict.get('positive', -1)
-        prob_negative = token_prob_dict.get('negative', -1)
+        positive_prob = token_prob_dict.get('positive', -1)
+        negative_prob = token_prob_dict.get('negative', -1)
 
-        return prob_positive, prob_negative
+        return positive_prob, negative_prob
     except Exception as e:
         print(f"Error processing sentence: {sentence}. Error: {e}")
         return -1, -1
 
 
-def main(
+async def main_async(
     start_idx: int = 0,
     max_num: int = 10000,
 ):
     dataset = load_dataset('glue', 'sst2')
 
     end_idx = start_idx + max_num
+
+    tasks = []
+    for idx, instance in enumerate(tqdm(dataset['train'])):
+        if idx < start_idx:
+            continue
+        if idx >= end_idx:
+            break
+
+        sentence = instance['sentence']
+        tasks.append(asyncio.create_task(get_probs(sentence)))
+    
+    results = await asyncio.gather(*tasks)
+
     with open(f'ickd_sst2_probs_n{max_num}_s{start_idx}_e{end_idx}.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["index", "sentence", "label", "positive_prob", "negative_prob"])
 
+        tasks = []
         for idx, instance in enumerate(tqdm(dataset['train'])):
             if idx < start_idx:
                 continue
             if idx >= start_idx + max_num:
                 break
 
+            positive_prob, negative_prob = results[idx - start_idx]
+
             index = instance['idx']
             sentence = instance['sentence']
             label = instance['label']
-            prob_positive, prob_negative = get_probs(sentence)
-            writer.writerow([index, sentence, label, prob_positive, prob_negative])
+            writer.writerow([index, sentence, label, positive_prob, negative_prob])
+
+
+def main(
+    start_idx: int = 0,
+    max_num: int = 10000,
+):
+    asyncio.run(main_async(start_idx, max_num))
 
 
 if __name__ == "__main__":
