@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "attentionx-icl"
+version = "0.1.0"
+description = ""
+authors = ["nemodleo <nemod.leo@snu.ac.kr>"]
+license = "mit"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+evaluate = "^0.4.1"
+torch = "^2.2.0"
+transformers = "^4.37.2"
+accelerate = "^0.26.1"
+loguru = "^0.7.2"
+datasets = "^2.16.1"
+polars = {extras = ["pyarrow"], version = "^0.20.7"}
+flake8 = "^7.0.0"
+mypy = "^1.8.0"
+fastapi = "^0.109.2"
+pydantic = "^2.6.1"
+scikit-learn = "^1.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
