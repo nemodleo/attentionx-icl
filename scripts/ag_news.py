@@ -31,7 +31,7 @@ def test():
         model_name='distilgpt2',
         batch_size=1,
         output_json_filepath='iclx_output',
-        output_json_filename='240111-sst5'
+        output_json_filename='240111-ag_news'
     )
 
     predictions = inferencer.inference(retriever, ice_template=template)
