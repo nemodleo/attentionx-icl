@@ -15,7 +15,9 @@ make install
 ## Ex
 
 ```
-make run
+make run-sst2
+make run-sst5
+make run-ag_news
 ```
 
 

@@ -17,8 +17,8 @@ def test():
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
     tp_dict = {
-        0: "</E>Movie Review: </text> \n Positive",
-        1: "</E>Movie Review: </text> \n Negative"
+        0: "</E>Movie Review: </text>\nPositive",
+        1: "</E>Movie Review: </text>\nNegative"
     }
 
     template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
@@ -29,7 +29,7 @@ def test():
         model_name='distilgpt2',
         batch_size=1,
         output_json_filepath='iclx_output',
-        output_json_filename='240110-sst2-test'
+        output_json_filename='240110-sst2'
     )
 
     predictions = inferencer.inference(retriever, ice_template=template)
