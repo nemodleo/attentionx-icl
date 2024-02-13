@@ -1,6 +1,11 @@
 SHELL=/bin/bash
 
 install:
+	IS_POETRY_INSTALLED="$(which poetry)"
+	if [ -z "$IS_POETRY_INSTALLED" ]; then
+		curl -sSL https://install.python-poetry.org | python3 -
+		export PATH="$HOME/.local/bin:$PATH"
+	fi
 	poetry install
 
 run-sst2:
