@@ -5,7 +5,7 @@ install:
 	poetry install
 
 poetry-export:
-	poetry export -f requirements.txt 
+	poetry export -f requirements.txt --output requirements.txt
 
 run-sst2:
 	poetry run python scripts/sst2.py
