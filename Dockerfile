@@ -16,6 +16,7 @@ ARG requirements
 RUN echo "$requirements"
 RUN echo "$requirements" > /app/requirements.txt
 RUN pip install -r /app/requirements.txt
+RUN pip install jupyterlab
 
 RUN mkdir /work
 WORKDIR /work
@@ -24,3 +25,5 @@ RUN python --version && \
     pip --version && \
     pip list | grep torch && \
     python -c "import torch ; print(torch.__version__)"
+
+

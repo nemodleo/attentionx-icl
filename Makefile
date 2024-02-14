@@ -26,18 +26,8 @@ check-quality:
 	$(AUTO_POETRY) flake8 iclx
 	$(AUTO_POETRY) mypy iclx
 
-
 docker-build:
 	docker build -t nemodleosnu/iclx:0.1.1 --build-arg requirements="$(cat requirements.txt)" -f Dockerfile .
-
-docker-build-and-push-vessl:
-	apt-get -qq install docker.io
-	set -x
-	dockerd -b none --iptables=0 -l warn &
-	for i in $(seq 5); do [ ! -S "/var/run/docker.sock" ] && sleep 2 || break; done
-	docker build -t nemodleosnu/iclx:0.1.1 --build-arg requirements="$(cat requirements.txt)" -f Dockerfile .
-	docker push nemodleosnu/iclx:0.1.1
-	kill $(jobs -p)
 
 docker-push:
 	docker push nemodleosnu/iclx:0.1.1
