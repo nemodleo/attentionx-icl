@@ -2,7 +2,7 @@ ifneq (, $(shell which poetry))
 	AUTO_POETRY = poetry run
 endif
 
-install:
+poetry-install:
 	curl -sSL https://install.python-poetry.org | python3 -
 	export PATH="${HOME}/.local/bin:${PATH}"
 	poetry install
