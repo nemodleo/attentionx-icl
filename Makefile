@@ -16,6 +16,8 @@ run-sst5:
 run-ag_news:
 	poetry run python scripts/ag_news.py
 
+run-trec:
+	poetry run python scripts/trec.py
 
 check-quality:
 	poetry run flake8 iclx

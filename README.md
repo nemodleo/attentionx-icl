@@ -18,6 +18,7 @@ make install
 make run-sst2
 make run-sst5
 make run-ag_news
+make run-trec
 ```
 
 
