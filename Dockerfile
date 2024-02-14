@@ -13,7 +13,7 @@ RUN mkdir /app
 ARG requirements
 RUN echo "$requirements"
 RUN echo "$requirements" > /app/requirements.txt
-RUN pip install -r /app/requirements.txt --no-cache-dir
+RUN pip install -r /app/requirements.txt
 
 RUN mkdir /work
 WORKDIR /work

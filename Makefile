@@ -23,7 +23,7 @@ check-quality:
 
 
 docker-build:
-	docker build -t iclx:0.1.0 --build-arg requirements=requirements.txt -f Dockerfile .
+	docker build -t nemodleosnu/iclx:0.1.0 --build-arg requirements="$(cat requirements.txt)" -f Dockerfile .
 
 docker-push:
-	docker push iclx:0.1.0
+	docker push nemodleosnu/iclx:0.1.0
