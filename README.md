@@ -24,9 +24,6 @@ make run-trec
 
 ## TODO
 
-[wip] implementation iclx
+[wip] implementation iclx more feature
 
-[wip] examples
-
-[ ] docker env
-
+[wip] more examples
