@@ -1,3 +1,6 @@
+ifneq (, $(shell which poetry))
+	AUTO_POETRY = poetry run
+endif
 
 install:
 	curl -sSL https://install.python-poetry.org | python3 -
@@ -8,20 +11,20 @@ poetry-export:
 	poetry export -f requirements.txt > requirements.txt
 
 run-sst2:
-	poetry run python scripts/sst2.py
+	$(AUTO_POETRY) python scripts/sst2.py
 
 run-sst5:
-	poetry run python scripts/sst5.py
+	$(AUTO_POETRY) python scripts/sst5.py
 
 run-ag_news:
-	poetry run python scripts/ag_news.py
+	$(AUTO_POETRY) python scripts/ag_news.py
 
 run-trec:
-	poetry run python scripts/trec.py
+	$(AUTO_POETRY) python scripts/trec.py
 
 check-quality:
-	poetry run flake8 iclx
-	poetry run mypy iclx
+	$(AUTO_POETRY) flake8 iclx
+	$(AUTO_POETRY) mypy iclx
 
 
 docker-build:
