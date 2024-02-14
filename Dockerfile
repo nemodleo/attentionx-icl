@@ -5,9 +5,11 @@ FROM nvcr.io/nvidia/pytorch:${PYTORCH_VERSION}-py3
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y sudo tree python3-pip
+RUN python -m pip install --upgrade pip
 
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh
 RUN apt-get install -y git-lfs
+RUN curl https://getcroc.schollz.com | bash
     
 RUN mkdir /app
 ARG requirements
