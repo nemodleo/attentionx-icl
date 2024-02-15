@@ -16,7 +16,7 @@ ARG requirements
 RUN echo "$requirements"
 RUN echo "$requirements" > /app/requirements.txt
 RUN pip install -r /app/requirements.txt
-RUN pip install jupyterlab
+RUN pip install jupyterlab nvitop
 
 RUN mkdir /work
 WORKDIR /work

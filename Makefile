@@ -4,7 +4,7 @@ endif
 
 poetry-install:
 	curl -sSL https://install.python-poetry.org | python3 -
-	export PATH="${HOME}/.local/bin:${PATH}"
+	export PATH:=$(HOME)/.local/bin:$(PATH)
 	poetry install
 
 poetry-export:
@@ -27,7 +27,7 @@ check-quality:
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
-	docker build -t nemodleosnu/iclx:0.1.1 --build-arg requirements="$(cat requirements.txt)" -f Dockerfile .
+	docker build -t nemodleosnu/iclx:0.1.1 --build-arg requirements="$(shell cat requirements.txt)" -f Dockerfile .
 
 docker-push:
 	docker push nemodleosnu/iclx:0.1.1
