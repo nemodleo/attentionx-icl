@@ -32,9 +32,9 @@ docker-build:
 		cp ../requirements.txt . && \
 		cp ../Dockerfile .
 	a="$(shell cat requirements.txt)"
-	docker build -t nemodleosnu/iclx:0.1.1 --build-arg requirements="$(shell cat requirements.txt)" -f Dockerfile .
+	docker build -t nemodleosnu/iclx:0.1.2 --build-arg requirements="$(shell cat requirements.txt)" -f Dockerfile .
 	popd
 	rm -rf .docker
 
 docker-push:
-	docker push nemodleosnu/iclx:0.1.1
+	docker push nemodleosnu/iclx:0.1.2
