@@ -1,10 +1,10 @@
+$(eval export PATH=$(HOME)/.local/bin:$(PATH))
 ifneq (, $(shell which poetry))
 	AUTO_POETRY = poetry run
 endif
 
 poetry-install:
 	curl -sSL https://install.python-poetry.org | python3 -
-	export PATH:=$(HOME)/.local/bin:$(PATH)
 	poetry install
 
 poetry-export:
@@ -27,11 +27,11 @@ check-quality:
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
+	set -x
 	mkdir .docker
-	pushd .docker && \
-		cp ../requirements.txt . && \
-		cp ../Dockerfile .
-	a="$(shell cat requirements.txt)"
+	pushd .docker
+	cp ../requirements.txt .
+	cp ../Dockerfile .
 	docker build -t nemodleosnu/iclx:0.1.2 --build-arg requirements="$(shell cat requirements.txt)" -f Dockerfile .
 	popd
 	rm -rf .docker
