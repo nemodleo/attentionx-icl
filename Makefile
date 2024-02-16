@@ -27,14 +27,7 @@ check-quality:
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
-	set -x
-	mkdir .docker
-	pushd .docker
-	cp ../requirements.txt .
-	cp ../Dockerfile .
-	docker build -t nemodleosnu/iclx:0.1.2 --build-arg requirements="$(shell cat requirements.txt)" -f Dockerfile .
-	popd
-	rm -rf .docker
+	docker build -t nemodleosnu/iclx:0.1.2-f Dockerfile .
 
 docker-push:
 	docker push nemodleosnu/iclx:0.1.2

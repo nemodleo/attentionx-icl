@@ -12,9 +12,7 @@ RUN apt-get install -y git-lfs
 RUN curl https://getcroc.schollz.com | bash
     
 RUN mkdir /app
-ARG requirements
-RUN echo "$requirements"
-RUN echo "$requirements" > /app/requirements.txt
+COPY requirements /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 RUN mkdir /work
@@ -24,5 +22,3 @@ RUN python --version && \
     pip --version && \
     pip list | grep torch && \
     python -c "import torch ; print(torch.__version__)"
-
-
