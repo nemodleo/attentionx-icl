@@ -8,7 +8,7 @@ poetry-install:
 	poetry install
 
 poetry-export:
-	poetry export -f requirements.txt > requirements.txt
+	poetry export -f requirements.txt --without-hashes > requirements.txt
 
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py

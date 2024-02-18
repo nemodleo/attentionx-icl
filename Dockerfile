@@ -6,6 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y sudo tree python3-pip
 RUN python -m pip install --upgrade pip
+RUN pip uninstall transformer-engine
 
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh
 RUN apt-get install -y git-lfs
