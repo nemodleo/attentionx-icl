@@ -13,7 +13,7 @@ RUN apt-get install -y git-lfs
 RUN curl https://getcroc.schollz.com | bash
     
 RUN mkdir /app
-COPY requirements /app/requirements.txt
+COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 RUN mkdir /work
