@@ -25,7 +25,7 @@ def get_probs(sentence):
             }
         ]
         response = openai.ChatCompletion.create(
-            model="gpt-4-turbo-preview",
+            model="gpt-3.5-turbo",
             messages=messages,
             max_tokens=1,
             logprobs=True,
@@ -58,16 +58,17 @@ def get_probs(sentence):
 
 def main(
     start_idx: int = 0,
-    max_num: int = 1000,
+    max_num: int = 1000000,
 ):
     dataset = load_dataset('glue', 'sst2')
+    train_dataset = dataset['train']
 
-    end_idx = start_idx + max_num
-    with open(f'poc/openai_api/ickd_sst2_probs_n{max_num}_s{start_idx}_e{end_idx}.csv', 'w', newline='', encoding='utf-8') as file:
+    end_idx = min(start_idx + max_num, len(train_dataset))
+    with open(f'poc/openai_api/ickd__gpt-3-5-turbo__sst2___n{max_num}_s{start_idx}_e{end_idx}.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["index", "sentence", "label", "positive_prob", "negative_prob"])
 
-        for idx, instance in enumerate(tqdm(dataset['train'])):
+        for idx, instance in enumerate(tqdm(train_dataset)):
             if idx < start_idx:
                 continue
             if idx >= start_idx + max_num:
