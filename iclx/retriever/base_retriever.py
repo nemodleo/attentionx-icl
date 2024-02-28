@@ -68,11 +68,9 @@ class BaseRetriever:
         """
         raise NotImplementedError("Method hasn't been implemented yet")
 
-    def get_labels(self, ice_template: Optional[PromptTemplate] = None, prompt_template: Optional[PromptTemplate] = None):
+    def get_labels(self, ice_template: Optional[PromptTemplate] = None):
         labels = []
-        if prompt_template is not None and isinstance(prompt_template.template, Dict):
-            labels = list(prompt_template.template.keys())[:]
-        elif ice_template is not None and ice_template.ice_token is not None and isinstance(ice_template.template, Dict):
+        if ice_template is not None and ice_template.ice_token is not None and isinstance(ice_template.template, Dict):
             labels = list(ice_template.template.keys())[:]
         else:
             labels = list(set(self.test_ds[self.dataset_reader.output_column]))
@@ -93,10 +91,8 @@ class BaseRetriever:
         return generated_ice
 
     def generate_label_prompt(self, idx: int, ice: str, label, ice_template: Optional[PromptTemplate] = None,
-                              prompt_template: Optional[PromptTemplate] = None, remain_sep: Optional[bool] = False) -> str:
-        if prompt_template is not None:
-            return prompt_template.generate_label_prompt_item(self.test_ds[idx], ice, label, remain_sep) + self.prompt_eos_token
-        elif ice_template is not None and ice_template.ice_token is not None:
+                              remain_sep: Optional[bool] = False) -> str:
+        if ice_template is not None and ice_template.ice_token is not None:
             return ice_template.generate_label_prompt_item(self.test_ds[idx], ice, label, remain_sep) + self.prompt_eos_token
         else:
             prefix_prompt = ' '.join(
