@@ -16,12 +16,18 @@ def test():
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
-    tp_dict = {
+    ice_dict = {
         0: "</E>Movie Review: </text>\nPositive",
         1: "</E>Movie Review: </text>\nNegative"
     }
+    ice_template = PromptTemplate(ice_dict, {'text': '</text>'}, ice_token='</E>')
 
-    template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    prompt_dict = {
+        0: "</E>Movie Review: </text>\nPositive",
+        1: "</E>Movie Review: </text>\nNegative"
+    }
+    prompt_template = PromptTemplate(prompt_dict, {'text': '</text>'}, ice_token='</E>')
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 
@@ -32,7 +38,7 @@ def test():
         output_json_filename='240110-sst2'
     )
 
-    predictions = inferencer.inference(retriever, ice_template=template)
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     score = AccEvaluator().score(predictions=predictions, references=data.references)
     print(score)
 

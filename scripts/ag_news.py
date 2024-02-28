@@ -16,14 +16,21 @@ def test():
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
-    tp_dict = { # acc: 0.2594736842105263
+    ice_dict = {
         0: "</E>\"</text>\" It is about world.",
         1: "</E>\"</text>\" It is about sports.",
         2: "</E>\"</text>\" It is about business.",
         3: "</E>\"</text>\" It is about science and technology.",
     }
+    ice_template = PromptTemplate(ice_dict, {'text': '</text>'}, ice_token='</E>')
 
-    template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+    prompt_dict = {
+        0: "</E>\"</text>\" It is about world.",
+        1: "</E>\"</text>\" It is about sports.",
+        2: "</E>\"</text>\" It is about business.",
+        3: "</E>\"</text>\" It is about science and technology.",
+    }
+    prompt_template = PromptTemplate(prompt_dict, {'text': '</text>'}, ice_token='</E>')
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 
@@ -34,7 +41,7 @@ def test():
         output_json_filename='240111-ag_news'
     )
 
-    predictions = inferencer.inference(retriever, ice_template=template)
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     score = AccEvaluator().score(predictions=predictions, references=data.references)
     print(score)
 

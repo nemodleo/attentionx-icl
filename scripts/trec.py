@@ -17,7 +17,7 @@ def test():
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
-    tp_dict = { # acc: 0.27
+    ice_dict = {
         0: "</E>\"</text>\" It is about abbreviation.",
         1: "</E>\"</text>\" It is about entity.",
         2: "</E>\"</text>\" It is about description and abstract concept.",
@@ -25,8 +25,17 @@ def test():
         4: "</E>\"</text>\" It is about location.",
         5: "</E>\"</text>\" It is about numeric value."
     }
+    ice_template = PromptTemplate(ice_dict, {'text': '</text>'}, ice_token='</E>')
 
-    template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+    prompt_dicts = {
+        0: "</E>\"</text>\" It is about abbreviation.",
+        1: "</E>\"</text>\" It is about entity.",
+        2: "</E>\"</text>\" It is about description and abstract concept.",
+        3: "</E>\"</text>\" It is about human being.",
+        4: "</E>\"</text>\" It is about location.",
+        5: "</E>\"</text>\" It is about numeric value."
+    }
+    prompt_template = PromptTemplate(prompt_dicts, {'text': '</text>'}, ice_token='</E>')
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 
@@ -37,7 +46,7 @@ def test():
         output_json_filename='240111-trec'
     )
 
-    predictions = inferencer.inference(retriever, ice_template=template)
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     score = AccEvaluator().score(predictions=predictions, references=data.references)
     print(score)
 
