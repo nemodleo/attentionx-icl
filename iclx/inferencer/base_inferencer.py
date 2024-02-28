@@ -61,6 +61,7 @@ class BaseInferencer:
     def inference(self,
                   retriever: BaseRetriever,
                   ice_template: Optional[PromptTemplate] = None,
+                  prompt_template: Optional[PromptTemplate] = None, 
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None
                   ) -> List:
@@ -69,6 +70,7 @@ class BaseInferencer:
         Args:
             retriever (:obj:`BaseRetriever`): An instance of a Retriever class that will be used to retrieve in-context examples
             ice_template (:obj:`PromptTemplate`, optional): A template for generating the in-context examples prompt. Defaults to None.
+            prompt_template (:obj:`PromptTemplate`, optional): A template for generating the final prompt. Defaults to None.
             output_json_filepath (:obj:`str`, optional): The file path to save the results as a `JSON` file. Defaults to None.
             output_json_filename (:obj:`str`, optional): The file name to save the results as a `JSON` file. Defaults to None.
 

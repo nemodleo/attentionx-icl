@@ -41,7 +41,10 @@ class PPLInferencer(BaseInferencer):
                          output_json_filepath, output_json_filename, **kwargs)
         self.labels = labels
 
-    def inference(self, retriever: BaseRetriever, ice_template: Optional[PromptTemplate] = None,
+    def inference(self,
+                  retriever: BaseRetriever,
+                  ice_template: Optional[PromptTemplate] = None,
+                  prompt_template: Optional[PromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None) -> List:
         # 1. Preparation for output logs
@@ -61,7 +64,7 @@ class PPLInferencer(BaseInferencer):
 
         # 3. Get labels of all the classes
         if self.labels is None:
-            labels = retriever.get_labels(ice_template=ice_template)
+            labels = retriever.get_labels(ice_template=ice_template, prompt_template=prompt_template)
         else:
             labels = self.labels
 
@@ -78,14 +81,13 @@ class PPLInferencer(BaseInferencer):
 
             # 5.1 Generate prompts of current label and truncate
             for idx in range(len(ice_idx_list)):
-                prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template,
-                                                         remain_sep=None)
+                prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template, remain_sep=None)
                 if self.max_model_token_num is not None:
                     prompt_token_num = self.get_input_token_num(prompt)
                     while len(ice_idx_list[idx]) > 0 and prompt_token_num > self.max_model_token_num:
                         ice_idx_list[idx] = ice_idx_list[idx][:-1]
                         ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template)
-                        prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template)
+                        prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template)
                         prompt_token_num = self.get_input_token_num(prompt)
 
                 prompt_list.append(prompt)
