@@ -9,8 +9,7 @@ from datasets import load_dataset
 
 from ickd_sst2_prompt import PROMPT
 
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = "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"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def get_probs(sentence):
