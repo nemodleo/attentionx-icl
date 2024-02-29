@@ -9,7 +9,8 @@ from datasets import load_dataset
 
 from ickd_sst2_prompt import PROMPT
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = "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"
 
 
 def get_probs(sentence):
@@ -64,6 +65,7 @@ def main(
     train_dataset = dataset['train']
 
     end_idx = min(start_idx + max_num, len(train_dataset))
+    max_num = end_idx - start_idx
     with open(f'poc/openai_api/ickd__gpt-3-5-turbo__sst2___n{max_num}_s{start_idx}_e{end_idx}.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["index", "sentence", "label", "positive_prob", "negative_prob"])
