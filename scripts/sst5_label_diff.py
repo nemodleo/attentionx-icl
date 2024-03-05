@@ -12,9 +12,9 @@ def gen(file_path):
         for line in f:
             yield json.loads(line)
             
-train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/train_spaced_sst2.jsonl"})
-val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/dev.jsonl"})
-test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/test.jsonl"})
+train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst5/train_label_sst5.jsonl"})
+val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst5/dev.jsonl"})
+test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst5/test.jsonl"})
 
 dataset_dict = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
 dataset = dataset_dict 
@@ -27,37 +27,41 @@ test_dataset = dataset['test']  # gets the testing split
 
 from openicl import PromptTemplate
 
-
 def test_naive(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E> Movie Review: </text> Positive </P>% Negative </N>%"
-
+    ice_dict = "</E>Review: </text>\nSentiment: great </VP>%% good </P>%% okay </N>%% bad </NG>% terrible </VN>%"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Review: </text>\nSentiment: terrible",
+        '1' : "</E>Review: </text>\nSentiment: bad",
+        '2' : "</E>Review: </text>\nSentiment: okay" ,
+        '3' : "</E>Review: </text>\nSentiment: good" ,
+        '4' : "</E>Review: </text>\nSentiment: great" 
     }
 
     label_dict = {
-        '0': "Negative",
-        '1': "Positive"
+        '0': "terrible",
+        '1': "bad",
+        '2': "okay",
+        '3': "good",
+        '4': "great"
     }
 
 
-    column_token_map = {'text': '</text>', 1 : '</P>', 0 : '</N>' }
+    column_token_map = {'text': '</text>', 4 : '</VP>', 3 : '</P>', 2 : '</N>', 1 : '</NG>', 0 : '</VN>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
+    from openicl import TopkRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)
+    retriever = TopkRetriever(data, ice_num=ice_num, labels= ['0', '1', '2', '3', '4'], order=True)
 
     from openicl import PPLInferencer
-    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1'])
+    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1', '2', '3', '4'])
 
     from openicl import AccEvaluator
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -71,32 +75,38 @@ def test_naive(ice_num, data):
 def test_sequence(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E>Movie Review: </text> </Label1> </1>% </Label2> </2>%"
+    ice_dict = "</E>Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>%"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Review: </text>\nSentiment: terrible",
+        '1' : "</E>Review: </text>\nSentiment: bad",
+        '2' : "</E>Review: </text>\nSentiment: okay" ,
+        '3' : "</E>Review: </text>\nSentiment: good" ,
+        '4' : "</E>Review: </text>\nSentiment: great" 
     }
 
     label_dict = {
-        '0': "Negative",
-        '1': "Positive"
+        '0': "terrible",
+        '1': "bad",
+        '2': "okay",
+        '3': "good",
+        '4': "great"
     }
 
 
-    column_token_map = {'text': '</text>', 0 : '</1>', 'Label1' : '</Label1>', 1 : '</2>', 'Label2' : '</Label2>' }
+    column_token_map = {'text': '</text>', 0 : '</1>', 'Label1' : '</Label1>', 1 : '</2>', 'Label2' : '</Label2>',2 : '</3>', 'Label3' : '</Label3>',3 : '</4>', 'Label4' : '</Label4>',4 : '</5>', 'Label5' : '</Label5>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
+    from openicl import TopkRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)
+    retriever = TopkRetriever(data, ice_num=ice_num, labels= ['0', '1', '2', '3', '4'], order=True)
 
     from openicl import PPLInferencer
-    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1'])
+    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1', '2', '3', '4'])
 
     from openicl import AccEvaluator
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -110,37 +120,38 @@ def test_sequence(ice_num, data):
 def test_binning(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E>Movie Review: </text> </Label1> is very likely, </Label2> is not very likely"
+    ice_dict = "</E>Review: </text>\nSentiment: </Label1> is very likely, </Label2> is likely, </Label3> could be likely, </Label4> is not likely, </Label5> is not very likely"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Review: </text>\nSentiment: terrible",
+        '1' : "</E>Review: </text>\nSentiment: bad",
+        '2' : "</E>Review: </text>\nSentiment: okay" ,
+        '3' : "</E>Review: </text>\nSentiment: good" ,
+        '4' : "</E>Review: </text>\nSentiment: great" 
     }
 
     label_dict = {
-        '0': "Negative",
-        '1': "Positive"
+        '0': "terrible",
+        '1': "bad",
+        '2': "okay",
+        '3': "good",
+        '4': "great"
     }
 
 
-    column_token_map = {
-        'text': '</text>', 
-        'Label1' : '</Label1>', 
-        'Label2' : '</Label2>' 
-    }
-
+    column_token_map = {'text': '</text>', 0 : '</1>', 'Label1' : '</Label1>', 1 : '</2>', 'Label2' : '</Label2>',2 : '</3>', 'Label3' : '</Label3>',3 : '</4>', 'Label4' : '</Label4>',4 : '</5>', 'Label5' : '</Label5>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
+    from openicl import TopkRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)
+    retriever = TopkRetriever(data, ice_num=ice_num, labels= ['0', '1', '2', '3', '4'], order=True)
 
     from openicl import PPLInferencer
-    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1'])
+    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1', '2', '3', '4'])
 
     from openicl import AccEvaluator
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -154,28 +165,44 @@ def test_binning(ice_num, data):
 def test_GT(ice_num, data):
 
     # Inference prompt template
+    '''
     ice_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Movie Review: </text>: terrible",
+        1 : "</E>Movie Review: </text>: bad",
+        2 : "</E>Movie Review: </text>: okay" ,
+        3 : "</E>Movie Review: </text>: good" ,
+        4 : "</E>Movie Review: </text>: great" 
     }
 
     tp_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Movie Review: </text>: terrible",
+        1 : "</E>Movie Review: </text>: bad",
+        2 : "</E>Movie Review: </text>: okay" ,
+        3 : "</E>Movie Review: </text>: good" ,
+        4 : "</E>Movie Review: </text>: great" 
+    }
+    '''
+
+    ice_dict = {
+        0 : "</E>Review: </text>\nSentiment: terrible",
+        1 : "</E>Review: </text>\nSentiment: bad",
+        2 : "</E>Review: </text>\nSentiment: okay" ,
+        3 : "</E>Review: </text>\nSentiment: good" ,
+        4 : "</E>Review: </text>\nSentiment: great" 
     }
 
     column_token_map = {'text': '</text>'}
     ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
-    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+    prompt_template = PromptTemplate(ice_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
+    from openicl import TopkRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= [0,1] )
+    retriever = TopkRetriever(data, ice_num=ice_num, labels= [0,1,2,3,4])
 
     from openicl import PPLInferencer
-    inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1])
+    inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1,2,3,4])
 
     from openicl import AccEvaluator
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -190,13 +217,19 @@ def test_pseudo_GT(ice_num, data):
 
     # Inference prompt template
     ice_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Review: </text>\nSentiment: terrible",
+        1 : "</E>Review: </text>\nSentiment: bad",
+        2 : "</E>Review: </text>\nSentiment: okay" ,
+        3 : "</E>Review: </text>\nSentiment: good" ,
+        4 : "</E>Review: </text>\nSentiment: great" 
     }
 
     tp_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Review: </text>\nSentiment: terrible",
+        1 : "</E>Review: </text>\nSentiment: bad",
+        2 : "</E>Review: </text>\nSentiment: okay" ,
+        3 : "</E>Review: </text>\nSentiment: good" ,
+        4 : "</E>Review: </text>\nSentiment: great" 
     }
 
     column_token_map = {'text': '</text>'}
@@ -204,13 +237,13 @@ def test_pseudo_GT(ice_num, data):
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
+    from openicl import TopkRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= [0,1] )
+    retriever = TopkRetriever(data, ice_num=ice_num, labels= [0,1,2,3,4] )
 
     from openicl import PPLInferencer
-    inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1])
+    inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1,2,3,4])
 
     from openicl import AccEvaluator
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -231,6 +264,7 @@ for i in range(shots):
     gt.append(test_GT(i, data)['accuracy'])
     pseudo_gt.append(test_pseudo_GT(i, data)['accuracy'])
 
+
 print(naive)
 print(sequence)
 print(binning)
@@ -244,4 +278,4 @@ plt.plot(x, gt, label = 'gt')
 plt.plot(x, pseudo_gt, label = 'pseudo_gt')
 
 plt.legend()
-plt.savefig('/output/sst2.png')
+plt.savefig('/output/sst5.png')

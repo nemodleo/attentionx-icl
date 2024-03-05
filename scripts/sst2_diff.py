@@ -31,13 +31,13 @@ from openicl import PromptTemplate
 def test_naive(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E> Movie Review: </text> Positive </P>% Negative </N>%"
+    ice_dict = "</E> Movie Review: </text>\nSentiment: Positive </P>% Negative </N>%"
 
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Movie Review: </text>\nSentiment: Negative",
+        '1' : "</E>Movie Review: </text>\nSentiment: Positive"
     }
 
     label_dict = {
@@ -71,12 +71,12 @@ def test_naive(ice_num, data):
 def test_sequence(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E>Movie Review: </text> </Label1> </1>% </Label2> </2>%"
+    ice_dict = "</E>Movie Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>%"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Movie Review: </text>\nSentiment: Negative",
+        '1' : "</E>Movie Review: </text>\nSentiment: Positive"
     }
 
     label_dict = {
@@ -110,12 +110,12 @@ def test_sequence(ice_num, data):
 def test_binning(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E>Movie Review: </text> </Label1> is very likely, </Label2> is not very likely"
+    ice_dict = "</E>Movie Review: </text>\nSentiment: </Label1> is very likely, </Label2> is not very likely"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Movie Review: </text>\nSentiment: Negative",
+        '1' : "</E>Movie Review: </text>\nSentiment: Positive"
     }
 
     label_dict = {
@@ -155,13 +155,13 @@ def test_GT(ice_num, data):
 
     # Inference prompt template
     ice_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Movie Review: </text>\nSentiment: Negative",
+        1 : "</E>Movie Review: </text>\nSentiment: Positive"
     }
 
     tp_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Movie Review: </text>\nSentiment: Negative",
+        1 : "</E>Movie Review: </text>\nSentiment: Positive"
     }
 
     column_token_map = {'text': '</text>'}
@@ -190,13 +190,13 @@ def test_pseudo_GT(ice_num, data):
 
     # Inference prompt template
     ice_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Movie Review: </text>\nSentiment: Negative",
+        1 : "</E>Movie Review: </text>\nSentiment: Positive"
     }
 
     tp_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Movie Review: </text>\nSentiment: Negative",
+        1 : "</E>Movie Review: </text>\nSentiment: Positive"
     }
 
     column_token_map = {'text': '</text>'}
