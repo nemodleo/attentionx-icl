@@ -14,15 +14,19 @@ class PromptTemplate:
     def __init__(self,
                  template: Dict,
                  column_token_map: Dict,
+                 label_dict: Optional[Dict] = None,
                  ice_token: Optional[str] = None,
                  sep_token: Optional[str] = None,
+                 binning: Optional[Dict] = None
                  ) -> None:
         self.template = template
         self.column_token_map = column_token_map
         self.ice_token = ice_token
         self.sep_token = sep_token
+        self.label_dict = label_dict
+        self.binning = binning
 
-    def generate_ice_item(self, entry: Dict, label: Hashable) -> str:
+    def generate_ice_item(self, entry: Dict, label: Hashable, order=False) -> str:
         """Generate in-context example based on the provided :obj:`entry` data.
 
         Args:
@@ -40,9 +44,29 @@ class PromptTemplate:
         # Remove ice_token
         if self.ice_token is not None:
             tp = tp.replace(self.ice_token, '')
+
+        if order:
+            label_dict = {v : entry[k] for k , v in self.label_dict.items()}
+
+            sorted_dict = {k: v for k, v in sorted(label_dict.items(), key=lambda item: item[1], reverse=True)}
+            labels = {'Label'+str(i+1) : list(sorted_dict.keys())[i] for i in range(len(sorted_dict.keys()))}
+            probs = list(sorted_dict.values())
+
         # Replace context token
         for key, token in self.column_token_map.items():
-            tp = tp.replace(token, str(entry[key]))
+            if 'Label' in token and order:
+                    tp = tp.replace(token, labels[key])
+            elif key != 'text' and order:
+                if self.binning is None : 
+                    text = str(round(float(probs[key])*100, 2))
+                else :
+                    text = self.binning[key]
+                tp = tp.replace(token, text)
+            else:
+                text = str(entry[key])
+                if key != 'text' : text = str(round(float(text)*100, 2))
+                tp = tp.replace(token, text)
+                
         return tp
 
     def generate_label_prompt_item(self, entry: Dict, ice: str, label: Hashable, remain_sep: Optional[bool] = False) -> str:

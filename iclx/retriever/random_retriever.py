@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
@@ -35,9 +35,11 @@ class RandomRetriever(BaseRetriever):
                  index_split: Optional[str] = 'train',
                  test_split: Optional[str] = 'test',
                  seed: Optional[int] = 43,
-                 accelerator: Optional[Accelerator] = None
+                 accelerator: Optional[Accelerator] = None,
+                 labels: Optional[List] = None,
+                 order: Optional[bool] = False
                  ) -> None:
-        super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split, test_split, accelerator)
+        super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split, test_split, accelerator, labels, order)
         self.seed = seed
 
     def retrieve(self):

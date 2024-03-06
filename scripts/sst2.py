@@ -1,9 +1,15 @@
 from datasets import load_dataset
 from datasets import Dataset, DatasetDict
-from openicl import DatasetReader
+from iclx.utils import DatasetReader
 import matplotlib.pyplot as plt
 import json
 import vessl 
+
+from iclx.utils import PromptTemplate
+from iclx.retriever import RandomRetriever
+from iclx.inferencer import PPLInferencer
+from iclx.evaluator import AccEvaluator
+
 
 vessl.init()
 
@@ -25,7 +31,6 @@ data = DatasetReader(dataset, input_columns=['text'], output_column= 'label')
 train_dataset = dataset['train']  # gets the training split
 test_dataset = dataset['test']  # gets the testing split
 
-from openicl import PromptTemplate
 
 
 def test_naive(ice_num, data):
@@ -45,21 +50,17 @@ def test_naive(ice_num, data):
         '1': "Positive"
     }
 
-
     column_token_map = {'text': '</text>', 1 : '</P>', 0 : '</N>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)
-
-    from openicl import PPLInferencer
     inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1'])
 
-    from openicl import AccEvaluator
+    
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     # compute accuracy for the prediction
@@ -89,16 +90,11 @@ def test_sequence(ice_num, data):
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
-
-    from openicl import RandomRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)
-
-    from openicl import PPLInferencer
     inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1'])
-
-    from openicl import AccEvaluator
+    
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     # compute accuracy for the prediction
@@ -123,7 +119,6 @@ def test_binning(ice_num, data):
         '1': "Positive"
     }
 
-
     column_token_map = {
         'text': '</text>', 
         'Label1' : '</Label1>', 
@@ -133,16 +128,12 @@ def test_binning(ice_num, data):
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
-
-    from openicl import RandomRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)
-
-    from openicl import PPLInferencer
+    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)  
     inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1'])
 
-    from openicl import AccEvaluator
+    
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     # compute accuracy for the prediction
@@ -169,15 +160,11 @@ def test_GT(ice_num, data):
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = RandomRetriever(data, ice_num=ice_num, labels= [0,1] )
-
-    from openicl import PPLInferencer
     inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1])
 
-    from openicl import AccEvaluator
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     # compute accuracy for the prediction
@@ -204,15 +191,11 @@ def test_pseudo_GT(ice_num, data):
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
 
-    from openicl import RandomRetriever
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = RandomRetriever(data, ice_num=ice_num, labels= [0,1] )
-
-    from openicl import PPLInferencer
     inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1])
 
-    from openicl import AccEvaluator
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, pseudo_gt='pseudo_gt')
     # compute accuracy for the prediction
