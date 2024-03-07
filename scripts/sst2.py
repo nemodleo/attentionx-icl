@@ -23,7 +23,7 @@ def test():
             for line in f:
                 yield json.loads(line)
                 
-    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/train_spaced_sst2.jsonl"})
+    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/train_diff_sst2.jsonl"})
     val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/dev.jsonl"})
     test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/test.jsonl"})
 
