@@ -47,10 +47,12 @@ def create_data():
     inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6b')
     predictions = inferencer.inference(retriever, ice_template=template)
 
+    # Add text, label info to created soft label information
     for i, p in enumerate(predictions):
         p["text"] = dataset_dict["test"][i]["text"] 
+        p["label"] = dataset_dict["test"][i]["label"] 
+        p["label_text"] = dataset_dict["test"][i]["label_text"] 
 
-    #print(predictions)
 
     # Save predictions as file ! 
     with open('/output/train_new_sst2.jsonl', 'w') as f:
