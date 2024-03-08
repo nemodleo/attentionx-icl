@@ -1,38 +1,24 @@
-"""PPL Inferencer"""
-
-import json
+# create soft labels from larger model
+# dilstill GPT2 : 82M params
 import torch
-from openicl import PromptTemplate
-from openicl.icl_retriever import *
-from openicl.icl_evaluator import *
-from openicl.icl_inferencer.icl_base_inferencer import BaseInferencer, PPLInferencerOutputHandler
-from openicl.utils.logging import get_logger
-from openicl.utils.api_service import *
+import numpy as np
 from typing import List, Union, Optional
 from tqdm import tqdm
 from tqdm import trange
 from transformers import PretrainedConfig
 from accelerate import Accelerator
+from loguru import logger
 
-logger = get_logger(__name__)
+from iclx import DatasetReader
+from iclx import PromptTemplate
+from iclx.inferencer.ppl_inferencer import PPLInferencer, PPLInferencerOutputHandler
+from iclx.retriever import *
+from iclx.evaluator import *
+from iclx import AccEvaluator
 
 
-class PPLInferencer(BaseInferencer):
-    """PPL In-context Learning Inferencer Class
-        Perplexity-based In-context Learning Inferencer.
-        
-    Attributes:
-        model (:obj:`AutoModelForCausalLM`, optional): Local PLM (loaded from Hugging Face), which can be initialized by name or a config class. 
-        tokenizer (:obj:`AutoTokenizer` or :obj:`GPT2Tokenizer`, optional): Tokenizer for :obj:`model`.
-        max_model_token_num (:obj:`int`, optional): Maximum number of tokenized words allowed by the LM. 
-        batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`. 
-        accelerator (:obj:`Accelerator`, optional): An instance of the `Accelerator` class, used for multiprocessing.
-        output_json_filepath (:obj:`str`, optional): File path for output `JSON` file. 
-        output_json_filename (:obj:`str`, optional): File name for output `JSON` file. 
-        api_name (:obj:`str`, optional): Name of API service. 
-        call_api (:obj:`bool`): If ``True``, an API for LM models will be used, determined by :obj:`api_name`.   
-        labels (:obj:`List`, optional): A list of labels for all classes.
-    """
+
+class ParentInferencer(PPLInferencer):
 
     def __init__(self,
                  model_name: Optional[str] = 'gpt2-xl',
@@ -54,8 +40,7 @@ class PPLInferencer(BaseInferencer):
 
     def inference(self, retriever: BaseRetriever, ice_template: Optional[PromptTemplate] = None,
                   prompt_template: Optional[PromptTemplate] = None, output_json_filepath: Optional[str] = None,
-                  output_json_filename: Optional[str] = None, normalizing_str: Optional[str] = None,
-                  pseudo_gt: Optional[str] = None) -> List:
+                  output_json_filename: Optional[str] = None, normalizing_str: Optional[str] = None) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
@@ -68,26 +53,28 @@ class PPLInferencer(BaseInferencer):
         if output_json_filename is None:
             output_json_filename = self.output_json_filename
 
-        # 2. Get results of retrieval process
-        ice_idx_list = retriever.retrieve()
+        # 2. Get results of retrieval process - only one!
 
+        r = retriever.retrieve()
+        print(len(r), "is the length of r")
+        print(r)
+        ice_idx_list = [ [i] for i in range(len(r))]
+        print(len(ice_idx_list))
+        print(ice_idx_list)
 
-        # 3. Get labels of all the classes # modify here : not neccessary
+        # 3. Get labels of all the classes
         if self.labels is None:
             labels = retriever.get_labels(ice_template=ice_template, prompt_template=prompt_template)
         else:
             labels = self.labels
 
         # 4. Generate in-context examples for testing inputs
-        # TODO : generate icl examples with whole labels. 
+        print(len(ice_idx_list))
         for idx in range(len(ice_idx_list)):
-            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
+            print(idx)
+            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template))
         output_handler.save_ice(ice)
 
-        print(ice[0])
-        print('-----------------')
-
-        # Here important : need to see !
         # 5. Calculating PPL for prompts in each label's class
         for label in labels:
             index = 0
@@ -127,8 +114,6 @@ class PPLInferencer(BaseInferencer):
                     normalizing_prompt_list.append(normalizing_prompt)
                 prompt_list.append(prompt)
 
-            print(prompt_list[0])
-
             if normalizing_str is not None:
                 normalizing_str_len = self.get_input_token_num(normalizing_str)
 
@@ -155,24 +140,15 @@ class PPLInferencer(BaseInferencer):
                     index = index + 1
             ppl.append(sub_ppl_list)
 
-        # 6. Get lowest PPL class as predictions
+        # 6. DO NOT lowest PPL class as predictions. rather, save them all.
         ppl = list(zip(*ppl))
         for single_ppl in ppl:
-            sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
-        output_handler.save_predictions(sub_predictions)
-
-        # 7. Output
-        output_handler.subprocess_write_to_json(output_json_filepath, output_json_filename)
-        if self.accelerator is not None:
-            self.accelerator.wait_for_everyone()
-        output_handler.merge_to_main_process(output_json_filepath, output_json_filename)
-        output_handler.write_to_json(output_json_filepath, output_json_filename)
-
-        return [sample['prediction'] for sample in output_handler.results_dict.values()]
+            sub_predictions.append({idx : ppl for idx, ppl in enumerate(single_ppl)})
+        
+        return sub_predictions
+    
 
     def __get_ppl(self, input_texts: List[str], mask_length=None):
-        if self.call_api:
-            return api_get_ppl(self.api_name, input_texts)
         self.tokenizer.padding_side = "right"
         inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
@@ -197,3 +173,31 @@ class PPLInferencer(BaseInferencer):
             lens -= np.array(mask_length)
         ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
         return ce_loss
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

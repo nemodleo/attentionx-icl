@@ -3,11 +3,15 @@
 
 from datasets import load_dataset
 from datasets import Dataset, DatasetDict
-from openicl import DatasetReader
+
+from iclx import DatasetReader
+from iclx import PromptTemplate
+from iclx import RandomRetriever
+from iclx.inferencer.parent_inferencer import ParentInferencer
+from iclx import AccEvaluator
+
 import json
 import vessl
-
-# Before : preprocess data !
 
 vessl.init()
 
@@ -30,35 +34,29 @@ print(dataset.keys())  # prints the names of the available splits
 train_dataset = dataset['train']  # gets the training split
 test_dataset = dataset['test']  # gets the testing split
 
-from openicl import PromptTemplate
 tp_dict = {
-    0 : "</E>Movie Review: </text> Negative",
-    1 : "</E>Movie Review: </text> Positive",
+    0 : "</E>Review: </text>\nSentiment: Negative",
+    1 : "</E>Review: </text>\nSentiment: Positive",
 }
 
 template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
-
-from openicl import RandomRetriever
 # Define a retriever using the previous `DataLoader`.
 # `ice_num` stands for the number of data in in-context examples.
 retriever = RandomRetriever(data, ice_num=0)
 
-import ParentInferencer
 inferencer = ParentInferencer.ParentInferencer(model_name='EleutherAI/gpt-j-6b')
 
-from openicl import AccEvaluator
 # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
 predictions = inferencer.inference(retriever, ice_template=template)
 
 for i, p in enumerate(predictions):
-    p["text"] = dataset_dict["test"][i]["text"]
+    p["text"] = dataset_dict["test"][i]["text"] 
 
 #print(predictions)
 
 # Save predictions as file ! 
-
-with open('/output/train_spaced_sst2.jsonl', 'w') as f:
+with open('/output/train_new_sst2.jsonl', 'w') as f:
     for entry in predictions:
         json.dump(entry, f)
         f.write('\n')

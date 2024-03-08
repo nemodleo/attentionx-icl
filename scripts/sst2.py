@@ -33,9 +33,6 @@ def test():
     # Define a DatasetReader, with specified column names where input and output are stored.
     data = DatasetReader(dataset, input_columns=['text'], output_column= 'label')
 
-    train_dataset = dataset['train']  # gets the training split
-    test_dataset = dataset['test']  # gets the testing split
-
     shots = 10
 
     naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
@@ -67,12 +64,12 @@ def test():
 def test_naive(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E> Movie Review: </text> Positive </P>% Negative </N>%"
+    ice_dict = "</E>Review: </text>\nSentiment: Positive </P>% Negative </N>%"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Review: </text>\nSentiment: Negative",
+        '1' : "</E>Review: </text>\nSentiment: Positive"
     }
 
     label_dict = {
@@ -86,7 +83,7 @@ def test_naive(ice_num, data):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'], order=True)
+    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0', '1'])
     inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0', '1'])
     
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -100,12 +97,12 @@ def test_naive(ice_num, data):
 def test_sequence(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E>Movie Review: </text> </Label1> </1>% </Label2> </2>%"
+    ice_dict = "</E>Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>%"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Review: </text>\nSentiment: Negative",
+        '1' : "</E>Review: </text>\nSentiment: Positive"
     }
 
     label_dict = {
@@ -133,12 +130,12 @@ def test_sequence(ice_num, data):
 def test_binning(ice_num, data):
 
     # ICL exemplar template
-    ice_dict = "</E>Movie Review: </text> </Label1> is very likely, </Label2> is not very likely"
+    ice_dict = "</E>Review: </text>\nSentiment: </Label1> is very likely, </Label2> is not very likely"
 
     # Inference prompt template
     tp_dict = {
-        '0' : "</E>Movie Review: </text> Negative",
-        '1' : "</E>Movie Review: </text> Positive"
+        '0' : "</E>Review: </text>\nSentiment: Negative",
+        '1' : "</E>Review: </text>\nSentiment: Positive"
     }
 
     label_dict = {
@@ -172,13 +169,13 @@ def test_GT(ice_num, data):
 
     # Inference prompt template
     ice_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Review: </text>\nSentiment: Negative",
+        1 : "</E>Review: </text>\nSentiment: Positive"
     }
 
     tp_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Review: </text>\nSentiment: Negative",
+        1 : "</E>Review: </text>\nSentiment: Positive"
     }
 
     column_token_map = {'text': '</text>'}
@@ -202,13 +199,13 @@ def test_pseudo_GT(ice_num, data):
 
     # Inference prompt template
     ice_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Review: </text>\nSentiment: Negative",
+        1 : "</E>Review: </text>\nSentiment: Positive"
     }
 
     tp_dict = {
-        0 : "</E>Movie Review: </text> Negative",
-        1 : "</E>Movie Review: </text> Positive"
+        0 : "</E>Review: </text>\nSentiment: Negative",
+        1 : "</E>Review: </text>\nSentiment: Positive"
     }
 
     column_token_map = {'text': '</text>'}
