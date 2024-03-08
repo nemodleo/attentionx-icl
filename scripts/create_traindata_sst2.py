@@ -1,5 +1,8 @@
 # here we do the testing. haha
 # added more codes in the main branch. 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from datasets import load_dataset
 from datasets import Dataset, DatasetDict
@@ -8,7 +11,7 @@ from iclx import DatasetReader
 from iclx import PromptTemplate
 from iclx import RandomRetriever
 from iclx.inferencer.parent_inferencer import ParentInferencer
-from iclx import AccEvaluator
+sys.path.pop()
 
 import json
 import vessl
