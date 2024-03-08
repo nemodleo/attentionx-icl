@@ -24,18 +24,15 @@ class ParentInferencer(PPLInferencer):
                  model_name: Optional[str] = 'gpt2-xl',
                  tokenizer_name: Optional[str] = None,
                  max_model_token_num: Optional[int] = None,
-                 model_config: Optional[PretrainedConfig] = None,
                  batch_size: Optional[int] = 1,
                  accelerator: Optional[Accelerator] = None,
                  output_json_filepath: Optional[str] = "./icl_inference_output",
                  output_json_filename: Optional[str] = "predictions",
-                 api_name: Optional[str] = None,
                  labels: Optional[List] = None,
-                 model_parallel: Optional[bool] = False,
                  **kwargs
                  ) -> None:
-        super().__init__(model_name, tokenizer_name, max_model_token_num, model_config, batch_size, accelerator,
-                         output_json_filepath, output_json_filename, api_name, model_parallel, **kwargs)
+        super().__init__(model_name, tokenizer_name, max_model_token_num, batch_size, accelerator,
+                         output_json_filepath, output_json_filename, **kwargs)
         self.labels = labels
 
     def inference(self, retriever: BaseRetriever, ice_template: Optional[PromptTemplate] = None,
