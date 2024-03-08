@@ -15,7 +15,7 @@ import vessl
 vessl.init()
 
 def create_data():
-    
+
     def gen(file_path):
         with open(file_path, 'r') as f:
             for line in f:
@@ -46,7 +46,7 @@ def create_data():
     # `ice_num` stands for the number of data in in-context examples.
     retriever = RandomRetriever(data, ice_num=0)
 
-    inferencer = ParentInferencer.ParentInferencer(model_name='EleutherAI/gpt-j-6b')
+    inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6b')
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=template)
