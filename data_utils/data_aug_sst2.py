@@ -37,7 +37,6 @@ with open('data/sst2/train_spaced_sst2.jsonl', 'w') as f:
         f.write(json.dumps(row) + '\n')
 
 
-
 import json
 import pandas as pd
 import numpy as np

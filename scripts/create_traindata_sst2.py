@@ -31,10 +31,7 @@ def create_data():
     # Define a DatasetReader, with specified column names where input and output are stored.
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
-    print(dataset.keys())  # prints the names of the available splits
-    train_dataset = dataset['train']  # gets the training split
-    test_dataset = dataset['test']  # gets the testing split
-
+    # Inference Prompt template. (no ICL, zero-shot)
     tp_dict = {
         0 : "</E>Review: </text>\nSentiment: Negative",
         1 : "</E>Review: </text>\nSentiment: Positive",
@@ -43,12 +40,11 @@ def create_data():
     template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
-    # `ice_num` stands for the number of data in in-context examples.
+    # `ice_num` = 0 for dataset creation purposes.
     retriever = RandomRetriever(data, ice_num=0)
 
+    # class ParentInferencer is modified to spit soft labels as predictions
     inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6b')
-
-    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=template)
 
     for i, p in enumerate(predictions):

@@ -53,11 +53,7 @@ class ParentInferencer(PPLInferencer):
         # 2. Get results of retrieval process - only one!
 
         r = retriever.retrieve()
-        print(len(r), "is the length of r")
-        print(r)
         ice_idx_list = [ [i] for i in range(len(r))]
-        print(len(ice_idx_list))
-        print(ice_idx_list)
 
         # 3. Get labels of all the classes
         if self.labels is None:
