@@ -27,9 +27,9 @@ def create_data():
             for line in f:
                 yield json.loads(line)
     
-    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/mini.jsonl"})
-    val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/mini.jsonl"})
-    test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/mini.jsonl"})
+    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/train.jsonl"})
+    val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/train.jsonl"})
+    test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/train.jsonl"})
     
     dataset_dict = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
     dataset = dataset_dict
