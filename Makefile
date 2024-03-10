@@ -45,6 +45,9 @@ docker-build-and-push:
 	$(MAKE) docker-build 
 	$(MAKE) docker-push
 
+download-dataset:
+	vessl dataset download iclx / ${INPUT}
+
 do-symlink:
 	ln -s ${INPUT}/ckpt ckpt
 	ln -s ${INPUT}/data data

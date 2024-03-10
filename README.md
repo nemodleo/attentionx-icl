@@ -10,13 +10,14 @@ this repository is a modification of https://github.com/Shark-NLP/OpenICL
 1. using poetry 
 ```bash
 make poetry-install
+make download-dataset INPUT={cached ckpt-data dir}
 make do-symlink INPUT={cached ckpt-data dir}
 ```
 
 2. using docker
 ```bash
+make download-dataset INPUT=/input
 make do-symlink INPUT=/input
-
 ```
 
 
