@@ -13,6 +13,15 @@ poetry-export:
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py
 
+run-sst2_gpt_j_6B:
+	$(AUTO_POETRY) python scripts/sst2_gpt_j_6B.py
+
+run-sst2_gpt_neo_2.7B:
+	$(AUTO_POETRY) python scripts/sst2_gpt_neo_2.7B.py
+
+run-sst2_topk:
+	$(AUTO_POETRY) python scripts/sst2_topk.py
+
 run-sst5:
 	$(AUTO_POETRY) python scripts/sst5.py
 
@@ -33,5 +42,5 @@ docker-push:
 	docker push nemodleosnu/iclx:0.1.4
 
 do-symlink:
-	ln -s /input/ckpt ckpt
-	ln -s /input/data data
+	ln -s ${INPUT}/ckpt ckpt
+	ln -s ${INPUT}/data data
