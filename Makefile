@@ -8,7 +8,7 @@ poetry-install:
 	poetry install
 
 poetry-export:
-	poetry export -f requirements.txt --without-hashes > requirements.txt
+	poetry export -f requirements.txt --without-hashes --output requirements.txt
 
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py
@@ -36,10 +36,10 @@ check-quality:
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
-	docker build -t nemodleosnu/iclx:0.1.4 -f Dockerfile .
+	docker build -t nemodleosnu/iclx:0.1.5 -f Dockerfile .
 
 docker-push:
-	docker push nemodleosnu/iclx:0.1.4
+	docker push nemodleosnu/iclx:0.1.5
 
 docker-build-and-push: 
 	$(MAKE) docker-build 
