@@ -37,7 +37,7 @@ class PromptTemplate:
             :obj:`str`: The generated in-context example.
         """
         # Select the corresponding template
-        tp = self.template[label]
+        tp = self.template[str(label)]
         # Remove sep token
         if self.sep_token is not None:
             tp.replace(self.sep_token, '')
@@ -66,7 +66,8 @@ class PromptTemplate:
                 text = str(entry[key])
                 if key != 'text' : text = str(round(float(text)*100, 2))
                 tp = tp.replace(token, text)
-                
+        
+        print(tp)
         return tp
 
     def generate_label_prompt_item(self, entry: Dict, ice: str, label: Hashable, remain_sep: Optional[bool] = False) -> str:
