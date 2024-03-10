@@ -13,6 +13,9 @@ poetry-export:
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py
 
+run-sst2-prob:
+	$(AUTO_POETRY) python scripts/sst2_prob.py
+
 run-sst5:
 	$(AUTO_POETRY) python scripts/sst5.py
 

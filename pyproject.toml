@@ -22,6 +22,7 @@ pydantic = "^2.6.1"
 scikit-learn = "^1.4.0"
 nvitop = "^1.3.2"
 jupyterlab = "^4.1.1"
+ipdb = "^0.13.13"
 
 
 [build-system]
