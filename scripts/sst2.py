@@ -77,7 +77,7 @@ def test_naive(ice_num, data):
         '1': "Positive"
     }
 
-    column_token_map = {'text': '</text>', 1 : '</P>', 0 : '</N>' }
+    column_token_map = {'text': '</text>', '1' : '</P>', '0' : '</N>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
@@ -110,7 +110,7 @@ def test_sequence(ice_num, data):
         '1': "Positive"
     }
 
-    column_token_map = {'text': '</text>', 0 : '</1>', 'Label1' : '</Label1>', 1 : '</2>', 'Label2' : '</Label2>' }
+    column_token_map = {'text': '</text>', '0' : '</1>', 'Label1' : '</Label1>', '1' : '</2>', 'Label2' : '</Label2>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
