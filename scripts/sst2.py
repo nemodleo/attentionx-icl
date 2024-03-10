@@ -77,6 +77,7 @@ def test_naive(ice_num, data):
         '1': "Positive"
     }
 
+    # Define prompt templates for ice and prompt
     column_token_map = {'text': '</text>', '1' : '</P>', '0' : '</N>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
@@ -110,6 +111,7 @@ def test_sequence(ice_num, data):
         '1': "Positive"
     }
 
+    # Define prompt templates for ice and prompt
     column_token_map = {'text': '</text>', '0' : '</1>', 'Label1' : '</Label1>', '1' : '</2>', 'Label2' : '</Label2>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
@@ -149,6 +151,7 @@ def test_binning(ice_num, data):
         'Label2' : '</Label2>' 
     }
 
+    # Define prompt templates for ice and prompt
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
@@ -169,23 +172,24 @@ def test_GT(ice_num, data):
 
     # Inference prompt template
     ice_dict = {
-        0 : "</E>Review: </text>\nSentiment: Negative",
-        1 : "</E>Review: </text>\nSentiment: Positive"
+        '0' : "</E>Review: </text>\nSentiment: Negative",
+        '1' : "</E>Review: </text>\nSentiment: Positive"
     }
 
     tp_dict = {
-        0 : "</E>Review: </text>\nSentiment: Negative",
-        1 : "</E>Review: </text>\nSentiment: Positive"
+        '0' : "</E>Review: </text>\nSentiment: Negative",
+        '1' : "</E>Review: </text>\nSentiment: Positive"
     }
 
+    # Define prompt templates for ice and prompt
     column_token_map = {'text': '</text>'}
     ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= [0,1] )
-    inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1])
+    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0','1'] )
+    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0','1'])
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -199,23 +203,24 @@ def test_pseudo_GT(ice_num, data):
 
     # Inference prompt template
     ice_dict = {
-        0 : "</E>Review: </text>\nSentiment: Negative",
-        1 : "</E>Review: </text>\nSentiment: Positive"
+        '0' : "</E>Review: </text>\nSentiment: Negative",
+        '1' : "</E>Review: </text>\nSentiment: Positive"
     }
 
     tp_dict = {
-        0 : "</E>Review: </text>\nSentiment: Negative",
-        1 : "</E>Review: </text>\nSentiment: Positive"
+        '0' : "</E>Review: </text>\nSentiment: Negative",
+        '1' : "</E>Review: </text>\nSentiment: Positive"
     }
 
+    # Define prompt templates for ice and prompt
     column_token_map = {'text': '</text>'}
     ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = RandomRetriever(data, ice_num=ice_num, labels= [0,1] )
-    inferencer = PPLInferencer(model_name='distilgpt2', labels= [0,1])
+    retriever = RandomRetriever(data, ice_num=ice_num, labels= ['0','1'] )
+    inferencer = PPLInferencer(model_name='distilgpt2', labels= ['0','1'])
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, pseudo_gt='pseudo_gt')
