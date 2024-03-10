@@ -36,6 +36,10 @@ class PromptTemplate:
         Returns:
             :obj:`str`: The generated in-context example.
         """
+
+        print(label)
+        print(str(label))
+        print(self.template)
         # Select the corresponding template
         tp = self.template[str(label)]
         # Remove sep token
