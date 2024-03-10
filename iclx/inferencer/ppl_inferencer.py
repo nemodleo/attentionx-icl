@@ -76,7 +76,7 @@ class PPLInferencer(BaseInferencer):
 
         print('Printing ICE examples-------------')
         print(ice[0])
-        print('-----------------')
+        print('----------------------------------')
 
         # 5. Calculating PPL for prompts in each label's class
         for label in labels:
