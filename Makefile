@@ -41,6 +41,10 @@ docker-build:
 docker-push:
 	docker push nemodleosnu/iclx:0.1.4
 
+docker-build-and-push: 
+	$(MAKE) docker-build 
+	$(MAKE) docker-push
+
 do-symlink:
 	ln -s ${INPUT}/ckpt ckpt
 	ln -s ${INPUT}/data data
