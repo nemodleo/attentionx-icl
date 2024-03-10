@@ -36,7 +36,7 @@ def test():
     shots = 10
 
     naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
-    x = [n for n in range(shots)]
+    x = [n for n in range(1, shots)]
 
     for i in range(shots):
         naive.append(test_naive(i, data)['accuracy'])
