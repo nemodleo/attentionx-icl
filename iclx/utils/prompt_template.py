@@ -68,7 +68,6 @@ class PromptTemplate:
                 if key != 'text' : text = str(round(float(text)*100, 2))
                 tp = tp.replace(token, text)
         
-        print(tp)
         return tp
 
     def generate_label_prompt_item(self, entry: Dict, ice: str, label: Hashable, remain_sep: Optional[bool] = False) -> str:
