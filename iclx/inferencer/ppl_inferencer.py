@@ -74,6 +74,7 @@ class PPLInferencer(BaseInferencer):
             ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
         output_handler.save_ice(ice)
 
+        print('printing ICE examples')
         print(ice[0])
         print('-----------------')
 
