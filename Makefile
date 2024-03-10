@@ -27,7 +27,11 @@ check-quality:
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
-	docker build -t nemodleosnu/iclx:0.1.3 -f Dockerfile .
+	docker build -t nemodleosnu/iclx:0.1.4 -f Dockerfile .
 
 docker-push:
-	docker push nemodleosnu/iclx:0.1.3
+	docker push nemodleosnu/iclx:0.1.4
+
+do-symlink:
+	ln -s /input/ckpt ckpt
+	ln -s /input/data data

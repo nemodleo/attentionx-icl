@@ -12,7 +12,8 @@ sys.path.pop()
 
 
 def test():
-    dataset = load_dataset('ag_news')
+    # 'ag_news'
+    dataset = load_dataset('data/ag_news')
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
@@ -34,8 +35,9 @@ def test():
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 
+    # 'distilgpt2'
     inferencer = PPLInferencer(
-        model_name='distilgpt2',
+        model_name='ckpt/models--distilgpt2',
         batch_size=1,
         output_json_filepath='iclx_output',
         output_json_filename='240111-ag_news'

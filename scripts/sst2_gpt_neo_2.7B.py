@@ -32,18 +32,17 @@ def test():
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 
-    # 'distilgpt2'
+    # 'EleutherAI/gpt-neo-2.7B'
     inferencer = PPLInferencer(
-        model_name='ckpt/models--distilgpt2',
+        model_name='ckpt/models--EleutherAI--gpt-neo-2.7B',
         batch_size=1,
         output_json_filepath='iclx_output',
-        output_json_filename='240310-sst2'
+        output_json_filename='240310-sst2-gpt-neo-2.7B'
     )
 
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     score = AccEvaluator().score(predictions=predictions, references=data.references)
     print(score)
-    assert score == {'accuracy': 0.5107084019769358}
 
 
 if __name__ == '__main__':
