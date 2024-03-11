@@ -4,6 +4,7 @@ exp environments for icl
 
 this repository is a modification of https://github.com/Shark-NLP/OpenICL
 
+[vessl env guide](https://www.notion.so/minchan0502/vessl-env-guide-620e400e19754fcdb6819773f818318c)
 
 ## Env
 
