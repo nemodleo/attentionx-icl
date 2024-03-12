@@ -48,7 +48,7 @@ class RandomRetriever(BaseRetriever):
         rtr_idx_list = []
         logger.info("Retrieving data for test set...")
         for _ in trange(len(self.test_ds), disable=not self.is_main_process):
-            # idx_list = np.random.choice(num_idx, self.ice_num, replace=False).tolist() #!
-            idx_list = np.random.choice(num_idx, self.ice_num).tolist()
+            idx_list = np.random.choice(num_idx, self.ice_num, replace=False).tolist() #!
+            # idx_list = np.random.choice(num_idx, self.ice_num).tolist()
             rtr_idx_list.append(idx_list)
         return rtr_idx_list
