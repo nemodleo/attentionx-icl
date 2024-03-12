@@ -12,8 +12,7 @@ sys.path.pop()
 
 
 def test():
-    # 'SetFit/sst5'
-    dataset = load_dataset('data/SetFit___sst5')
+    dataset = load_dataset('SetFit/sst5')
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
@@ -39,7 +38,7 @@ def test():
 
     # 'distilgpt2'
     inferencer = PPLInferencer(
-        model_name='ckpt/models--distilgpt2',
+        model_name='distilgpt2',
         batch_size=1,
         output_json_filepath='iclx_output',
         output_json_filename='240111-sst5'

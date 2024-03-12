@@ -12,8 +12,7 @@ sys.path.pop()
 
 
 def test():
-    # 'gpt3mix/sst2'
-    dataset = load_dataset('data/gpt3mix___sst2')
+    dataset = load_dataset('gpt3mix/sst2')
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
@@ -32,9 +31,8 @@ def test():
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 
-    # 'EleutherAI/gpt-neo-2.7B'
     inferencer = PPLInferencer(
-        model_name='ckpt/models--EleutherAI--gpt-neo-2.7B',
+        model_name='EleutherAI/gpt-neo-2.7B',
         batch_size=1,
         output_json_filepath='iclx_output',
         output_json_filename='240310-sst2-gpt-neo-2.7B'

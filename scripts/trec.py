@@ -12,8 +12,7 @@ sys.path.pop()
 
 
 def test():
-    # 'trec'
-    dataset = load_dataset('data/trec')
+    dataset = load_dataset('trec')
     dataset = dataset.rename_column('coarse_label', 'label')
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
@@ -40,9 +39,8 @@ def test():
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 
-    # 'distilgpt2'
     inferencer = PPLInferencer(
-        model_name='ckpt/models--distilgpt2',
+        model_name='distilgpt2',
         batch_size=1,
         output_json_filepath='iclx_output',
         output_json_filename='240111-trec'

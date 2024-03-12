@@ -36,10 +36,10 @@ check-quality:
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
-	docker build -t nemodleosnu/iclx:0.1.5 -f Dockerfile .
+	docker build -t nemodleosnu/iclx:0.2.0 -f Dockerfile .
 
 docker-push:
-	docker push nemodleosnu/iclx:0.1.5
+	docker push nemodleosnu/iclx:0.2.0
 
 docker-build-and-push: 
 	$(MAKE) docker-build 
