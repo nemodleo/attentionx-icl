@@ -74,9 +74,9 @@ class PPLInferencer(BaseInferencer):
             ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
         output_handler.save_ice(ice)
 
-        print('Printing ICE examples-------------')
-        print(ice[0])
-        print('----------------------------------')
+        #print('Printing ICE examples-------------')
+        #print(ice[0])
+        #print('----------------------------------')
 
         # 5. Calculating PPL for prompts in each label's class
         for label in labels:
@@ -96,6 +96,10 @@ class PPLInferencer(BaseInferencer):
                         prompt_token_num = self.get_input_token_num(prompt)
 
                 prompt_list.append(prompt)
+
+            print('Printing LLM prompt -------------')
+            print(prompt_list[0])
+            print('----------------------------------')
 
             # 5.2 Get PPL
             logger.info(f"Calculating PPL for prompts labeled '{label}'")
