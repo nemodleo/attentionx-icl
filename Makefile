@@ -39,6 +39,7 @@ docker-build:
 	docker build -t nemodleosnu/iclx:0.2.0 -f Dockerfile .
 
 docker-push:
+	ln -s ~/.cache .cache
 	docker push nemodleosnu/iclx:0.2.0
 
 docker-build-and-push: 
