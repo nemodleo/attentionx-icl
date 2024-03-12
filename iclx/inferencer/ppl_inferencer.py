@@ -115,9 +115,7 @@ class PPLInferencer(BaseInferencer):
 
         # 6. Get lowest PPL class as predictions
         ppl = list(zip(*ppl))
-        print('First prediction -------------')
-        print(ppl[0])
-        print('----------------------------------')
+  
         for single_ppl in ppl:
             sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
         output_handler.save_predictions(sub_predictions)
