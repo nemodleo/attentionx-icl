@@ -36,7 +36,7 @@ check-quality:
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
-	ln -s ~/.cache .cache
+	rsync  -avu --delete ~/.cache/huggingface/ huggingface/
 	docker build -t nemodleosnu/iclx:0.2.0 -f Dockerfile .
 
 docker-push:
