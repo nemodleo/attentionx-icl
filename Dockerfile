@@ -2,8 +2,8 @@
 ARG PYTORCH_VERSION=24.01
 FROM nvcr.io/nvidia/pytorch:${PYTORCH_VERSION}-py3
 
-COPY ./huggingface /root/.cache/huggingface
 ARG DEBIAN_FRONTEND=noninteractive
+COPY ./huggingface /root/.cache/huggingface
 RUN apt-get update && \
     apt-get install -y sudo tree python3-pip
 RUN python -m pip install --upgrade pip

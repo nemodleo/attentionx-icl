@@ -31,19 +31,32 @@ run-ag_news:
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
 
+vessl-sst2:
+	vessl run create -f vessl_exp/sst2.yaml
+
 check-quality:
 	$(AUTO_POETRY) flake8 iclx
 	$(AUTO_POETRY) mypy iclx
 
 docker-build:
-	rsync  -avu --delete ~/.cache/huggingface/ huggingface/
+	# mv ~/.cache/huggingface/ huggingface/
 	docker build -t nemodleosnu/iclx:0.2.0 -f Dockerfile .
+	# mv huggingface/ ~/.cache/huggingface/
 
 docker-push:
 	docker push nemodleosnu/iclx:0.2.0
 
 docker-build-and-push: 
 	$(MAKE) docker-build 
+	$(MAKE) docker-push
+
+mac-docker-build:
+	# mv ~/.cache/huggingface/ huggingface/
+	docker build --platform linux/amd64 -t nemodleosnu/iclx:0.2.0 -f Dockerfile .
+	# mv huggingface/ ~/.cache/huggingface/
+
+mac-docker-build-and-push: 
+	$(MAKE) mac-docker-build 
 	$(MAKE) docker-push
 
 download-dataset:

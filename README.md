@@ -30,6 +30,10 @@ make run-ag_news
 make run-trec
 ```
 
+```
+make vessl-sst2
+```
+
 
 ## TODO
 
