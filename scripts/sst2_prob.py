@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from iclx import DatasetReader
-from iclx import PromptTemplate
+from iclx import ProbPromptTemplate
 from iclx import RandomRetriever
 from iclx import ProbInferencer
 from iclx import AccEvaluator
@@ -17,17 +17,20 @@ def test():
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
     ice_dict = {
-        0: "</E></text> It is good",
-        1: "</E></text> It is bad"
+        0: "Positive",
+        1: "Negative"
     }
-    ice_template = PromptTemplate(ice_dict, {'text': '</text>'}, ice_token='</E>')
+    prefix_template = "</E></text> It is"
+    concat_token = "\n"
+
+    ice_template = ProbPromptTemplate(prefix_template, ice_dict, concat_token, {'text': '</text>'}, ice_token='</E>')
 
 
     prompt_dict = {
-        0: "</E></text> It is good",
-        1: "</E></text> It is bad"
+        0: "Positive",
+        1: "Negative"
     }
-    prompt_template = PromptTemplate(prompt_dict, {'text': '</text>'}, ice_token='</E>')
+    prompt_template = ProbPromptTemplate(prefix_template, prompt_dict, concat_token, {'text': '</text>'}, ice_token='</E>')
 
     retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
 

@@ -22,6 +22,9 @@ class PromptTemplate:
         self.ice_token = ice_token
         self.sep_token = sep_token
 
+    def _get_template(self, label) -> str:
+        return self.template[label]
+
     def generate_ice_item(self, entry: Dict, label: Hashable) -> str:
         """Generate in-context example based on the provided :obj:`entry` data.
 
@@ -33,7 +36,7 @@ class PromptTemplate:
             :obj:`str`: The generated in-context example.
         """
         # Select the corresponding template
-        tp = self.template[label]
+        tp = self._get_template(label)
         # Remove sep token
         if self.sep_token is not None:
             tp.replace(self.sep_token, '')
@@ -64,7 +67,7 @@ class PromptTemplate:
         if self.ice_token is None:
             raise ValueError("PromptTemplate.ice_token should be not None when generates prompt")
         # Select the corresponding template
-        tp = self.template[label] if isinstance(self.template, Dict) else self.template
+        tp = self._get_template(label)
         # Remove sep token
         if not remain_sep and self.sep_token is not None:
             tp.replace(self.sep_token, '')

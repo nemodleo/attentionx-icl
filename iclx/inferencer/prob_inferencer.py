@@ -8,7 +8,7 @@ from loguru import logger
 
 from iclx.inferencer import BaseInferencer
 from iclx.retriever import BaseRetriever
-from iclx.utils import PromptTemplate
+from iclx.utils import ProbPromptTemplate
 
 
 class ProbInferencer(BaseInferencer):
@@ -43,8 +43,8 @@ class ProbInferencer(BaseInferencer):
 
     def inference(self,
                   retriever: BaseRetriever,
-                  ice_template: Optional[PromptTemplate] = None,
-                  prompt_template: Optional[PromptTemplate] = None,
+                  ice_template: Optional[ProbPromptTemplate] = None,
+                  prompt_template: Optional[ProbPromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None) -> List:
         # 1. Preparation for output logs
@@ -97,7 +97,11 @@ class ProbInferencer(BaseInferencer):
             for idx in trange(0, len(prompt_list), self.batch_size, disable=not self.is_main_process):
                 sub_prompt_list = prompt_list[idx:idx + self.batch_size]
                 with torch.no_grad():
-                    sub_res = self.__get_prob(sub_prompt_list).tolist()
+                    if prompt_template:
+                        label_tokens = f"{prompt_template.concat_token}{prompt_template.prob_tokens[label]}"
+                    else:
+                        label_tokens = f"{ice_template.concat_token}{ice_template.prob_tokens[label]}"
+                    sub_res = self.__get_prob(sub_prompt_list, label_tokens).tolist()
                 for res, prompt in zip(sub_res, sub_prompt_list):
                     sub_prob_list.append(res)
                     output_handler.save_prompt_and_prob(label, prompt[len(ice[idx]):], prompt, res, index)
@@ -119,15 +123,17 @@ class ProbInferencer(BaseInferencer):
 
         return [sample['prediction'] for sample in output_handler.results_dict.values()]
 
-    def __get_prob(self, input_texts: List[str], mask_length=None):
+    def __get_prob(self, input_texts: List[str], label_tokens: str, mask_length=None):
         self.tokenizer.padding_side = "right"
+        label_token_length = len(self.tokenizer.encode(label_tokens))
         inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
         outputs = self.model(**inputs)
 
-        last_token_probs = torch.nn.functional.softmax(outputs.logits[..., -2, :], dim=-1).contiguous()
-        last_token_index = inputs["input_ids"][..., -1].contiguous()
-        probs = last_token_probs[..., last_token_index].cpu().detach().numpy()
+        last_token_probs = torch.nn.functional.softmax(outputs.logits[..., -(label_token_length+1):-1, :], dim=-1).contiguous()
+        last_token_index = inputs["input_ids"][..., -label_token_length:].contiguous()
+        probs = torch.take_along_dim(last_token_probs, last_token_index[..., None], dim=2)
+        probs = torch.prod(probs, dim=1).flatten().detach().cpu().numpy()
         return probs
 
 
