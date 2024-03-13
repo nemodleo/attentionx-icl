@@ -13,10 +13,10 @@ from iclx.inferencer.parent_inferencer import ParentInferencer
 
 import numpy as np
 
-# def rec_softmax(x):
-#     e_x = np.exp(x)
-#     e_x = 1/e_x
-#     return e_x / e_x.sum(axis=0)
+def rec_softmax(x):
+    e_x = np.exp(x)
+    e_x = 1/e_x
+    return e_x / e_x.sum(axis=0)
 
 
 vessl.init()
@@ -25,6 +25,8 @@ def create_data(setup_dict):
     setup = json.load(open(setup_dict, 'r'))
     train_path = setup['train_path']
     tp_dict = setup['template_dict']
+    data_columns = setup['data_columns']
+    label_map = setup['label_map']
     output_path = setup['output_path']
     # print(train_path, tp_dict, output_path)
     
@@ -40,7 +42,7 @@ def create_data(setup_dict):
     dataset_dict = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
     dataset = dataset_dict
     
-    data = DatasetReader(dataset, input_columns=['text'], output_column='label')
+    data = DatasetReader(dataset, input_columns=data_columns['input_columns'], output_column=data_columns['output_columns'][0])
     
     
     template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
@@ -49,16 +51,18 @@ def create_data(setup_dict):
     predictions = inferencer.inference(retriever, ice_template=template)
     
     for i, p in enumerate(predictions):
-        p["text"] = dataset_dict["test"][i]["text"] 
-        p["label"] = dataset_dict["test"][i]["label"] 
-        # p["label_text"] = "subjective" if dataset_dict["test"][i]["label"] == 0 else "objective"
+        entry = dataset_dict["test"][i]
+        p["text"] = entry["text"] 
+        p["label"] = str(entry["label"])
+        p["label_text"] = label_map[p["label"]]
 
-    #     perplexity_values = [p[0], p[1]]
-    #     probabilities = rec_softmax(perplexity_values)
-    
-    #     p.pop(0, None)
-    #     p.pop(1, None)
-    #     p.update({str(k): v for k, v in zip(range(2), probabilities)})
+        label_keys = list(label_map.keys())
+        perplexity_values = [p[int(k)] for k in label_keys]      
+        probabilities = rec_softmax(perplexity_values)
+
+        for k in label_keys:
+            p.pop(k, None)
+        p.update({str(k): v for k, v in zip(range(len(label_keys)), probabilities)})
     
     # Save predictions as file ! 
     with open(output_path, 'w') as f:
