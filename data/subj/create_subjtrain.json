@@ -1,0 +1,7 @@
+{
+"train_path":"data/subj/train.jsonl",
+"template_dict": {
+    "0" : "</E>Review: </text>\nSubjectivity: Subjective",
+    "1" : "</E>Review: </text>\nSubjectivity: Objective"},
+"output_path":"data/subj/train_new_subj.jsonl"
+}
