@@ -23,7 +23,7 @@ def test(shots=10, model_name='/root/input/ckpt/models--distilgpt2', retriever=R
             for line in f:
                 yield json.loads(line)
                 
-    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/train_new_subj.jsonl"})
+    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/new_train_subj.jsonl"})
     val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/dev.jsonl"})
     test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/subj/test.jsonl"})
 
@@ -35,10 +35,10 @@ def test(shots=10, model_name='/root/input/ckpt/models--distilgpt2', retriever=R
     x = [n for n in range(shots)]
 
     for i in range(shots):
-        # naive.append(test_naive(i, data, model_name, retriever, seed)['accuracy'])
-        # sequence.append(test_sequence(i, data, model_name, retriever, seed)['accuracy'])
-        # binning.append(test_binning(i, data, model_name, retriever, seed)['accuracy'])
-        # gt.append(test_GT(i, data, model_name, retriever, seed)['accuracy'])
+        naive.append(test_naive(i, data, model_name, retriever, seed)['accuracy'])
+        sequence.append(test_sequence(i, data, model_name, retriever, seed)['accuracy'])
+        binning.append(test_binning(i, data, model_name, retriever, seed)['accuracy'])
+        gt.append(test_GT(i, data, model_name, retriever, seed)['accuracy'])
         pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, seed)['accuracy'])
 
     print(naive)
@@ -54,7 +54,7 @@ def test(shots=10, model_name='/root/input/ckpt/models--distilgpt2', retriever=R
     plt.plot(x, pseudo_gt, label = 'pseudo_gt')
 
     plt.legend()
-    plt.savefig('/output/subj.png')
+    plt.savefig('experiment_output/subj.png')
 
 
 def test_naive(ice_num, data, model_name, retriever, seed):
