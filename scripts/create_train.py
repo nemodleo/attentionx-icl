@@ -59,6 +59,8 @@ def create_data(setup_dict):
         label_keys = list(label_map.keys())
         perplexity_values = [p[int(k)] for k in label_keys]      
         probabilities = rec_softmax(perplexity_values)
+        max_label_index = int(np.argmax(probabilities))
+        p["pseudo_gt"] = str(max_label_index)
 
         for k in label_keys:
             p.pop(k, None)
