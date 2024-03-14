@@ -12,8 +12,7 @@ sys.path.pop()
 
 
 def test():
-    # 'gpt3mix/sst2'
-    dataset = load_dataset('data/gpt3mix___sst2')
+    dataset = load_dataset('gpt3mix/sst2')
 
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
@@ -30,16 +29,14 @@ def test():
     }
     prompt_template = PromptTemplate(prompt_dict, {'text': '</text>'}, ice_token='</E>')
 
-    # 'all-mpnet-base-v2', 'gpt2-xl'
     retriever = TopkRetriever(
         data, ice_num=8, index_split='train', test_split='test',
-        sentence_transformers_model_name='ckpt/models--sentence-transformers--all-mpnet-base-v2',
-        tokenizer_name='ckpt/models--gpt2-xl'
+        sentence_transformers_model_name='all-mpnet-base-v2',
+        tokenizer_name='gpt2-xl'
     )
 
-    # 'distilgpt2'
     inferencer = PPLInferencer(
-        model_name='ckpt/models--distilgpt2',
+        model_name='distilgpt2',
         batch_size=1,
         output_json_filepath='iclx_output',
         output_json_filename='240310-sst2-topk'
