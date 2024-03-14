@@ -4,7 +4,7 @@ exp environments for icl
 
 this repository is a modification of https://github.com/Shark-NLP/OpenICL
 
-[vessl env guide](https://www.notion.so/minchan0502/vessl-env-guide-620e400e19754fcdb6819773f818318c)
+[vessl-run env guide](https://www.notion.so/minchan0502/vessl-run-env-guide-620e400e19754fcdb6819773f818318c)
 
 ## Env
 
@@ -31,7 +31,13 @@ make run-trec
 ```
 
 ```
-make vessl-sst2
+make vessl-run-sst2
+make vessl-run-sst2_gpt_j_6B
+make vessl-run-sst2_gpt_neo_2.7B
+make vessl-run-sst2_topk
+make vessl-run-sst5
+make vessl-run-ag_news
+make vessl-run-trec
 ```
 
 

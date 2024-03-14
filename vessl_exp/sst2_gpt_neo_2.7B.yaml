@@ -1,0 +1,15 @@
+name: sst2_gpt_neo_2.7B
+description: 
+resources:
+  cluster: snu-eng-dgx
+  preset: a100-1
+image: docker.io/nemodleosnu/iclx:0.2.0
+import:
+  /code/:
+    git:
+      url: https://github.com/nemodleo/attentionx-icl
+      ref: main
+run:
+  - command: |-
+      make run-sst2_gpt_neo_2.7B
+    workdir: /code/

@@ -31,8 +31,26 @@ run-ag_news:
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
 
-vessl-sst2:
+vessl-run-sst2:
 	vessl run create -f vessl_exp/sst2.yaml
+
+vessl-run-sst2_gpt_j_6B:
+	vessl run create -f vessl_exp/sst2_gpt_j_6B.yaml
+
+vessl-run-sst2_gpt_neo_2.7B:
+	vessl run create -f vessl_exp/sst2_gpt_neo_2.7B.yaml
+
+vessl-run-sst2_topk:
+	vessl run create -f vessl_exp/sst2_topk.yaml
+
+vessl-run-sst5:
+	vessl run create -f vessl_exp/sst5.yaml
+
+vessl-run-ag_news:
+	vessl run create -f vessl_exp/ag_news.yaml
+
+vessl-run-trec:
+	vessl run create -f vessl_exp/trec.yaml
 
 check-quality:
 	$(AUTO_POETRY) flake8 iclx
