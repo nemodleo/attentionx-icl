@@ -25,6 +25,9 @@ run-create_data_sst2:
 run-create_subj:
 	$(AUTO_POETRY) python scripts/create_subj_train.py
 
+run-subj:
+	$(AUTO_POETRY) python scripts/subj.py
+
 run-create_train:
 	$(AUTO_POETRY) python scripts/create_train.py $(SETUP_DICT)
 
