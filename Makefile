@@ -37,6 +37,9 @@ run-create_data_sst5:
 run-create_data_subj:
 	$(AUTO_POETRY) python scripts/create_traindata_subj.py
 
+run-subj:
+	$(AUTO_POETRY) python scripts/subj.py
+
 run-create_train:
 	$(AUTO_POETRY) python scripts/create_train.py $(SETUP_DICT)
 
