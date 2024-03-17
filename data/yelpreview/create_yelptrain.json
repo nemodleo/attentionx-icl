@@ -1,5 +1,5 @@
 {
-    "train_path":"data/yelpreivew/train.jsonl",
+    "train_path":"data/yelpreview/train.jsonl",
     "template_dict": {
             "0" : "</E>Review: </text>\nSentiment: terrible",
             "1" : "</E>Review: </text>\nSentiment: bad",
