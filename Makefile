@@ -31,6 +31,9 @@ run-ag_news:
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
 
+vessl-workspace-init:
+	ln -s /opt/.cache/huggingface /root/.cache/huggingface
+
 vessl-run-sst2:
 	vessl run create -f vessl_exp/sst2.yaml
 
@@ -58,11 +61,11 @@ check-quality:
 
 docker-build:
 	# mv ~/.cache/huggingface/ huggingface/
-	docker build -t nemodleosnu/iclx:0.2.0 -f Dockerfile .
+	docker build -t nemodleosnu/iclx:0.2.1 -f Dockerfile .
 	# mv huggingface/ ~/.cache/huggingface/
 
 docker-push:
-	docker push nemodleosnu/iclx:0.2.0
+	docker push nemodleosnu/iclx:0.2.1
 
 docker-build-and-push: 
 	$(MAKE) docker-build 
@@ -70,7 +73,7 @@ docker-build-and-push:
 
 mac-docker-build:
 	# mv ~/.cache/huggingface/ huggingface/
-	docker build --platform linux/amd64 -t nemodleosnu/iclx:0.2.0 -f Dockerfile .
+	docker build --platform linux/amd64 -t nemodleosnu/iclx:0.2.1 -f Dockerfile .
 	# mv huggingface/ ~/.cache/huggingface/
 
 mac-docker-build-and-push: 
