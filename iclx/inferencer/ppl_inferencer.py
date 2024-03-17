@@ -46,7 +46,8 @@ class PPLInferencer(BaseInferencer):
                   ice_template: Optional[PromptTemplate] = None,
                   prompt_template: Optional[PromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
-                  output_json_filename: Optional[str] = None) -> List:
+                  output_json_filename: Optional[str] = None,
+                  pseudo_gt: Optional[str] = None) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
@@ -70,8 +71,12 @@ class PPLInferencer(BaseInferencer):
 
         # 4. Generate in-context examples for testing inputs
         for idx in range(len(ice_idx_list)):
-            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template))
+            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
         output_handler.save_ice(ice)
+
+        #print('Printing ICE examples-------------')
+        #print(ice[0])
+        #print('----------------------------------')
 
         # 5. Calculating PPL for prompts in each label's class
         for label in labels:
@@ -92,6 +97,10 @@ class PPLInferencer(BaseInferencer):
 
                 prompt_list.append(prompt)
 
+            print('Printing LLM prompt -------------')
+            print(prompt_list[0])
+            print('----------------------------------')
+
             # 5.2 Get PPL
             logger.info(f"Calculating PPL for prompts labeled '{label}'")
             for idx in trange(0, len(prompt_list), self.batch_size, disable=not self.is_main_process):
@@ -106,6 +115,7 @@ class PPLInferencer(BaseInferencer):
 
         # 6. Get lowest PPL class as predictions
         ppl = list(zip(*ppl))
+  
         for single_ppl in ppl:
             sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
         output_handler.save_predictions(sub_predictions)

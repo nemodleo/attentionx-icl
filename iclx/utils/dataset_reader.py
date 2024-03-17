@@ -25,8 +25,8 @@ class DatasetReader:
 
     def __init__(self,
                  dataset: Union[Dataset, DatasetDict],
-                 input_columns: List[str],
-                 output_column: str,
+                 input_columns: Union[List[str], str],
+                 output_column: Union[List[str], str],
                  test_split: Optional[str] = 'test'
                  ) -> None:
         self.input_columns = input_columns
