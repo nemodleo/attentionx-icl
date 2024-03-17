@@ -37,8 +37,8 @@ def create_data():
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
     
     tp_dict = {
-        '0' : "</E>Review: </text>\nSubjectivity: Subjective",
-        '1' : "</E>Review: </text>\nSubjectivity: Objective",
+        0 : "</E>Review: </text>\nSubjectivity: Subjective",
+        1 : "</E>Review: </text>\nSubjectivity: Objective",
     }
     
     template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
