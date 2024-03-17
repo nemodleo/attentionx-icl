@@ -82,7 +82,7 @@ class PromptTemplate:
 
         Raises:
             ValueError: If the :obj:`ice_token` attribute of the :obj:`PromptTemplate` instance is :obj:`None`.
-            
+
         Returns:
             :obj:`str`: The generated prompt.
         """
