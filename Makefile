@@ -32,6 +32,7 @@ run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
 
 vessl-workspace-init:
+	mkdir /root/.cache
 	ln -s /opt/.cache/huggingface /root/.cache/huggingface
 
 vessl-run-sst2:
