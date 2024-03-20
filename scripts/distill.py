@@ -17,7 +17,7 @@ import json
 import vessl 
 vessl.init()
 
-retriever_dict = {"TopK": TopkRetriever,
+retriever_dict = {"Topk": TopkRetriever,
                 "Random": RandomRetriever}
 
 
