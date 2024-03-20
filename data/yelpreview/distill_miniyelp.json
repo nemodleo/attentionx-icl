@@ -1,4 +1,6 @@
 {
+    "retriever": "Topk",
+
     "train_path":"data/yelpreview/minitrain_new_yelp.jsonl",
     "val_path": null,
     "test_path":"data/yelpreview/test_mini.jsonl",
@@ -37,5 +39,5 @@
         "GT": {"text": "</text>"}
     },
 
-    "output_path":"output/mini_yelp.png"
+    "output_path":"output/mini_yelp-topk.png"
 }

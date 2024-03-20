@@ -7,6 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from iclx import DatasetReader
 from iclx import PromptTemplate
 from iclx import RandomRetriever
+from iclx import TopkRetriever
 from iclx import PPLInferencer
 from iclx import AccEvaluator
 sys.path.pop()
@@ -16,11 +17,12 @@ import json
 import vessl 
 vessl.init()
 
-
+retriever_dict = {"TopK": TopkRetriever,
+                "Random": RandomRetriever}
 
 
 def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
-    
+    print(retriever)
     def gen(file_path):
         with open(file_path, 'r') as f:
             for line in f:
@@ -197,6 +199,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     setup = json.load(open(args.setup_dict, 'r'))
+
+    RETRIEVER = retriever_dict[setup['retriever']]
     TRAIN_PATH = setup['train_path']
     VAL_PATH = setup['val_path']
     TEST_PATH = setup['test_path']
@@ -212,4 +216,4 @@ if __name__ == '__main__':
     
     OUTPUT_PATH = setup['output_path']
     
-    test()
+    test(retriever=RETRIEVER)
