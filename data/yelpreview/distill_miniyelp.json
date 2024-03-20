@@ -25,12 +25,6 @@
     },
     
     "labels": ["0", "1", "2", "3", "4"],
-    "label_map": {
-        "0": "terrible",
-        "1": "bad",
-        "2": "okay",
-        "3": "good",
-        "4": "great"},
 
     "column_token_map": {
         "naive":{"text": "</text>", "4" : "</VP>", "3" : "</P>", "2" : "</N>", "1" : "</NG>", "0" : "</VN>"},

@@ -69,11 +69,9 @@ def test_naive(ice_num, data, model_name, retriever, seed):
     # Inference prompt template
     tp_dict = TP_DICT
 
-    label_dict = LABEL_MAP
-
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["naive"]
-    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
@@ -97,11 +95,9 @@ def test_sequence(ice_num, data, model_name, retriever, seed):
     # Inference prompt template
     tp_dict = TP_DICT
 
-    label_dict = LABEL_MAP
-
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
-    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
@@ -124,12 +120,10 @@ def test_binning(ice_num, data, model_name, retriever, seed):
     # Inference prompt template
     tp_dict = TP_DICT
 
-    label_dict = LABEL_MAP
-
     column_token_map = COLUMN_TOKEN_MAP["binning"]
 
     # Define prompt templates for ice and prompt
-    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
@@ -211,7 +205,6 @@ if __name__ == '__main__':
     TP_DICT = setup['template_dict']
     
     LABELS = setup['labels']
-    LABEL_MAP = setup['label_map']
     COLUMN_TOKEN_MAP = setup['column_token_map']
     
     OUTPUT_PATH = setup['output_path']
