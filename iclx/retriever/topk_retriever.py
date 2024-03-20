@@ -1,36 +1,25 @@
-"""Topk Retriever"""
-
-from openicl import DatasetReader
-from openicl.icl_dataset_reader import DatasetEncoder
-from openicl.icl_retriever import BaseRetriever
-from openicl.utils.collators import DataCollatorWithPaddingAndCuda
-from openicl.utils.logging import get_logger
+import tqdm
+import copy
+import faiss
 import torch
+import numpy as np
 from torch.utils.data import DataLoader
-from typing import Optional, List
+from typing import Optional
 from transformers import AutoTokenizer
 from sentence_transformers import SentenceTransformer
-import tqdm
-import faiss
-import copy
-import numpy as np
-from accelerate import Accelerator
-
-import numpy as np
-from typing import Optional, List
-from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
 
 from iclx.retriever import BaseRetriever
 from iclx.utils import DatasetReader
-
+from iclx.utils import DatasetEncoder
+from iclx.utils import DataCollatorWithPaddingAndCuda
 
 
 class TopkRetriever(BaseRetriever):
     """Topk In-context Learning Retriever Class
         Class of Topk Retriever.
-        
+
     Attributes:
         dataset_reader (:obj:`DatasetReader`): An instance of the :obj:`DatasetReader` class.
         ice_separator (:obj:`str`, optional): A string that separates each in-context example.
@@ -47,7 +36,6 @@ class TopkRetriever(BaseRetriever):
         tokenizer (:obj:`AutoTokenizer`): Tokenizer for :obj:`model`.
         index (:obj:`IndexIDMap`): Index generated with FAISS.
     """
-    model = None
 
     def __init__(self,
                  dataset_reader: DatasetReader,
@@ -60,12 +48,10 @@ class TopkRetriever(BaseRetriever):
                  test_split: Optional[str] = 'test',
                  tokenizer_name: Optional[str] = 'gpt2-xl',
                  batch_size: Optional[int] = 1,
-                 accelerator: Optional[Accelerator] = None,
-                 labels: Optional[List] = None,
-                 order: Optional[bool] = False
+                 accelerator: Optional[Accelerator] = None
                  ) -> None:
         super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split,
-                         test_split, accelerator, labels, order)
+                         test_split, accelerator)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.batch_size = batch_size
         self.tokenizer_name = tokenizer_name
@@ -102,7 +88,6 @@ class TopkRetriever(BaseRetriever):
     def knn_search(self, ice_num):
         res_list = self.forward(self.dataloader, process_bar=True, information="Embedding test set...")
         rtr_idx_list = [[] for _ in range(len(res_list))]
-        if ice_num == 0: return rtr_idx_list
         logger.info("Retrieving data for test set...")
         for entry in tqdm.tqdm(res_list, disable=not self.is_main_process):
             idx = entry['metadata']['id']
