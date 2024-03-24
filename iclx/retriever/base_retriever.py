@@ -30,7 +30,6 @@ class BaseRetriever:
                  index_split: Optional[str] = 'train',
                  test_split: Optional[str] = 'test',
                  accelerator: Optional[Accelerator] = None,
-                 labels: Optional[List] = None,
                  use_ordering: Optional[bool] = False
                  ) -> None:
         self.dataset_reader = dataset_reader
@@ -41,7 +40,6 @@ class BaseRetriever:
         self.index_split = index_split
         self.test_split = test_split
         self.accelerator = accelerator
-        self.labels = labels
         self.use_ordering = use_ordering
         self.is_main_process = True if self.accelerator is None or self.accelerator.is_main_process else False
         self.index_ds = self.dataset_reader.dataset
@@ -90,7 +88,7 @@ class BaseRetriever:
                 generated_ice_list.append(' '.join(list(map(str,
                                                             [self.index_ds[idx][ctx] for ctx in dr.input_columns] + [
                                                                 self.index_ds[idx][dr.output_column]]))))
-            elif pseudo_gt is not None :
+            elif pseudo_gt is not None:
                 generated_ice_list.append(
                     ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][pseudo_gt], use_ordering=self.use_ordering))
             else:

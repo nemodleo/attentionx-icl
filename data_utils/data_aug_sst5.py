@@ -17,7 +17,7 @@ def add_gt(gt_path, soft_label_path):
     assert len(lines1) == len(lines2), "Files have different number of lines"
 
     # Column to append from file2 to file1
-    column_to_append = ['label', 'label_text'] 
+    column_to_append = ['label', 'label_text']
 
     # Create a new list to hold the updated rows
     new_rows = []
@@ -45,6 +45,7 @@ def rec_softmax(x):
     e_x = 1/e_x
     return e_x / e_x.sum(axis=0)
 
+
 def process_jsonl(file_path, output_file_path):
     data = []
     with open(file_path, 'r') as f:
@@ -52,7 +53,7 @@ def process_jsonl(file_path, output_file_path):
             data.append(json.loads(line))
     df = pd.DataFrame(data)
 
-    df[columns] = df[columns].apply(rec_softmax, axis = 1)
+    df[columns] = df[columns].apply(rec_softmax, axis=1)
 
     df.to_json(output_file_path, orient='records', lines=True)
     return df

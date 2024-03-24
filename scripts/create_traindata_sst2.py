@@ -1,18 +1,18 @@
-from datasets import Dataset, DatasetDict
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from iclx import DatasetReader
 from iclx import PromptTemplate
 from iclx import RandomRetriever
-from iclx.inferencer.parent_inferencer import ParentInferencer
+from iclx.inferencer import ParentInferencer
 sys.path.pop()
-
-import matplotlib.pyplot as plt
 import json
-import vessl 
+import vessl
+from datasets import Dataset
+from datasets import DatasetDict
+
 vessl.init()
+
 
 def create_data():
 
@@ -20,7 +20,7 @@ def create_data():
         with open(file_path, 'r') as f:
             for line in f:
                 yield json.loads(line)
-                
+
     train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/train_sst2.jsonl"})
     val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/train_sst2.jsonl"})
     test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/train_sst2.jsonl"})
@@ -33,8 +33,8 @@ def create_data():
 
     # Inference Prompt template. (no ICL, zero-shot)
     tp_dict = {
-        0 : "</E>Review: </text>\nSentiment: Negative",
-        1 : "</E>Review: </text>\nSentiment: Positive",
+        '0': "</E>Review: </text>\nSentiment: Negative",
+        '1': "</E>Review: </text>\nSentiment: Positive",
     }
 
     template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
@@ -45,16 +45,16 @@ def create_data():
 
     # class ParentInferencer is modified to spit soft labels as predictions
     inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6B')
+
     predictions = inferencer.inference(retriever, ice_template=template)
 
     # Add text, label info to created soft label information
     for i, p in enumerate(predictions):
-        p["text"] = dataset_dict["test"][i]["text"] 
-        p["label"] = dataset_dict["test"][i]["label"] 
-        p["label_text"] = dataset_dict["test"][i]["label_text"] 
+        p["text"] = dataset_dict["test"][i]["text"]
+        p["label"] = dataset_dict["test"][i]["label"]
+        p["label_text"] = dataset_dict["test"][i]["label_text"]
 
-
-    # Save predictions as file ! 
+    # Save predictions as file
     with open('/output/train_new_sst2.jsonl', 'w') as f:
         for entry in predictions:
             json.dump(entry, f)
