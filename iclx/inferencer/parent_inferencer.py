@@ -9,7 +9,7 @@ from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
 
-from iclx import PromptTemplate
+from iclx.utils.prompt_template import PromptTemplate
 from iclx.inferencer.ppl_inferencer import PPLInferencer
 from iclx.inferencer.ppl_inferencer import PPLInferencerOutputHandler
 from iclx.retriever import BaseRetriever
