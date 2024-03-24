@@ -82,7 +82,7 @@ def test_naive(ice_num, data, model_name, retriever, seed):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, seed=seed, labels=['0', '1'])
+    retriever = retriever(data, ice_num=ice_num, seed=seed)
     inferencer = PPLInferencer(model_name=model_name, labels=['0', '1'])
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -122,7 +122,7 @@ def test_sequence(ice_num, data, model_name, retriever, seed):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, seed=seed, labels=['0', '1'], use_ordering=True)
+    retriever = retriever(data, ice_num=ice_num, seed=seed, use_ordering=True)
     inferencer = PPLInferencer(model_name=model_name, labels=['0', '1'])
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -161,7 +161,7 @@ def test_binning(ice_num, data, model_name, retriever, seed):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, seed=seed, labels=['0', '1'], use_ordering=True)  
+    retriever = retriever(data, ice_num=ice_num, seed=seed, use_ordering=True)  
     inferencer = PPLInferencer(model_name=model_name, labels=['0', '1'])
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -192,7 +192,7 @@ def test_GT(ice_num, data, model_name, retriever, seed):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, seed=seed, labels=['0', '1'])
+    retriever = retriever(data, ice_num=ice_num, seed=seed)
     inferencer = PPLInferencer(model_name=model_name, labels=['0', '1'])
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -223,7 +223,7 @@ def test_pseudo_GT(ice_num, data, model_name, retriever, seed):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, seed=seed, labels=['0', '1'])
+    retriever = retriever(data, ice_num=ice_num, seed=seed)
     inferencer = PPLInferencer(model_name=model_name, labels=['0', '1'])
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
