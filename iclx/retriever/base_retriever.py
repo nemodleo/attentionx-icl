@@ -31,7 +31,7 @@ class BaseRetriever:
                  test_split: Optional[str] = 'test',
                  accelerator: Optional[Accelerator] = None,
                  labels: Optional[List] = None,
-                 order: Optional[bool] = False
+                 use_ordering: Optional[bool] = False
                  ) -> None:
         self.dataset_reader = dataset_reader
         self.ice_separator = ice_separator
@@ -42,7 +42,7 @@ class BaseRetriever:
         self.test_split = test_split
         self.accelerator = accelerator
         self.labels = labels
-        self.order = order
+        self.use_ordering = use_ordering
         self.is_main_process = True if self.accelerator is None or self.accelerator.is_main_process else False
         self.index_ds = self.dataset_reader.dataset
         self.test_ds = self.dataset_reader.dataset
@@ -92,10 +92,10 @@ class BaseRetriever:
                                                                 self.index_ds[idx][dr.output_column]]))))
             elif pseudo_gt is not None :
                 generated_ice_list.append(
-                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][pseudo_gt], order=self.order))
+                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][pseudo_gt], use_ordering=self.use_ordering))
             else:
                 generated_ice_list.append(
-                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][dr.output_column], order=self.order))
+                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][dr.output_column], use_ordering=self.use_ordering))
         generated_ice = self.ice_separator.join(generated_ice_list) + self.ice_eos_token
         return generated_ice
 

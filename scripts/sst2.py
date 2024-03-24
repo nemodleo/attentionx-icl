@@ -10,6 +10,7 @@ from iclx import PPLInferencer
 from iclx import AccEvaluator
 sys.path.pop()
 
+from loguru import logger
 import matplotlib.pyplot as plt
 import json
 import vessl 
@@ -28,7 +29,6 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
     test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/test.jsonl"})
 
     dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
-    # Define a DatasetReader, with specified column names where input and output are stored.
     data = DatasetReader(dataset, input_columns=['text'], output_column= 'label')
 
     naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
@@ -41,11 +41,11 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
         gt.append(test_GT(i, data, model_name, retriever, seed)['accuracy'])
         pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, seed)['accuracy'])
 
-    print(naive)
-    print(sequence)
-    print(binning)
-    print(gt)
-    print(pseudo_gt)
+    logger.info(naive)
+    logger.info(sequence)
+    logger.info(binning)
+    logger.info(gt)
+    logger.info(pseudo_gt)
 
     plt.plot(x, naive, label = 'naive')
     plt.plot(x, sequence, label = 'sequence')
@@ -73,21 +73,10 @@ def test_naive(ice_num, data, model_name, retriever, seed):
         '1': "Positive"
     }
 
-<<<<<<< HEAD:scripts/sst2.py
     # Define prompt templates for ice and prompt
     column_token_map = {'text': '</text>', '1' : '</P>', '0' : '</N>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
-=======
-    retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
-
-    inferencer = PPLInferencer(
-        model_name='distilgpt2',
-        batch_size=1,
-        output_json_filepath='iclx_output',
-        output_json_filename='240310-sst2'
-    )
->>>>>>> 04fc83f5973c8b42adfec1667f358953e9b66e16:scripts/sst2_old.py
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
@@ -98,7 +87,6 @@ def test_naive(ice_num, data, model_name, retriever, seed):
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
-<<<<<<< HEAD:scripts/sst2.py
     
     return score
 
@@ -126,7 +114,7 @@ def test_sequence(ice_num, data, model_name, retriever, seed):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, seed=seed, labels= ['0', '1'], order=True)
+    retriever = retriever(data, ice_num=ice_num, seed=seed, labels= ['0', '1'], use_ordering=True)
     inferencer = PPLInferencer(model_name=model_name, labels= ['0', '1'])
     
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -165,7 +153,7 @@ def test_binning(ice_num, data, model_name, retriever, seed):
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, seed=seed, labels= ['0', '1'], order=True)  
+    retriever = retriever(data, ice_num=ice_num, seed=seed, labels= ['0', '1'], use_ordering=True)  
     inferencer = PPLInferencer(model_name=model_name, labels= ['0', '1'])
     
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -236,10 +224,6 @@ def test_pseudo_GT(ice_num, data, model_name, retriever, seed):
     score = AccEvaluator().score(predictions=predictions, references=data.references)
     
     return score
-=======
-    print(score)
-    # assert score == {'accuracy': 0.5090609555189456}
->>>>>>> 04fc83f5973c8b42adfec1667f358953e9b66e16:scripts/sst2_old.py
 
 
 if __name__ == '__main__':

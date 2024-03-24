@@ -51,9 +51,8 @@ class ParentInferencer(PPLInferencer):
             output_json_filename = self.output_json_filename
 
         # 2. Get results of retrieval process - only one!
-
         r = retriever.retrieve()
-        ice_idx_list = [ [i] for i in range(len(r))]
+        ice_idx_list = retriever.retrieve()
 
         # 3. Get labels of all the classes
         if self.labels is None:
@@ -62,9 +61,7 @@ class ParentInferencer(PPLInferencer):
             labels = self.labels
 
         # 4. Generate in-context examples for testing inputs
-        print(len(ice_idx_list))
         for idx in range(len(ice_idx_list)):
-            print(idx)
             ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template))
         output_handler.save_ice(ice)
 
@@ -141,31 +138,6 @@ class ParentInferencer(PPLInferencer):
         return sub_predictions
     
 
-    def __get_ppl(self, input_texts: List[str], mask_length=None):
-        self.tokenizer.padding_side = "right"
-        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-        outputs = self.model(**inputs)
-
-        shift_logits = outputs.logits[..., :-1, :].contiguous()
-        shift_labels = inputs["input_ids"][..., 1:].contiguous()
-
-        loss_fct = torch.nn.CrossEntropyLoss(reduction='none', ignore_index=self.tokenizer.pad_token_id)
-        loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).view(
-            shift_labels.size())
-
-        if mask_length is not None:
-            mask = torch.zeros_like(shift_labels)  # [batch,seqlen]
-            for i in range(len(mask)):
-                for j in range(mask_length[i] - 1, len(mask[i])):
-                    mask[i][j] = 1
-            loss = loss * mask
-
-        lens = (inputs["input_ids"] != self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
-        if mask_length is not None:
-            lens -= np.array(mask_length)
-        ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
-        return ce_loss
 
 
 

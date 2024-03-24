@@ -45,7 +45,6 @@ class DataCollatorWithPaddingAndCuda:
                 verbose=False
             )
 
-        # print(features)
         batch = self.tokenizer.pad(
             features,
             padding=True,

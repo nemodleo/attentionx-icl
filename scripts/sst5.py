@@ -10,6 +10,7 @@ from iclx import PPLInferencer
 from iclx import AccEvaluator
 sys.path.pop()
 
+from loguru import logger 
 import matplotlib.pyplot as plt
 import json
 import vessl 
@@ -41,11 +42,11 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
         gt.append(test_GT(i, data, model_name, retriever, seed)['accuracy'])
         pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, seed)['accuracy'])
 
-    print(naive)
-    print(sequence)
-    print(binning)
-    print(gt)
-    print(pseudo_gt)
+    logger.info(naive)
+    logger.info(sequence)
+    logger.info(binning)
+    logger.info(gt)
+    logger.info(pseudo_gt)
 
     plt.plot(x, naive, label = 'naive')
     plt.plot(x, sequence, label = 'sequence')
@@ -79,22 +80,10 @@ def test_naive(ice_num, data, model_name, retriever, seed):
         '4': "great"
     }
 
-<<<<<<< HEAD:scripts/sst5.py
     # Define prompt templates for ice and prompt
     column_token_map = {'text': '</text>', '4' : '</VP>', '3' : '</P>', '2' : '</N>', '1' : '</NG>', '0' : '</VN>' }
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
-=======
-    retriever = RandomRetriever(data, ice_num=8, seed=42, index_split='train', test_split='test')
-
-    # 'distilgpt2'
-    inferencer = PPLInferencer(
-        model_name='distilgpt2',
-        batch_size=1,
-        output_json_filepath='iclx_output',
-        output_json_filename='240111-sst5'
-    )
->>>>>>> 04fc83f5973c8b42adfec1667f358953e9b66e16:scripts/sst5_old.py
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.

@@ -43,7 +43,7 @@ def create_data():
     
     template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
     retriever = RandomRetriever(data, ice_num=0)
-    inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6b')
+    inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6B')
     predictions = inferencer.inference(retriever, ice_template=template)
     
     for i, p in enumerate(predictions):

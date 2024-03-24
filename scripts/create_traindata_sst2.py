@@ -44,7 +44,7 @@ def create_data():
     retriever = RandomRetriever(data, ice_num=0)
 
     # class ParentInferencer is modified to spit soft labels as predictions
-    inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6b')
+    inferencer = ParentInferencer(model_name='EleutherAI/gpt-j-6B')
     predictions = inferencer.inference(retriever, ice_template=template)
 
     # Add text, label info to created soft label information

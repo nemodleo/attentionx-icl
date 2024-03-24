@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 
 columns = ['0', '1']
+file_path = 'data/sst2/train_spaced_sst2.jsonl'
+output_file_path = 'data/sst2/train_spaced_sst2.jsonl'
 
 def rec_softmax(x):
     print(x)
@@ -22,4 +24,5 @@ def process_jsonl(file_path, output_file_path):
     df.to_json(output_file_path, orient='records', lines=True)
     return df
 
-df = process_jsonl('data/sst2/train_spaced_sst2.jsonl', 'data/sst2/train_spaced_sst2.jsonl')
+if __name__ == '__main__':
+    df = process_jsonl(file_path, output_file_path)
