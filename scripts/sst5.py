@@ -15,7 +15,7 @@ from datasets import DatasetDict
 from loguru import logger
 
 
-def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
+def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, batch_size=1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:
@@ -34,11 +34,11 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
     x = [n for n in range(shots)]
 
     for i in range(shots):
-        naive.append(test_naive(i, data, model_name, retriever, seed)['accuracy'])
-        sequence.append(test_sequence(i, data, model_name, retriever, seed)['accuracy'])
-        binning.append(test_binning(i, data, model_name, retriever, seed)['accuracy'])
-        gt.append(test_GT(i, data, model_name, retriever, seed)['accuracy'])
-        pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, seed)['accuracy'])
+        naive.append(test_naive(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        sequence.append(test_sequence(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        binning.append(test_binning(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        gt.append(test_GT(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, seed, batch_size)['accuracy'])
 
     logger.info(naive)
     logger.info(sequence)
@@ -56,7 +56,7 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
     plt.savefig('/output/sst5.png')
 
 
-def test_naive(ice_num, data, model_name, retriever, seed):
+def test_naive(ice_num, data, model_name, retriever, seed, batch_size):
 
     # ICL exemplar template
     ice_dict = "</E>Review: </text>\nSentiment: great </VP>%% good </P>%% okay </N>%% bad </NG>% terrible </VN>%"
@@ -93,7 +93,7 @@ def test_naive(ice_num, data, model_name, retriever, seed):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num, seed=seed)
-    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'])
+    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'], batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -103,7 +103,7 @@ def test_naive(ice_num, data, model_name, retriever, seed):
     return score
 
 
-def test_sequence(ice_num, data, model_name, retriever, seed):
+def test_sequence(ice_num, data, model_name, retriever, seed, batch_size):
 
     # ICL exemplar template
     ice_dict = "</E>Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>%"
@@ -145,7 +145,7 @@ def test_sequence(ice_num, data, model_name, retriever, seed):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num, seed=seed, use_ordering=True)
-    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'])
+    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'], batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -155,7 +155,7 @@ def test_sequence(ice_num, data, model_name, retriever, seed):
     return score
 
 
-def test_binning(ice_num, data, model_name, retriever, seed):
+def test_binning(ice_num, data, model_name, retriever, seed, batch_size):
 
     # ICL exemplar template
     ice_dict = "</E>Review: </text>\nSentiment: </Label1> is very likely, </Label2> is likely, </Label3> could be likely, </Label4> is not likely, </Label5> is not very likely"
@@ -192,7 +192,7 @@ def test_binning(ice_num, data, model_name, retriever, seed):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num, seed=seed, use_ordering=True)
-    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'])
+    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'], batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -202,7 +202,7 @@ def test_binning(ice_num, data, model_name, retriever, seed):
     return score
 
 
-def test_GT(ice_num, data, model_name, retriever, seed):
+def test_GT(ice_num, data, model_name, retriever, seed, batch_size):
 
     # ICL exemplar template & Inference prompt template
     ice_dict = {
@@ -229,7 +229,7 @@ def test_GT(ice_num, data, model_name, retriever, seed):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num, seed=seed)
-    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'])
+    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'], batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -239,7 +239,7 @@ def test_GT(ice_num, data, model_name, retriever, seed):
     return score
 
 
-def test_pseudo_GT(ice_num, data, model_name, retriever, seed):
+def test_pseudo_GT(ice_num, data, model_name, retriever, seed, batch_size):
 
     # Inference prompt template
     ice_dict = {
@@ -266,7 +266,7 @@ def test_pseudo_GT(ice_num, data, model_name, retriever, seed):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num, seed=seed)
-    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'])
+    inferencer = PPLInferencer(model_name=model_name, labels=['0', '1', '2', '3', '4'], batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, pseudo_gt='pseudo_gt')
