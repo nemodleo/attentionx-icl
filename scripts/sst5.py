@@ -9,7 +9,6 @@ from iclx import AccEvaluator
 sys.path.pop()
 import matplotlib.pyplot as plt
 import json
-import vessl
 from datasets import Dataset
 from datasets import DatasetDict
 from loguru import logger
@@ -53,7 +52,7 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, 
     plt.plot(x, pseudo_gt, label='pseudo_gt')
 
     plt.legend()
-    plt.savefig('/output/sst5.png')
+    plt.savefig('iclx_output/sst5.png')
 
 
 def test_naive(ice_num, data, model_name, retriever, seed, batch_size):
@@ -277,5 +276,4 @@ def test_pseudo_GT(ice_num, data, model_name, retriever, seed, batch_size):
 
 
 if __name__ == '__main__':
-    vessl.init()
     test()

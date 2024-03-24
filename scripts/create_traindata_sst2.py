@@ -7,7 +7,6 @@ from iclx import RandomRetriever
 from iclx.inferencer import ParentInferencer
 sys.path.pop()
 import json
-import vessl
 from datasets import Dataset
 from datasets import DatasetDict
 
@@ -53,12 +52,11 @@ def create_data():
         p["label_text"] = dataset_dict["test"][i]["label_text"]
 
     # Save predictions as file
-    with open('/output/train_new_sst2.jsonl', 'w') as f:
+    with open('data/sst2/train_new_sst2.jsonl', 'w') as f:
         for entry in predictions:
             json.dump(entry, f)
             f.write('\n')
 
 
 if __name__ == '__main__':
-    vessl.init()
     create_data()

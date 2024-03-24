@@ -7,7 +7,6 @@ from iclx import RandomRetriever
 from iclx.inferencer import ParentInferencer
 sys.path.pop()
 import json
-import vessl
 from datasets import Dataset
 from datasets import DatasetDict
 import numpy as np
@@ -46,8 +45,8 @@ def create_data():
     predictions = inferencer.inference(retriever, ice_template=template)
 
     for i, p in enumerate(predictions):
-        p["text"] = dataset_dict["test"][i]["text"] 
-        p["label"] = dataset_dict["test"][i]["label"] 
+        p["text"] = dataset_dict["test"][i]["text"]
+        p["label"] = dataset_dict["test"][i]["label"]
         p["label_text"] = "subjective" if dataset_dict["test"][i]["label"] == 0 else "objective"
 
         perplexity_values = [p[0], p[1]]
@@ -65,5 +64,4 @@ def create_data():
 
 
 if __name__ == '__main__':
-    vessl.init()
     create_data()
