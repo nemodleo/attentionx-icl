@@ -27,7 +27,7 @@ def test(shots=10, model_name='distilgpt2', retriever=TopkRetriever, batch_size=
     test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst2/test.jsonl"})
 
     dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
-    data = DatasetReader(dataset, input_columns=['text'], output_column= 'label')
+    data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
     naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
     x = [n for n in range(shots)]
