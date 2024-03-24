@@ -11,8 +11,6 @@ import vessl
 from datasets import Dataset
 from datasets import DatasetDict
 
-vessl.init()
-
 
 def create_data():
 
@@ -62,4 +60,5 @@ def create_data():
 
 
 if __name__ == '__main__':
+    vessl.init()
     create_data()

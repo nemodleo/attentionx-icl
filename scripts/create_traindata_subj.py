@@ -12,8 +12,6 @@ from datasets import Dataset
 from datasets import DatasetDict
 import numpy as np
 
-vessl.init()
-
 
 def rec_softmax(x):
     e_x = np.exp(x)
@@ -67,4 +65,5 @@ def create_data():
 
 
 if __name__ == '__main__':
+    vessl.init()
     create_data()

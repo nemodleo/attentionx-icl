@@ -14,8 +14,6 @@ from datasets import Dataset
 from datasets import DatasetDict
 from loguru import logger
 
-vessl.init()
-
 
 def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
 
@@ -237,4 +235,5 @@ def test_pseudo_GT(ice_num, data, model_name, retriever, seed):
 
 
 if __name__ == '__main__':
+    vessl.init()
     test()
