@@ -45,11 +45,11 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42):
     logger.info(gt)
     logger.info(pseudo_gt)
 
-    plt.plot(x, naive, label = 'naive')
-    plt.plot(x, sequence, label = 'sequence')
-    plt.plot(x, binning, label = 'binning')
-    plt.plot(x, gt, label = 'gt')
-    plt.plot(x, pseudo_gt, label = 'pseudo_gt')
+    plt.plot(x, naive, label='naive')
+    plt.plot(x, sequence, label='sequence')
+    plt.plot(x, binning, label='binning')
+    plt.plot(x, gt, label='gt')
+    plt.plot(x, pseudo_gt, label='pseudo_gt')
 
     plt.legend()
     plt.savefig('/output/sst2.png')
