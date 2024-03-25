@@ -38,7 +38,7 @@ class PromptTemplate:
         """
 
         # Select the corresponding template
-        tp = self.template[label] if isinstance(self.template, Dict) else self.template
+        tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template
         # Remove sep token
         if self.sep_token is not None:
             tp.replace(self.sep_token, '')
