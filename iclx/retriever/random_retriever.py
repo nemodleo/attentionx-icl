@@ -36,10 +36,9 @@ class RandomRetriever(BaseRetriever):
                  test_split: Optional[str] = 'test',
                  seed: Optional[int] = 43,
                  accelerator: Optional[Accelerator] = None,
-                 labels: Optional[List] = None,
-                 order: Optional[bool] = False
+                 use_ordering: Optional[bool] = False
                  ) -> None:
-        super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split, test_split, accelerator, labels, order)
+        super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split, test_split, accelerator, use_ordering)
         self.seed = seed
 
     def retrieve(self):
@@ -48,7 +47,6 @@ class RandomRetriever(BaseRetriever):
         rtr_idx_list = []
         logger.info("Retrieving data for test set...")
         for _ in trange(len(self.test_ds), disable=not self.is_main_process):
-            idx_list = np.random.choice(num_idx, self.ice_num, replace=False).tolist() #!
-            # idx_list = np.random.choice(num_idx, self.ice_num).tolist()
+            idx_list = np.random.choice(num_idx, self.ice_num, replace=False).tolist()
             rtr_idx_list.append(idx_list)
         return rtr_idx_list

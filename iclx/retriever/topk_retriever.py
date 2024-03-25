@@ -48,10 +48,11 @@ class TopkRetriever(BaseRetriever):
                  test_split: Optional[str] = 'test',
                  tokenizer_name: Optional[str] = 'gpt2-xl',
                  batch_size: Optional[int] = 1,
-                 accelerator: Optional[Accelerator] = None
+                 accelerator: Optional[Accelerator] = None,
+                 use_ordering: Optional[bool] = False
                  ) -> None:
         super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split,
-                         test_split, accelerator)
+                         test_split, accelerator, use_ordering)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.batch_size = batch_size
         self.tokenizer_name = tokenizer_name

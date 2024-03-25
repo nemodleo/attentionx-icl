@@ -1,32 +1,29 @@
 # create soft labels from larger model
 # dilstill GPT2 : 82M params
 import torch
-import numpy as np
-from typing import List, Union, Optional
-from tqdm import tqdm
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import Union
 from tqdm import trange
-from transformers import PretrainedConfig
-from accelerate import Accelerator
 from loguru import logger
+from accelerate import Accelerator
 
-from iclx import DatasetReader
-from iclx import PromptTemplate
-from iclx.inferencer.ppl_inferencer import PPLInferencer, PPLInferencerOutputHandler
-from iclx.retriever import *
-from iclx.evaluator import *
-from iclx import AccEvaluator
-
+from iclx.utils.prompt_template import PromptTemplate
+from iclx.inferencer.ppl_inferencer import PPLInferencer
+from iclx.inferencer.ppl_inferencer import PPLInferencerOutputHandler
+from iclx.retriever import BaseRetriever
 
 
 class ParentInferencer(PPLInferencer):
 
     def __init__(self,
                  model_name: Optional[str] = 'gpt2-xl',
-                 tokenizer_name: Optional[str] = None,
+                 tokenizer_name: Optional[Union[str, Any]] = None,
                  max_model_token_num: Optional[int] = None,
                  batch_size: Optional[int] = 1,
                  accelerator: Optional[Accelerator] = None,
-                 output_json_filepath: Optional[str] = "./icl_inference_output",
+                 output_json_filepath: Optional[str] = "./iclx_output",
                  output_json_filename: Optional[str] = "predictions",
                  labels: Optional[List] = None,
                  **kwargs
@@ -35,9 +32,14 @@ class ParentInferencer(PPLInferencer):
                          output_json_filepath, output_json_filename, **kwargs)
         self.labels = labels
 
-    def inference(self, retriever: BaseRetriever, ice_template: Optional[PromptTemplate] = None,
-                  prompt_template: Optional[PromptTemplate] = None, output_json_filepath: Optional[str] = None,
-                  output_json_filename: Optional[str] = None, normalizing_str: Optional[str] = None) -> List:
+    def inference(self,
+                  retriever: BaseRetriever,
+                  ice_template: Optional[PromptTemplate] = None,
+                  prompt_template: Optional[PromptTemplate] = None,
+                  output_json_filepath: Optional[str] = None,
+                  output_json_filename: Optional[str] = None,
+                  normalizing_str: Optional[str] = None
+                  ) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
@@ -50,10 +52,8 @@ class ParentInferencer(PPLInferencer):
         if output_json_filename is None:
             output_json_filename = self.output_json_filename
 
-        # 2. Get results of retrieval process - only one!
-
-        r = retriever.retrieve()
-        ice_idx_list = [ [i] for i in range(len(r))]
+        # 2. Get results of retrieval process
+        ice_idx_list = retriever.retrieve()
 
         # 3. Get labels of all the classes
         if self.labels is None:
@@ -62,9 +62,7 @@ class ParentInferencer(PPLInferencer):
             labels = self.labels
 
         # 4. Generate in-context examples for testing inputs
-        print(len(ice_idx_list))
         for idx in range(len(ice_idx_list)):
-            print(idx)
             ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template))
         output_handler.save_ice(ice)
 
@@ -76,7 +74,7 @@ class ParentInferencer(PPLInferencer):
             normalizing_prompt_list = []
             context_length_list = []
 
-            # 5.1 Generate prompts of current label and truncate 
+            # 5.1 Generate prompts of current label and truncate
             for idx in range(len(ice_idx_list)):
                 prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template,
                                                          prompt_template=prompt_template,
@@ -137,60 +135,5 @@ class ParentInferencer(PPLInferencer):
         ppl = list(zip(*ppl))
         for single_ppl in ppl:
             sub_predictions.append({idx : ppl for idx, ppl in enumerate(single_ppl)})
-        
+
         return sub_predictions
-    
-
-    def __get_ppl(self, input_texts: List[str], mask_length=None):
-        self.tokenizer.padding_side = "right"
-        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-        outputs = self.model(**inputs)
-
-        shift_logits = outputs.logits[..., :-1, :].contiguous()
-        shift_labels = inputs["input_ids"][..., 1:].contiguous()
-
-        loss_fct = torch.nn.CrossEntropyLoss(reduction='none', ignore_index=self.tokenizer.pad_token_id)
-        loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).view(
-            shift_labels.size())
-
-        if mask_length is not None:
-            mask = torch.zeros_like(shift_labels)  # [batch,seqlen]
-            for i in range(len(mask)):
-                for j in range(mask_length[i] - 1, len(mask[i])):
-                    mask[i][j] = 1
-            loss = loss * mask
-
-        lens = (inputs["input_ids"] != self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
-        if mask_length is not None:
-            lens -= np.array(mask_length)
-        ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
-        return ce_loss
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
