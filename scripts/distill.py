@@ -1,27 +1,24 @@
-from datasets import Dataset, DatasetDict
 import sys
 import os
-import argparse
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from iclx import DatasetReader
 from iclx import PromptTemplate
-from iclx import RandomRetriever
-from iclx import TopkRetriever
+from iclx import RandomRetriever, TopkRetriever
 from iclx import PPLInferencer
 from iclx import AccEvaluator
 sys.path.pop()
-
 import matplotlib.pyplot as plt
 import json
-import vessl 
-vessl.init()
+from datasets import Dataset
+from datasets import DatasetDict
+from loguru import logger
+import argparse
 
 retriever_dict = {"Topk": TopkRetriever,
                 "Random": RandomRetriever}
 
 
-def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever):
+def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, batch_size = 1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:
@@ -39,17 +36,17 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever):
     x = [n for n in range(shots)]
 
     for i in range(shots):
-        naive.append(test_naive(i, data, model_name, retriever)['accuracy'])
-        sequence.append(test_sequence(i, data, model_name, retriever)['accuracy'])
-        binning.append(test_binning(i, data, model_name, retriever)['accuracy'])
-        gt.append(test_GT(i, data, model_name, retriever)['accuracy'])
-        pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever)['accuracy'])
+        naive.append(test_naive(i, data, model_name, retriever, batch_size)['accuracy'])
+        sequence.append(test_sequence(i, data, model_name, retriever, batch_size)['accuracy'])
+        binning.append(test_binning(i, data, model_name, retriever, batch_size)['accuracy'])
+        gt.append(test_GT(i, data, model_name, retriever, batch_size)['accuracy'])
+        pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, batch_size)['accuracy'])
 
-    print(naive)
-    print(sequence)
-    print(binning)
-    print(gt)
-    print(pseudo_gt)
+    logger.info(naive)
+    logger.info(sequence)
+    logger.info(binning)
+    logger.info(gt)
+    logger.info(pseudo_gt)
 
     plt.plot(x, naive, label = 'naive')
     plt.plot(x, sequence, label = 'sequence')
@@ -61,7 +58,7 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever):
     plt.savefig(OUTPUT_PATH)
 
 
-def test_naive(ice_num, data, model_name, retriever):
+def test_naive(ice_num, data, model_name, retriever, batch_size):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["naive"]
@@ -69,15 +66,17 @@ def test_naive(ice_num, data, model_name, retriever):
     # Inference prompt template
     tp_dict = TP_DICT
 
+    label_dict = LABEL_DICT
+
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["naive"]
-    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num)
-    inferencer = PPLInferencer(model_name=model_name, labels= LABELS)
+    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -87,7 +86,7 @@ def test_naive(ice_num, data, model_name, retriever):
     return score
 
 
-def test_sequence(ice_num, data, model_name, retriever):
+def test_sequence(ice_num, data, model_name, retriever, batch_size):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["sequence"]
@@ -95,15 +94,17 @@ def test_sequence(ice_num, data, model_name, retriever):
     # Inference prompt template
     tp_dict = TP_DICT
 
+    label_dict = LABEL_DICT
+
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
-    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, order=True)
-    inferencer = PPLInferencer(model_name=model_name, labels=LABELS)
+    retriever = retriever(data, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -112,7 +113,7 @@ def test_sequence(ice_num, data, model_name, retriever):
 
     return score
 
-def test_binning(ice_num, data, model_name, retriever):
+def test_binning(ice_num, data, model_name, retriever, batch_size):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["binning"]
@@ -120,16 +121,18 @@ def test_binning(ice_num, data, model_name, retriever):
     # Inference prompt template
     tp_dict = TP_DICT
 
+    label_dict = LABEL_DICT
+
     column_token_map = COLUMN_TOKEN_MAP["binning"]
 
     # Define prompt templates for ice and prompt
-    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
-    retriever = retriever(data, ice_num=ice_num, order=True)  
-    inferencer = PPLInferencer(model_name=model_name, labels=LABELS)
+    retriever = retriever(data, ice_num=ice_num, use_ordering=True)  
+    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -138,7 +141,7 @@ def test_binning(ice_num, data, model_name, retriever):
 
     return score
 
-def test_GT(ice_num, data, model_name, retriever):
+def test_GT(ice_num, data, model_name, retriever, batch_size):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -153,7 +156,7 @@ def test_GT(ice_num, data, model_name, retriever):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num)
-    inferencer = PPLInferencer(model_name=model_name, labels=LABELS)
+    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -163,7 +166,7 @@ def test_GT(ice_num, data, model_name, retriever):
     return score
 
 
-def test_pseudo_GT(ice_num, data, model_name, retriever):
+def test_pseudo_GT(ice_num, data, model_name, retriever, batch_size):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -178,7 +181,7 @@ def test_pseudo_GT(ice_num, data, model_name, retriever):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, ice_num=ice_num)
-    inferencer = PPLInferencer(model_name=model_name, labels=LABELS)
+    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, pseudo_gt='pseudo_gt')
@@ -194,6 +197,7 @@ if __name__ == '__main__':
 
     setup = json.load(open(args.setup_dict, 'r'))
 
+    BATCH_SIZE = setup['batch_size']
     RETRIEVER = retriever_dict[setup['retriever']]
     TRAIN_PATH = setup['train_path']
     VAL_PATH = setup['val_path']
@@ -204,9 +208,9 @@ if __name__ == '__main__':
     ICE_DICT = setup['ice_dict']
     TP_DICT = setup['template_dict']
     
-    LABELS = setup['labels']
+    LABEL_DICT = setup['label_dict']
     COLUMN_TOKEN_MAP = setup['column_token_map']
     
     OUTPUT_PATH = setup['output_path']
     
-    test(retriever=RETRIEVER)
+    test(retriever=RETRIEVER, batch_size=BATCH_SIZE)
