@@ -1,0 +1,20 @@
+{
+    "train_path":"data/yelpreview/train_mini.jsonl",
+    "template_dict": {
+            "0" : "</E>Review: </text>\nSentiment: terrible",
+            "1" : "</E>Review: </text>\nSentiment: bad",
+            "2" : "</E>Review: </text>\nSentiment: okay" ,
+            "3" : "</E>Review: </text>\nSentiment: good" ,
+            "4" : "</E>Review: </text>\nSentiment: great" 
+        },
+    "data_columns": {
+        "input_columns": ["text"],
+        "output_columns": ["label"]},
+    "label_map": {
+        "0": "terrible",
+        "1": "bad",
+        "2": "okay",
+        "3": "good",
+        "4": "great"},
+    "output_path":"data/yelpreview/minitrain_new_yelp.jsonl"
+    }

@@ -1,10 +1,11 @@
 import json
 import numpy as np
 import torch
-from typing import List, Optional
+from typing import List
+from typing import Optional
 from tqdm import trange
-from accelerate import Accelerator
 from loguru import logger
+from accelerate import Accelerator
 
 from iclx.inferencer import BaseInferencer
 from iclx.retriever import BaseRetriever
@@ -74,10 +75,6 @@ class PPLInferencer(BaseInferencer):
             ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
         output_handler.save_ice(ice)
 
-        #print('Printing ICE examples-------------')
-        #print(ice[0])
-        #print('----------------------------------')
-
         # 5. Calculating PPL for prompts in each label's class
         for label in labels:
             index = 0
@@ -97,10 +94,6 @@ class PPLInferencer(BaseInferencer):
 
                 prompt_list.append(prompt)
 
-            print('Printing LLM prompt -------------')
-            print(prompt_list[0])
-            print('----------------------------------')
-
             # 5.2 Get PPL
             logger.info(f"Calculating PPL for prompts labeled '{label}'")
             for idx in trange(0, len(prompt_list), self.batch_size, disable=not self.is_main_process):
@@ -115,7 +108,6 @@ class PPLInferencer(BaseInferencer):
 
         # 6. Get lowest PPL class as predictions
         ppl = list(zip(*ppl))
-  
         for single_ppl in ppl:
             sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
         output_handler.save_predictions(sub_predictions)

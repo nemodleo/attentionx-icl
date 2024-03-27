@@ -26,7 +26,7 @@ class PromptTemplate:
         self.label_dict = label_dict
         self.binning = binning
 
-    def generate_ice_item(self, entry: Dict, label: Hashable, order=False) -> str:
+    def generate_ice_item(self, entry: Dict, label: Hashable, use_ordering=False) -> str:
         """Generate in-context example based on the provided :obj:`entry` data.
 
         Args:
@@ -46,28 +46,28 @@ class PromptTemplate:
         if self.ice_token is not None:
             tp = tp.replace(self.ice_token, '')
 
-        if order:
+        if use_ordering:
             label_dict = {v : entry[k] for k , v in self.label_dict.items()}
-
             sorted_dict = {k: v for k, v in sorted(label_dict.items(), key=lambda item: item[1], reverse=True)}
-            labels = {'Label'+str(i+1) : list(sorted_dict.keys())[i] for i in range(len(sorted_dict.keys()))}
+            labels = {'Label'+str(i+1): list(sorted_dict.keys())[i] for i in range(len(sorted_dict.keys()))}
             probs = list(sorted_dict.values())
 
         # Replace context token
         for key, token in self.column_token_map.items():
-            if 'Label' in token and order:
-                    tp = tp.replace(token, labels[key])
-            elif key != 'text' and order:
-                if self.binning is None : 
+            if 'Label' in token and use_ordering:
+                tp = tp.replace(token, labels[key])
+            elif key != 'text' and use_ordering:
+                if self.binning is None:
                     text = str(round(float(probs[int(key)])*100, 2))
-                else :
+                else:
                     text = self.binning[key]
                 tp = tp.replace(token, text)
             else:
                 text = str(entry[key])
-                if key != 'text' : text = str(round(float(text)*100, 2))
+                if key != 'text':
+                    text = str(round(float(text)*100, 2))
                 tp = tp.replace(token, text)
-        
+
         return tp
 
     def generate_label_prompt_item(self, entry: Dict, ice: str, label: Hashable, remain_sep: Optional[bool] = False) -> str:
@@ -82,7 +82,7 @@ class PromptTemplate:
 
         Raises:
             ValueError: If the :obj:`ice_token` attribute of the :obj:`PromptTemplate` instance is :obj:`None`.
-            
+
         Returns:
             :obj:`str`: The generated prompt.
         """

@@ -31,6 +31,9 @@ run-create_train:
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
 
+run-distill:
+	$(AUTO_POETRY) python scripts/distill.py $(SETUP_DICT)
+
 check-quality:
 	$(AUTO_POETRY) flake8 iclx
 	$(AUTO_POETRY) mypy iclx
