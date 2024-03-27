@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from iclx import DatasetReader
 from iclx import PromptTemplate
 from iclx import RandomRetriever
+from iclx import TopkRetriever
 from iclx import PPLInferencer
 from iclx import AccEvaluator
 sys.path.pop()
@@ -14,7 +15,7 @@ from datasets import DatasetDict
 from loguru import logger
 
 
-def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, batch_size=1):
+def test(shots=10, model_name='distilgpt2', retriever=TopkRetriever, seed=42, batch_size=1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:
