@@ -167,3 +167,6 @@ data
 
 # iclx outputs
 iclx_output/*
+
+#.DS_Store
+.DS_Store

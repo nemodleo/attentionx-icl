@@ -1,10 +1,11 @@
 import json
 import numpy as np
 import torch
-from typing import List, Optional
+from typing import List
+from typing import Optional
 from tqdm import trange
-from accelerate import Accelerator
 from loguru import logger
+from accelerate import Accelerator
 
 from iclx.inferencer import BaseInferencer
 from iclx.retriever import BaseRetriever

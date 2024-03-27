@@ -61,7 +61,7 @@ class BaseInferencer:
     def inference(self,
                   retriever: BaseRetriever,
                   ice_template: Optional[PromptTemplate] = None,
-                  prompt_template: Optional[PromptTemplate] = None, 
+                  prompt_template: Optional[PromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None
                   ) -> List:
@@ -86,12 +86,12 @@ class BaseInferencer:
         model_config = AutoConfig.from_pretrained(model_name)
         with init_empty_weights():
             empty_model = AutoModelForCausalLM.from_config(model_config)
-        device_map = infer_auto_device_map(empty_model, dtype="float16")
+        device_map = infer_auto_device_map(empty_model, dtype="float32")
         self.model = AutoModelForCausalLM.from_pretrained(model_name,
                                                           device_map=device_map,
                                                           offload_folder="offload",
                                                           offload_state_dict=True,
-                                                          torch_dtype=torch.float16)
+                                                          torch_dtype=torch.float32)
 
     def _init_tokenizer(self, tokenizer_name):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)

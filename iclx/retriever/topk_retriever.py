@@ -48,10 +48,12 @@ class TopkRetriever(BaseRetriever):
                  test_split: Optional[str] = 'test',
                  tokenizer_name: Optional[str] = 'gpt2-xl',
                  batch_size: Optional[int] = 1,
-                 accelerator: Optional[Accelerator] = None
+                 accelerator: Optional[Accelerator] = None,
+                 use_ordering: Optional[bool] = False,
+                 **kwargs,
                  ) -> None:
         super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split,
-                         test_split, accelerator)
+                         test_split, accelerator, use_ordering)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.batch_size = batch_size
         self.tokenizer_name = tokenizer_name
@@ -88,6 +90,7 @@ class TopkRetriever(BaseRetriever):
     def knn_search(self, ice_num):
         res_list = self.forward(self.dataloader, process_bar=True, information="Embedding test set...")
         rtr_idx_list = [[] for _ in range(len(res_list))]
+        if ice_num == 0: return rtr_idx_list
         logger.info("Retrieving data for test set...")
         for entry in tqdm.tqdm(res_list, disable=not self.is_main_process):
             idx = entry['metadata']['id']

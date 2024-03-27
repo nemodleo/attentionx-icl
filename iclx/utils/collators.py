@@ -1,8 +1,12 @@
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
-
 import torch
-from transformers import PreTrainedTokenizerBase, BatchEncoding
+from dataclasses import dataclass
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
+from transformers import PreTrainedTokenizerBase
+from transformers import BatchEncoding
 from transformers.file_utils import PaddingStrategy
 
 
@@ -45,7 +49,6 @@ class DataCollatorWithPaddingAndCuda:
                 verbose=False
             )
 
-        # print(features)
         batch = self.tokenizer.pad(
             features,
             padding=True,
