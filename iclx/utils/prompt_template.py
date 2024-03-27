@@ -38,7 +38,7 @@ class PromptTemplate:
         """
 
         # Select the corresponding template
-        tp = self.template[label] if isinstance(self.template, Dict) else self.template
+        tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template
         # Remove sep token
         if self.sep_token is not None:
             tp.replace(self.sep_token, '')
@@ -89,7 +89,7 @@ class PromptTemplate:
         if self.ice_token is None:
             raise ValueError("PromptTemplate.ice_token should be not None when generates prompt")
         # Select the corresponding template
-        tp = self.template[label] if isinstance(self.template, Dict) else self.template
+        tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template
         # Remove sep token
         if not remain_sep and self.sep_token is not None:
             tp.replace(self.sep_token, '')

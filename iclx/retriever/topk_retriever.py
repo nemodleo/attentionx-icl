@@ -46,6 +46,7 @@ class TopkRetriever(BaseRetriever):
                  ice_num: Optional[int] = 1,
                  index_split: Optional[str] = 'train',
                  test_split: Optional[str] = 'test',
+                 seed: Optional[int] = 43,
                  tokenizer_name: Optional[str] = 'gpt2-xl',
                  batch_size: Optional[int] = 1,
                  accelerator: Optional[Accelerator] = None,
@@ -89,6 +90,7 @@ class TopkRetriever(BaseRetriever):
     def knn_search(self, ice_num):
         res_list = self.forward(self.dataloader, process_bar=True, information="Embedding test set...")
         rtr_idx_list = [[] for _ in range(len(res_list))]
+        if ice_num == 0: return rtr_idx_list
         logger.info("Retrieving data for test set...")
         for entry in tqdm.tqdm(res_list, disable=not self.is_main_process):
             idx = entry['metadata']['id']
