@@ -81,7 +81,7 @@ class BaseRetriever:
             labels = list(set(self.test_ds[self.dataset_reader.output_column]))
         return labels
 
-    def generate_ice(self, idx_list: List[int], ice_template: Optional[PromptTemplate] = None, pseudo_gt: Optional[str] = None) -> str:
+    def generate_ice(self, idx_list: List[int], ice_template: Optional[PromptTemplate] = None) -> str:
         generated_ice_list = []
         dr = self.dataset_reader
         for idx in idx_list:

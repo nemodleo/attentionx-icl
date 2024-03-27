@@ -17,6 +17,8 @@ make poetry-install
 ```bash
 ```
 
+3. symlinking for using cache ```ln -s /opt/.cache/huggingface /root/.cache/huggingface```
+
 
 ## Ex
 
