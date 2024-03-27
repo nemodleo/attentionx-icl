@@ -17,7 +17,8 @@ class PromptTemplate:
                  label_dict: Optional[Dict] = None,
                  ice_token: Optional[str] = None,
                  sep_token: Optional[str] = None,
-                 binning: Optional[Dict] = None
+                 binning: Optional[Dict] = None,
+                 **kwargs,
                  ) -> None:
         self.template = template
         self.column_token_map = column_token_map

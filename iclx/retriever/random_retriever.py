@@ -36,7 +36,8 @@ class RandomRetriever(BaseRetriever):
                  test_split: Optional[str] = 'test',
                  seed: Optional[int] = 43,
                  accelerator: Optional[Accelerator] = None,
-                 use_ordering: Optional[bool] = False
+                 use_ordering: Optional[bool] = False,
+                 **kwargs,
                  ) -> None:
         super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split, test_split, accelerator, use_ordering)
         self.seed = seed

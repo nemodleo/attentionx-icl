@@ -46,11 +46,11 @@ class TopkRetriever(BaseRetriever):
                  ice_num: Optional[int] = 1,
                  index_split: Optional[str] = 'train',
                  test_split: Optional[str] = 'test',
-                 seed: Optional[int] = 43,
                  tokenizer_name: Optional[str] = 'gpt2-xl',
                  batch_size: Optional[int] = 1,
                  accelerator: Optional[Accelerator] = None,
-                 use_ordering: Optional[bool] = False
+                 use_ordering: Optional[bool] = False,
+                 **kwargs,
                  ) -> None:
         super().__init__(dataset_reader, ice_separator, ice_eos_token, prompt_eos_token, ice_num, index_split,
                          test_split, accelerator, use_ordering)

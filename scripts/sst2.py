@@ -15,7 +15,7 @@ from datasets import DatasetDict
 from loguru import logger
 
 
-def test(shots=10, model_name='distilgpt2', retriever=TopkRetriever, seed=42, batch_size=1):
+def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, batch_size=1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:

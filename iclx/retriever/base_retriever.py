@@ -30,7 +30,8 @@ class BaseRetriever:
                  index_split: Optional[str] = 'train',
                  test_split: Optional[str] = 'test',
                  accelerator: Optional[Accelerator] = None,
-                 use_ordering: Optional[bool] = False
+                 use_ordering: Optional[bool] = False,
+                 **kwargs,
                  ) -> None:
         self.dataset_reader = dataset_reader
         self.ice_separator = ice_separator
