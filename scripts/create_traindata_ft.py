@@ -28,8 +28,8 @@ def main():
     parser.add_argument("--data_col", type=str, default="text")
     args = parser.parse_args()
 
-    model = AutoModelForSequenceClassification.from_pretrained("SetFit/distilbert-base-uncased__sst5__all-train").to(device)
-    tkn = AutoTokenizer.from_pretrained("SetFit/distilbert-base-uncased__sst5__all-train")
+    model = AutoModelForSequenceClassification.from_pretrained(args.model_name_or_path).to(device)
+    tkn = AutoTokenizer.from_pretrained(args.model_name_or_path)
 
     data = []
     with open(args.data_path, "r") as f:
