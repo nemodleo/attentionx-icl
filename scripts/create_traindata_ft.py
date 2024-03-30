@@ -4,7 +4,7 @@ A script for generating inference data of fine-tuned model
 Example Usage:
     python3 create_traindata_ft.py \
         --data_path ../data/sst5/train_sst5.jsonl \
-        --output_path .../data/sst5/train_sst5_bert.jsonl \
+        --output_path ../data/sst5/train_sst5_bert.jsonl \
         --model_name_or_path SetFit/distilbert-base-uncased__sst5__all-train
 """
 
@@ -46,7 +46,7 @@ def main():
         for i in range(probs.shape[1]):
             item[str(i)] = probs[0][i].item()
 
-    with open(args.data_path, "w") as f:
+    with open(args.output_path, "w") as f:
         for row in data:
             f.write(json.dumps(row) + "\n")
 
