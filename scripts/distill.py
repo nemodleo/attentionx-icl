@@ -226,5 +226,10 @@ if __name__ == '__main__':
     folder_name = f"output/{now}_{EXP_NAME}"
 
     os.makedirs(folder_name, exist_ok=True)
+
+    logger.info(f"Experiment: {EXP_NAME}")
+    logger.info(f"Starting distillation for {SHOT_NUM} shots for {STUDENT} student with {setup['retriever']} retriever.")
+    logger.info(f"Using training data from {TRAIN_PATH}")
+    logger.info(f"output will be saved to {folder_name}")
     
     test(output_path = folder_name, shots=SHOT_NUM, model_name=STUDENT, retriever=RETRIEVER, batch_size=BATCH_SIZE)
