@@ -12,13 +12,14 @@ import json
 from datasets import Dataset
 from datasets import DatasetDict
 from loguru import logger
+from datetime import datetime
 import argparse
 
 retriever_dict = {"Topk": TopkRetriever,
                 "Random": RandomRetriever}
 
 
-def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, batch_size = 1):
+def test(output_path, shots=10, model_name='distilgpt2', retriever=RandomRetriever, batch_size = 1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:
@@ -55,8 +56,13 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, batch_siz
     plt.plot(x, pseudo_gt, label = 'pseudo_gt')
 
     plt.legend()
-    plt.savefig(OUTPUT_PATH)
+    plt.savefig(f"{output_path}/plot.png")
 
+    accs = {'naive': naive, 'sequence': sequence, 'binning': binning, 'gt': gt, 'pseudo_gt': pseudo_gt}
+    with open(f"{output_path}/acc.txt", 'w') as f:
+        f.write(f"{output_path.split('/')[-1]}\n total shots: {shots}\n\n")
+        for key, val in accs.items():
+            f.write(f"{key}: {', '.joing(map(str,values))}\n")
 
 def test_naive(ice_num, data, model_name, retriever, batch_size):
 
@@ -199,6 +205,10 @@ if __name__ == '__main__':
 
     BATCH_SIZE = setup['batch_size']
     RETRIEVER = retriever_dict[setup['retriever']]
+    STUDENT = setup['student']
+    SHOT_NUM = setup['shot_num']
+
+    
     TRAIN_PATH = setup['train_path']
     VAL_PATH = setup['val_path']
     TEST_PATH = setup['test_path']
@@ -211,6 +221,10 @@ if __name__ == '__main__':
     LABEL_DICT = setup['label_dict']
     COLUMN_TOKEN_MAP = setup['column_token_map']
     
-    OUTPUT_PATH = setup['output_path']
+    EXP_NAME = setup['experiment_name']
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    folder_name = f"output/{now}_{EXP_NAME}"
+
+    os.makedirs(folder_name, exist_ok=True)
     
-    test(retriever=RETRIEVER, batch_size=BATCH_SIZE)
+    test(output_path = folder_name, shots=SHOT_NUM, model_name=STUDENT, retriever=RETRIEVER, batch_size=BATCH_SIZE)
