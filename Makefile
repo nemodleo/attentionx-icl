@@ -28,6 +28,15 @@ run-sst5:
 run-ag_news:
 	$(AUTO_POETRY) python scripts/ag_news.py
 
+run-create_data_sst2:
+	$(AUTO_POETRY) python scripts/create_traindata_sst2.py
+
+run-create_data_sst5:
+	$(AUTO_POETRY) python scripts/create_traindata_sst5.py
+
+run-create_data_subj:
+	$(AUTO_POETRY) python scripts/create_traindata_subj.py
+
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
 
