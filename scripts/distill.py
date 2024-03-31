@@ -19,13 +19,13 @@ retriever_dict = {"Topk": TopkRetriever,
                 "Random": RandomRetriever}
 
 
-def test(output_path, shots=10, model_name='distilgpt2', retriever=RandomRetriever, batch_size = 1):
+def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, batch_size = 1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:
             for line in f:
                 yield json.loads(line)
-                
+    
     train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TRAIN_PATH})
     val_ds = None if not VAL_PATH else Dataset.from_generator(gen, gen_kwargs={"file_path": VAL_PATH})
     test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TEST_PATH})
@@ -36,12 +36,24 @@ def test(output_path, shots=10, model_name='distilgpt2', retriever=RandomRetriev
     naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
     x = [n for n in range(shots)]
 
-    for i in range(shots):
-        naive.append(test_naive(i, data, model_name, retriever, batch_size)['accuracy'])
-        sequence.append(test_sequence(i, data, model_name, retriever, batch_size)['accuracy'])
-        binning.append(test_binning(i, data, model_name, retriever, batch_size)['accuracy'])
-        gt.append(test_GT(i, data, model_name, retriever, batch_size)['accuracy'])
-        pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, batch_size)['accuracy'])
+    with open(f"{FOLDER_NAME}/acc_{EXP_NAME}_{shots}shots.txt", 'a') as f:
+        f.write("naive, sequence, binning, gt, pseudo_gt\n")
+
+        for i in range(shots):
+            naive.append(test_naive(i, data, model_name, retriever, batch_size)['accuracy'])
+            logger.info(f"naive for shot {i} done")
+            sequence.append(test_sequence(i, data, model_name, retriever, batch_size)['accuracy'])
+            logger.info(f"sequence for shot {i} done")
+            binning.append(test_binning(i, data, model_name, retriever, batch_size)['accuracy'])
+            logger.info(f"binning for shot {i} done")
+            gt.append(test_GT(i, data, model_name, retriever, batch_size)['accuracy'])
+            logger.info(f"gt for shot {i} done")
+            pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, batch_size)['accuracy'])
+            logger.info(f"pseudo_gt for shot {i} done")
+
+            f.write(f"{naive[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
+            f.flush()
+            logger.info(f"Finished logging accuracies for {i} shot")
 
     logger.info(naive)
     logger.info(sequence)
@@ -56,13 +68,9 @@ def test(output_path, shots=10, model_name='distilgpt2', retriever=RandomRetriev
     plt.plot(x, pseudo_gt, label = 'pseudo_gt')
 
     plt.legend()
-    plt.savefig(f"{output_path}/plot.png")
+    plt.savefig(f"{FOLDER_NAME}/plot_{EXP_NAME}_{shots}shots.png")
 
-    accs = {'naive': naive, 'sequence': sequence, 'binning': binning, 'gt': gt, 'pseudo_gt': pseudo_gt}
-    with open(f"{output_path}/acc.txt", 'w') as f:
-        f.write(f"{output_path.split('/')[-1]}\n total shots: {shots}\n\n")
-        for key, val in accs.items():
-            f.write(f"{key}: {', '.joing(map(str,values))}\n")
+    logger.info(f"Finished running and saving artifacts for experiment {EXP_NAME}")
 
 def test_naive(ice_num, data, model_name, retriever, batch_size):
 
@@ -223,13 +231,13 @@ if __name__ == '__main__':
     
     EXP_NAME = setup['experiment_name']
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    folder_name = f"output/{now}_{EXP_NAME}"
+    FOLDER_NAME = f"output/{now}_{EXP_NAME}"
 
-    os.makedirs(folder_name, exist_ok=True)
+    os.makedirs(FOLDER_NAME, exist_ok=True)
 
     logger.info(f"Experiment: {EXP_NAME}")
-    logger.info(f"Starting distillation for {SHOT_NUM} shots for {STUDENT} student with {setup['retriever']} retriever.")
+    logger.info(f"Starting distillation of {SHOT_NUM} shots using {STUDENT} student with {setup['retriever']} retriever.")
     logger.info(f"Using training data from {TRAIN_PATH}")
-    logger.info(f"output will be saved to {folder_name}")
+    logger.info(f"output will be saved to {FOLDER_NAME}")
     
-    test(output_path = folder_name, shots=SHOT_NUM, model_name=STUDENT, retriever=RETRIEVER, batch_size=BATCH_SIZE)
+    test(shots=SHOT_NUM, model_name = STUDENT, retriever=RETRIEVER, batch_size=BATCH_SIZE)
