@@ -1,0 +1,45 @@
+{   
+    "experiment_name":"sst2-topk-distilgpt2",
+
+    "batch_size": 16,
+    "retriever": "Topk",
+    "student": "distilgpt2",
+    "shot_num": 10,
+
+    "train_path":"data/sst2/train_label_sst2.jsonl",
+    "val_path": null,
+    "test_path":"data/sst2/test.jsonl",
+
+    "data_columns": {
+    "input_columns": ["text"],
+    "output_columns": ["label"]},
+
+    "ice_dict":{
+    "naive": "</E>Review: </text>\nSentiment: Positive </P>% Negative </N>%",
+    "sequence": "</E>Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>%",
+    "binning": "</E>Review: </text>\nSentiment: </Label1> is very likely, </Label2> is not very likely"
+    
+    },
+
+    "template_dict": {
+        "0" : "</E>Review: </text>\nSentiment: Negative",
+        "1" : "</E>Review: </text>\nSentiment: Positive"
+    }
+,
+
+    "label_dict": {"0": "Negative",
+    "1": "Positive"
+}
+,
+
+    "column_token_map": {
+        "naive": {"text": "</text>", "1" : "</P>", "0" : "</N>" },
+        "sequence":{"text": "</text>", "0" : "</1>", "Label1" : "</Label1>", "1" : "</2>", "Label2" : "</Label2>" },
+        "binning":{
+            "text": "</text>", 
+            "Label1" : "</Label1>", 
+            "Label2" : "</Label2>" 
+        },
+        "GT": {"text": "</text>"}
+    }
+}
