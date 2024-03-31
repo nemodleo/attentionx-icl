@@ -68,6 +68,9 @@ class BERTTrainingModule(pl.LightningModule):
 
     def configure_optimizers(self):
         return AdamW(self.parameters(), lr=self.lr)
+    
+    def on_save_checkpoint(self, checkpoint):
+        self.model.save_pretrained("model")
 
 
 def train(
