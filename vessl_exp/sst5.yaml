@@ -3,7 +3,7 @@ description:
 resources:
   cluster: snu-eng-dgx
   preset: a100-1
-image: docker.io/nemodleosnu/iclx:0.2.0
+image: docker.io/nemodleosnu/iclx:0.2.1
 import:
   /code/:
     git:
