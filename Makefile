@@ -35,10 +35,16 @@ run-create_data_sst5:
 	$(AUTO_POETRY) python scripts/create_traindata_sst5.py
 
 run-create_subj:
-	$(AUTO_POETRY) python scripts/create_traindata_subj.py
+	$(AUTO_POETRY) python scripts/bert/create_traindata_subj.py
 
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
+
+train-bert-sst2:
+	$(AUTO_POETRY) python scripts/bert/train_sst2.py
+
+infer-bert-sst2:
+	$(AUTO_POETRY) python scripts/bert/infer_sst2.py
 
 vessl-workspace-init:
 	mkdir /root/.cache
