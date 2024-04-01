@@ -1,6 +1,7 @@
 from datasets import Dataset, DatasetDict
 import sys
 import os
+from loguru import logger
 import argparse
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import json
@@ -21,17 +22,7 @@ def rec_softmax(x):
 
 vessl.init()
 
-def create_data(setup_dict):
-    setup = json.load(open(setup_dict, 'r'))
-    TRAIN_PATH = setup['train_path']
-    OUTPUT_PATH = setup['output_path']
-    
-    TP_DICT = setup['template_dict']
-    DATA_COLUMNS = setup['data_columns']
-    LABEL_MAP = setup['label_map']
-    
-    BATCH_SIZE = setup['batch_size']
-    TEACHER = setup['teacher_model']
+def create_data():
     
     def gen(file_path):
         with open(file_path, 'r') as f:
@@ -74,6 +65,7 @@ def create_data(setup_dict):
         for entry in predictions:
             json.dump(entry, f)
             f.write('\n')
+    logger.info("Finished saving the data to OUTPUT_PATH")
 
 
 if __name__ == '__main__':
@@ -81,4 +73,20 @@ if __name__ == '__main__':
     parser.add_argument('setup_dict', type=str, help='Path to the setup dictionary json file')
     args = parser.parse_args()
 
-    create_data(args.setup_dict)
+    setup = json.load(open(args.setup_dict, 'r'))
+    
+    TRAIN_PATH = setup['train_path']
+    OUTPUT_PATH = setup['output_path']
+    
+    TP_DICT = setup['template_dict']
+    DATA_COLUMNS = setup['data_columns']
+    LABEL_MAP = setup['label_map']
+    
+    BATCH_SIZE = setup['batch_size']
+    TEACHER = setup['teacher_model']
+
+    logger.info(f"Creating train data with PseudoGT Label using teacher model {TEACHER}")
+    logger.info(f"Using train data from: {TRAIN_PATH}")
+    logger.info(f"Created data will be saved to {OUTPUT_PATH}")
+
+    create_data()
