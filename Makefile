@@ -41,7 +41,7 @@ run-create_train:
 	$(AUTO_POETRY) python scripts/create_train.py $(SETUP_DICT)
 
 run-create_train:
-	$(AUTO_POETRY) python scripts/create_train.py $(SETUP_DICT)
+	$(AUTO_POETRY) python scripts/create_train_with_pseudo.py $(SETUP_DICT)
 
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
