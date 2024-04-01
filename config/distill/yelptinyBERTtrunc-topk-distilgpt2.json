@@ -1,0 +1,45 @@
+{   "experiment_name":"yelptinyBERTtrunc-topk-distilgpt2",
+
+    "batch_size": 32,
+    "retriever": "Topk",
+    "student": "distilgpt2",
+    "shot_num": 10,
+
+    "train_path":"data/yelpreview/yelp-train-tiny-bert-trunc.jsonl",
+    "val_path": null,
+    "test_path":"data/yelpreview/yelp-test-tiny.jsonl",
+
+    "data_columns": {
+    "input_columns": ["text"],
+    "output_columns": ["label"]},
+
+    "ice_dict":{
+    "naive": "</E>Review: </text>\nSentiment: great </VP>%% good </P>%% okay </N>%% bad </NG>% terrible </VN>%",
+    "sequence": "</E>Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>%",
+    "binning": "</E>Review: </text>\nSentiment: </Label1> is very likely, </Label2> is likely, </Label3> could be likely, </Label4> is not likely, </Label5> is not very likely"
+    
+    },
+
+    "template_dict": {
+        "0" : "</E>Review: </text>\nSentiment: terrible",
+        "1" : "</E>Review: </text>\nSentiment: bad",
+        "2" : "</E>Review: </text>\nSentiment: okay" ,
+        "3" : "</E>Review: </text>\nSentiment: good" ,
+        "4" : "</E>Review: </text>\nSentiment: great"
+    },
+
+    "label_dict": {
+        "0": "terrible",
+        "1": "bad",
+        "2": "okay",
+        "3": "good",
+        "4": "great"
+    },
+
+    "column_token_map": {
+        "naive":{"text": "</text>", "4" : "</VP>", "3" : "</P>", "2" : "</N>", "1" : "</NG>", "0" : "</VN>"},
+        "sequence":{"text": "</text>", "0" : "</1>", "Label1" : "</Label1>", "1" : "</2>", "Label2" : "</Label2>", "2" : "</3>", "Label3" : "</Label3>", "3" : "</4>", "Label4" : "</Label4>", "4" : "</5>", "Label5" : "</Label5>" },
+        "binning":{"text": "</text>", "Label1" : "</Label1>", "Label2" : "</Label2>", "Label3" : "</Label3>", "Label4" : "</Label4>", "Label5" : "</Label5>"},
+        "GT": {"text": "</text>"}
+    }
+}
