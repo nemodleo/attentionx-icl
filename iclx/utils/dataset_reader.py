@@ -27,8 +27,12 @@ class DatasetReader:
                  dataset: Union[Dataset, DatasetDict],
                  input_columns: List[str],
                  output_column: str,
+<<<<<<< HEAD
                  test_split: Optional[str] = 'test',
                  **kwargs,
+=======
+                 test_split: Optional[str] = 'test'
+>>>>>>> 666ab85 (align with main's topk)
                  ) -> None:
         self.input_columns = input_columns
         self.output_column = output_column

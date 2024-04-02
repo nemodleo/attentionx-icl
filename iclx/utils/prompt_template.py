@@ -14,7 +14,6 @@ class PromptTemplate:
     def __init__(self,
                  template: Dict,
                  column_token_map: Dict,
-                 label_dict: Optional[Dict] = None,
                  ice_token: Optional[str] = None,
                  sep_token: Optional[str] = None,
                  binning: Optional[Dict] = None,
@@ -37,9 +36,8 @@ class PromptTemplate:
         Returns:
             :obj:`str`: The generated in-context example.
         """
-
         # Select the corresponding template
-        tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template
+        tp = self.template[label]
         # Remove sep token
         if self.sep_token is not None:
             tp.replace(self.sep_token, '')
