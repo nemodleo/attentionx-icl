@@ -92,6 +92,10 @@ class BaseInferencer:
                                                           offload_folder="offload",
                                                           offload_state_dict=True,
                                                           torch_dtype=torch.float32)
+<<<<<<< HEAD
+=======
+        # TODO: self.model = AutoModelForCausalLM.from_pretrained(model_name)
+>>>>>>> 0e991d9b58fcbabfd8f42a81ca6d7f15f3df9217
 
     def _init_tokenizer(self, tokenizer_name):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)

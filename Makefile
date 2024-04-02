@@ -38,7 +38,7 @@ run-create_data_subj:
 	$(AUTO_POETRY) python scripts/create_traindata_subj.py
 
 run-create_train:
-	$(AUTO_POETRY) python scripts/create_train.py $(SETUP_DICT)
+	$(AUTO_POETRY) python scripts/create_train_with_pseudo.py $(SETUP_DICT)
 
 run-create_train:
 	$(AUTO_POETRY) python scripts/create_train_with_pseudo.py $(SETUP_DICT)
