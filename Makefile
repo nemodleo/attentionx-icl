@@ -40,6 +40,9 @@ run-create_data_subj:
 run-create_train:
 	$(AUTO_POETRY) python scripts/create_train.py $(SETUP_DICT)
 
+run-create_train:
+	$(AUTO_POETRY) python scripts/create_train.py $(SETUP_DICT)
+
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
 
