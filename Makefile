@@ -71,6 +71,9 @@ vessl-run-ag_news:
 vessl-run-trec:
 	vessl run create -f vessl_exp/trec.yaml
 
+run-distill:
+	$(AUTO_POETRY) python scripts/distill.py $(SETUP_DICT)
+
 check-quality:
 	$(AUTO_POETRY) flake8 iclx
 	$(AUTO_POETRY) mypy iclx
