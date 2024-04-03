@@ -17,8 +17,8 @@ def test():
     data = DatasetReader(dataset, input_columns=['text'], output_column='label')
 
     ice_dict = {
-        0: "Positive",
-        1: "Negative"
+        "0": "Positive",
+        "1": "Negative"
     }
     prefix_template = "</E></text> It is"
     concat_token = "\n"
@@ -27,8 +27,8 @@ def test():
 
 
     prompt_dict = {
-        0: "Positive",
-        1: "Negative"
+        "0": "Positive",
+        "1": "Negative"
     }
     prompt_template = ProbPromptTemplate(prefix_template, prompt_dict, concat_token, {'text': '</text>'}, ice_token='</E>')
 

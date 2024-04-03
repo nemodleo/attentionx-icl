@@ -160,3 +160,13 @@ cython_debug/
 #.idea/
 
 poetry.lock
+
+# ckpt and data
+ckpt
+data
+
+# iclx outputs
+iclx_output/*
+
+#.DS_Store
+.DS_Store

@@ -1,0 +1,15 @@
+name: sst2_topk
+description: 
+resources:
+  cluster: snu-eng-dgx
+  preset: a100-1
+image: docker.io/nemodleosnu/iclx:0.2.1
+import:
+  /code/:
+    git:
+      url: https://github.com/nemodleo/attentionx-icl
+      ref: main
+run:
+  - command: |-
+      make run-sst2_topk
+    workdir: /code/

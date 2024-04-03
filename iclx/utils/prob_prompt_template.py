@@ -29,7 +29,7 @@ class ProbPromptTemplate(PromptTemplate):
         self.sep_token = sep_token
 
     def _get_template(self, label) -> str:
-        return f"{self.prefix_template}{self.concat_token}{self.prob_tokens[label]}"
+        return f"{self.prefix_template}{self.concat_token}{self.prob_tokens[str(label)]}"
 
     def __repr__(self):
         return f"ProbPromptTemplate({{\n\tprefix_template: {self.prefix_template},\n\prob_tokens: {self.prob_tokens},\n\tcolumn_token_map: {self.column_token_map},\n\tice_token: {self.ice_token}\n}})"
