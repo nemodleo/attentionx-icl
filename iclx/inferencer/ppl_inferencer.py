@@ -48,7 +48,8 @@ class PPLInferencer(BaseInferencer):
                   prompt_template: Optional[PromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None,
-                  pseudo_gt: Optional[str] = None) -> List:
+                  pseudo_gt: Optional[str] = None,
+                  shuffle: Optional[str] = None) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
@@ -72,7 +73,7 @@ class PPLInferencer(BaseInferencer):
 
         # 4. Generate in-context examples for testing inputs
         for idx in range(len(ice_idx_list)):
-            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
+            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt, shuffle=shuffle))
         output_handler.save_ice(ice)
 
         # 5. Calculating PPL for prompts in each label's class
