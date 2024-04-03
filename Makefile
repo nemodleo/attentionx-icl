@@ -37,7 +37,7 @@ run-create_data_sst2:
 run-create_data_sst5:
 	$(AUTO_POETRY) python scripts/create_traindata_sst5.py
 
-run-create_subj:
+run-create_data_subj:
 	$(AUTO_POETRY) python scripts/create_traindata_subj.py
 
 run-trec:

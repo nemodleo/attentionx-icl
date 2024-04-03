@@ -161,10 +161,6 @@ cython_debug/
 
 poetry.lock
 
-# ckpt and data
-ckpt
-data
-
 # iclx outputs
 iclx_output/*
 
