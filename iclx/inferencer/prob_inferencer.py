@@ -47,6 +47,8 @@ class ProbInferencer(BaseInferencer):
                   prompt_template: Optional[ProbPromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None) -> List:
+        if not prompt_template and not isinstance(prompt_template, ProbPromptTemplate):
+            raise NotImplementedError("You must pass ProbPromptTemplate instance to prob inferencer")
         # 1. Preparation for output logs
         output_handler = ProbInferencerOutputHandler(self.accelerator)
 
@@ -97,10 +99,7 @@ class ProbInferencer(BaseInferencer):
             for idx in trange(0, len(prompt_list), self.batch_size, disable=not self.is_main_process):
                 sub_prompt_list = prompt_list[idx:idx + self.batch_size]
                 with torch.no_grad():
-                    if prompt_template:
-                        label_tokens = f"{prompt_template.concat_token}{prompt_template.prob_tokens[label]}"
-                    else:
-                        label_tokens = f"{ice_template.concat_token}{ice_template.prob_tokens[label]}"
+                    label_tokens = f"{prompt_template.concat_token}{prompt_template.prob_tokens[label]}"
                     sub_res = self.__get_prob(sub_prompt_list, label_tokens).tolist()
                 for res, prompt in zip(sub_res, sub_prompt_list):
                     sub_prob_list.append(res)
