@@ -33,15 +33,17 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever
     dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
-    naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
+    # naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
+    sequence, binning, gt, pseudo_gt = [], [], [], []
     x = [n for n in range(shots)]
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}_{shots}shots.txt", 'a') as f:
-        f.write("naive, sequence, binning, gt, pseudo_gt\n")
+        # f.write("naive, sequence, binning, gt, pseudo_gt\n")
+        f.write("sequence, binning, gt, pseudo_gt\n")
 
         for i in range(shots):
-            naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
-            logger.info(f"naive for shot {i} done")
+            # naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            # logger.info(f"naive for shot {i} done")
             sequence.append(test_sequence(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             logger.info(f"sequence for shot {i} done")
             binning.append(test_binning(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
@@ -51,17 +53,18 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever
             pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             logger.info(f"pseudo_gt for shot {i} done")
 
-            f.write(f"{naive[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
+            # f.write(f"{naive[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
+            f.write(f"{sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
-    logger.info(naive)
+    # logger.info(naive)
     logger.info(sequence)
     logger.info(binning)
     logger.info(gt)
     logger.info(pseudo_gt)
 
-    plt.plot(x, naive, label = 'naive')
+    # plt.plot(x, naive, label = 'naive')
     plt.plot(x, sequence, label = 'sequence')
     plt.plot(x, binning, label = 'binning')
     plt.plot(x, gt, label = 'gt')
