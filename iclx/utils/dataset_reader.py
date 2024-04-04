@@ -51,8 +51,7 @@ class DatasetReader:
         prompt = ' '.join([str(entry[ctx]) for ctx in self.input_columns])
         return prompt
 
-    def generate_input_field_corpus(self, dataset: Union[Dataset, DatasetDict], split: Optional[str] = None) -> List[
-        str]:
+    def generate_input_field_corpus(self, dataset: Union[Dataset, DatasetDict], split: Optional[str] = None) -> List[str]:
         """Generate corpus for input field.
 
         Args:
