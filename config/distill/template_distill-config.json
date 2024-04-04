@@ -2,7 +2,7 @@
 
     "batch_size": 1,
     "retriever": "<Random/Topk>",
-    "retriever_base": : "all-mpnet-base-v2",
+    "retriever_base": "all-mpnet-base-v2",
     "student": "distilgpt2",
     "shot_num": 10,
 
