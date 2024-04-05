@@ -19,7 +19,7 @@ https://github.com/nemodleo/attentionx-icl/issues/19
 pip install transformers==4.39.3
 ```
 
-3. symlinking for using cache ```ln -s /opt/.cache/huggingface /root/.cache/huggingface```
+3. symlinking for using cache ```make vessl-workspace-init```
 
 
 ## Ex
