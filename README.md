@@ -14,7 +14,9 @@ make poetry-install
 ```
 
 2. using docker
+https://github.com/nemodleo/attentionx-icl/issues/19
 ```bash
+pip install transformers==4.39.3
 ```
 
 3. symlinking for using cache ```ln -s /opt/.cache/huggingface /root/.cache/huggingface```
