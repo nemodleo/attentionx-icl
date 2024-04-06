@@ -42,7 +42,7 @@ def add_gt(gt_path, soft_label_path):
 
 def rec_softmax(x):
     e_x = np.exp(x)
-    e_x = 1/e_x
+    e_x = 1 / e_x
     return e_x / e_x.sum(axis=0)
 
 
