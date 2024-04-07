@@ -8,7 +8,9 @@ class ProbPromptTemplate(PromptTemplate):
         This class represents a template that guides the generation of prompts in the retrieval or inference process.
 
     Attributes:
-        template (:obj:`Dict` or :obj:`str`): A custom template dictionary or string. If a dictionary, the keys of the dictionary represent the values of the output_column, and the values represent the corresponding generated statement. If a string, it represents a string template.
+        prefix_template (:obj:`str`): A template for prefix string that is shared by all classes
+        prob_tokens (:obj:`Dict`): A dictionary tokens that map label to corresponding tokens
+        concat_token(:obj:`str`, optional): A string that connects the prefix and the class tokens
         column_token_map (:obj:`Dict`): A dictionary mapping column names to specific tokens. The tokens will be replaced by data in the corresponding column (one piece each time) during the retrieval or inference process.
         ice_token(:obj:`str`, optional): A string that represents the specific token mapping from in-context examples. None if you want to use this template only to generate in-context examples, otherwise it can be used to generate the final prompt that is fed into the PLM. The ice_token will be invisible when generating in-context examples.
     """

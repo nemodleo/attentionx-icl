@@ -13,7 +13,7 @@ from iclx.utils import ProbPromptTemplate
 
 class ProbInferencer(BaseInferencer):
     """Probability In-context Learning Inferencer Class
-        Perplexity-based In-context Learning Inferencer.
+        Probability-based In-context Learning Inferencer.
 
     Attributes:
         model (:obj:`AutoModelForCausalLM`, optional): Local PLM (loaded from Hugging Face), which can be initialized by name or a config class.
@@ -47,8 +47,8 @@ class ProbInferencer(BaseInferencer):
                   prompt_template: Optional[ProbPromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None) -> List:
-        if not prompt_template and not isinstance(prompt_template, ProbPromptTemplate):
-            raise NotImplementedError("You must pass ProbPromptTemplate instance to prob inferencer")
+        if not prompt_template or not isinstance(prompt_template, ProbPromptTemplate):
+            raise NotImplementedError("You must pass a ProbPromptTemplate instance as prompt_template argument")
         # 1. Preparation for output logs
         output_handler = ProbInferencerOutputHandler(self.accelerator)
 
