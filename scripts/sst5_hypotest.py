@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from iclx import DatasetReader
 from iclx import PromptTemplate
 from iclx import RandomRetriever
+from iclx import TopkRetriever
 from iclx import PPLInferencer
 from iclx import AccEvaluator
 sys.path.pop()
@@ -14,14 +15,14 @@ from datasets import DatasetDict
 from loguru import logger
 
 
-def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, batch_size=1):
+def test(shots=10, model_name='EleutherAI/gpt-neo-2.7B', retriever=TopkRetriever, seed=42, batch_size=1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:
             for line in f:
                 yield json.loads(line)
 
-    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst5/train_label_sst5.jsonl"})
+    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst5/train_sst5_bert.jsonl"})
     val_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst5/dev.jsonl"})
     test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": "data/sst5/test.jsonl"})
 
@@ -33,17 +34,26 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, 
     s_1_1, s_1_2, s_2_1, s_2_2, s_2_3, s_3_1, s_3_2 = [], [], [], [], [], [], []
     b_1_1, b_2_1, b_2_2, b_2_3, b_3_1, b_3_2 = [], [], [], [], [], []
     
-    x = [n for n in range(7, 10)]
+    x = [n for n in range(shots)]
 
-    for i in range(7, 10):
+    for i in range(shots):
         s_1_1.append(test_sequence_1_1(i, data, model_name, retriever, seed, batch_size)['accuracy'])
         s_1_2.append(test_sequence_1_2(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        
         s_2_1.append(test_sequence_2_1(i, data, model_name, retriever, seed, batch_size)['accuracy'])
         s_2_2.append(test_sequence_2_2(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        s_2_3.append(test_sequence_2_3(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+
+        s_3_1.append(test_sequence_3_1(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        s_3_2.append(test_sequence_3_2(i, data, model_name, retriever, seed, batch_size)['accuracy'])
 
         b_1_1.append(test_binning_1_1(i, data, model_name, retriever, seed, batch_size)['accuracy'])
         b_2_1.append(test_binning_2_1(i, data, model_name, retriever, seed, batch_size)['accuracy'])
         b_2_2.append(test_binning_2_2(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        b_2_3.append(test_binning_2_3(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+
+        b_3_1.append(test_binning_3_1(i, data, model_name, retriever, seed, batch_size)['accuracy'])
+        b_3_2.append(test_binning_3_2(i, data, model_name, retriever, seed, batch_size)['accuracy'])
 
         naive.append(test_naive(i, data, model_name, retriever, seed, batch_size)['accuracy'])
         sequence.append(test_sequence(i, data, model_name, retriever, seed, batch_size)['accuracy'])
@@ -53,12 +63,21 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, 
 
     logger.info(s_1_1)
     logger.info(s_1_2)
+    
     logger.info(s_2_1)
     logger.info(s_2_2)
+    logger.info(s_2_3)
+
+    logger.info(s_3_1)
+    logger.info(s_3_2)
 
     logger.info(b_1_1)
     logger.info(b_2_1)
     logger.info(b_2_2)
+    logger.info(b_2_3)
+
+    logger.info(b_3_1)
+    logger.info(b_3_2)
 
     logger.info(naive)
     logger.info(sequence)
@@ -69,12 +88,21 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, seed=42, 
 
     plt.plot(x, s_1_1, label='s1.1')
     plt.plot(x, s_1_2, label='s1.2')
+    
     plt.plot(x, s_2_1, label='s2.1')
     plt.plot(x, s_2_2, label='s2.2')
+    plt.plot(x, s_2_3, label='s2.3')
+
+    plt.plot(x, s_3_1, label='s3.1')
+    plt.plot(x, s_3_2, label='s3.2')
 
     plt.plot(x, b_1_1, label='b1.1')
     plt.plot(x, b_2_1, label='b2.1')
     plt.plot(x, b_2_2, label='b2.2')
+    plt.plot(x, b_2_3, label='b2.3')
+
+    plt.plot(x, b_3_1, label='b3.1')
+    plt.plot(x, b_3_2, label='b3.2')
 
     plt.plot(x, naive, label='naive')
     plt.plot(x, sequence, label='sequence')
@@ -841,7 +869,7 @@ def test_binning_3_1(ice_num, data, model_name, retriever, seed, batch_size):
 
     return score
 
-def test_binning_3_1(ice_num, data, model_name, retriever, seed, batch_size):
+def test_binning_3_2(ice_num, data, model_name, retriever, seed, batch_size):
 
     # ICL exemplar template
     ice_dict = "</E>Review: </text>\nSentiment: </Label1> </Exp1>, </Label2> </Exp2>, </Label3> </Exp3>, </Label4> </Exp4>, </Label5> </Exp5>"
