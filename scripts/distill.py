@@ -45,12 +45,19 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever
             # naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             # logger.info(f"naive for shot {i} done")
             sequence.append(test_sequence(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
             logger.info(f"sequence for shot {i} done")
+            
             binning.append(test_binning(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
             logger.info(f"binning for shot {i} done")
+            
             gt.append(test_GT(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
             logger.info(f"gt for shot {i} done")
+            
             pseudo_gt.append(test_pseudo_GT(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
             logger.info(f"pseudo_gt for shot {i} done")
 
             # f.write(f"{naive[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
