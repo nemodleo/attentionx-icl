@@ -31,7 +31,7 @@ class TopkRetriever(BaseRetriever):
         index_ds (:obj:`Dataset`): The index dataset. Used to select data for in-context examples.
         test_ds (:obj:`Dataset`): The test dataset. Used to generate prompts for each data.
         accelerator (:obj:`Accelerator`, optional): An instance of the :obj:`Accelerator` class, used for multiprocessing.
-        batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`.
+        batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`. 
         model (:obj:`SentenceTransformer`): An instance of :obj:`SentenceTransformer` class, used to calculate embeddings.
         tokenizer (:obj:`AutoTokenizer`): Tokenizer for :obj:`model`.
         index (:obj:`IndexIDMap`): Index generated with FAISS.

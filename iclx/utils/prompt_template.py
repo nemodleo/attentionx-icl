@@ -48,7 +48,7 @@ class PromptTemplate:
             tp = tp.replace(self.ice_token, '')
 
         if use_ordering:
-            label_dict = {v: entry[k] for k, v in self.label_dict.items()}
+            label_dict = {v : entry[k] for k , v in self.label_dict.items()}
             sorted_dict = {k: v for k, v in sorted(label_dict.items(), key=lambda item: item[1], reverse=True)}
             labels = {'Label'+str(i+1): list(sorted_dict.keys())[i] for i in range(len(sorted_dict.keys()))}
             probs = list(sorted_dict.values())
