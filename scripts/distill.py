@@ -15,8 +15,8 @@ from loguru import logger
 from datetime import datetime
 import argparse
 
-retriever_dict = {"Topk": TopkRetriever,
-                "Random": RandomRetriever}
+retriever_dict = {"topk": TopkRetriever,
+                "random": RandomRetriever}
 
 
 def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever_base='all-mpnet-base-v2', batch_size = 1):
