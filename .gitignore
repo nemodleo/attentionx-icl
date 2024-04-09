@@ -163,6 +163,6 @@ poetry.lock
 
 # iclx outputs
 iclx_output/*
-
+output/*
 #.DS_Store
 .DS_Store
