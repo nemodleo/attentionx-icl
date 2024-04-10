@@ -9,14 +9,14 @@ import pytorch_lightning as pl
 from transformers import AutoTokenizer
 
 
-class SST5DataModule(pl.LightningDataModule):
+class YELPDataModule(pl.LightningDataModule):
     def __init__(self, model_name_or_path: str, batch_size: int):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         self.batch_size = batch_size
 
     def setup(self, stage=None):
-        dataset = load_dataset("SetFit/sst5")
+        dataset = load_dataset("yelp_review_full")
         self.train_dataset = self._tokenize(dataset['train'])
         self.val_dataset = self._tokenize(dataset['validation'])
         self.test_dataset = self._tokenize(dataset['test'])

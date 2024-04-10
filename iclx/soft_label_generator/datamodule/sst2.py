@@ -24,7 +24,7 @@ class SST2DataModule(pl.LightningDataModule):
     def _tokenize(self, dataset):
         tokenized_dataset = dataset.map(
             lambda examples: self.tokenizer(
-                examples['sentence'],
+                examples['text'],
                 padding=True,
                 truncation=True,
                 max_length=512,
