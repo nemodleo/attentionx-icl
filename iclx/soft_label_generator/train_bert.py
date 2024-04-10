@@ -51,7 +51,7 @@ def train(
     batch_size: int = 32,
     lr: float = 2e-5,
 ):
-    if dataset != "sst2":
+    if dataset == "sst2":
         data_module = SST2DataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
