@@ -15,7 +15,7 @@ from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
 
 
 def infer(
-    checkpoint_path: str,
+    checkpoint_path: str = "/home/alan-k/workspace/fork/attentionx-icl/lightning_logs/version_9/checkpoints/epoch=03-val_loss=0.20.ckpt",
     model_name_or_path: str = "bert-base-uncased",
     dataset_name: str = "sst2",
     dataset_split: str = "train",
@@ -68,6 +68,7 @@ def infer(
 
     # Load checkpoint
     checkpoint = torch.load(checkpoint_path)
+    checkpoint['state_dict'] = {k.replace('model.', ''): v for k, v in checkpoint['state_dict'].items() if 'model.' in k}
     model.load_state_dict(checkpoint['state_dict'])
 
     # Start inference
