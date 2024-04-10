@@ -42,7 +42,8 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever
         # f.write("naive, sequence, binning, gt, pseudo_gt\n")
         f.write("sequence, binning, gt, pseudo_gt\n")
 
-        for i in range(shots):
+        # number of shots to run
+        for i in [1,4,8,16,32]:
             # naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             # logger.info(f"naive for shot {i} done")
             sequence.append(test_sequence(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
