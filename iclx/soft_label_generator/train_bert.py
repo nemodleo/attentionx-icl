@@ -5,7 +5,10 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 from transformers import AutoModelForSequenceClassification, AdamW
 
-from scripts.bert.datamodule.sst2_datamodule import SST2DataModule
+from iclx.soft_label_generator.datamodule.sst2 import SST2DataModule
+from iclx.soft_label_generator.datamodule.sst5 import SST5DataModule
+from iclx.soft_label_generator.datamodule.trec import TRECDataModule
+from iclx.soft_label_generator.datamodule.ag_news import AGNewsDataModule
 
 
 class BERTTrainingModule(pl.LightningModule):
@@ -42,16 +45,34 @@ class BERTTrainingModule(pl.LightningModule):
 
 def train(
     model_name_or_path: str = "bert-base-uncased",
-    max_epochs: int = 10,
+    dataset: str = "sst2",
+    max_epochs: int = 100,
     n_gpus: int = 8,
     batch_size: int = 32,
     lr: float = 2e-5,
 ):
-    # Load data
-    data_module = SST2DataModule(
-        model_name_or_path=model_name_or_path,
-        batch_size=batch_size,
-    )
+    if dataset != "sst2":
+        data_module = SST2DataModule(
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+        )
+    elif dataset == "sst5":
+        data_module = SST5DataModule(
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+        )
+    elif dataset == "trec":
+        data_module = TRECDataModule(
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+        )
+    elif dataset == "ag_news":
+        data_module = AGNewsDataModule(
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+        )
+    else:
+        raise ValueError(f"Unknown dataset: {dataset}")
 
     # Load model
     model = BERTTrainingModule(
@@ -70,8 +91,9 @@ def train(
 
     trainer = pl.Trainer(
         max_epochs=max_epochs,
-        gpus=n_gpus,
         callbacks=[checkpoint_callback],
+        devices=n_gpus,
+        accelerator="cuda",
     )
 
     trainer.fit(model, data_module)

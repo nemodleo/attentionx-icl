@@ -10,6 +10,30 @@ poetry-install:
 poetry-export:
 	poetry export -f requirements.txt --without-hashes --output requirements.txt
 
+train-bert-sst2:
+	$(AUTO_POETRY) python scripts/train_bert_sst2.py
+
+infer-bert-sst2:
+	$(AUTO_POETRY) python scripts/infer_bert_sst2.py
+
+train-bert-sst5:
+	$(AUTO_POETRY) python scripts/train_bert_sst5.py
+
+infer-bert-sst5:
+	$(AUTO_POETRY) python scripts/infer_bert_sst5.py
+
+train-bert-ag-news:
+	$(AUTO_POETRY) python scripts/train_bert_ag_news.py
+
+infer-bert-ag-news:
+	$(AUTO_POETRY) python scripts/infer_bert_ag_news.py
+
+train-bert-trec:
+	$(AUTO_POETRY) python scripts/train_bert_trec.py
+
+infer-bert-trec:
+	$(AUTO_POETRY) python scripts/infer_bert_trec.py
+
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py
 
@@ -39,12 +63,6 @@ run-create_subj:
 
 run-trec:
 	$(AUTO_POETRY) python scripts/trec.py
-
-train-bert-sst2:
-	$(AUTO_POETRY) python scripts/bert/train_sst2.py
-
-infer-bert-sst2:
-	$(AUTO_POETRY) python scripts/bert/infer_sst2.py
 
 vessl-workspace-init:
 	mkdir /root/.cache
