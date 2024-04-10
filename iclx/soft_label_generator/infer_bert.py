@@ -15,6 +15,7 @@ from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
 
 
 def infer(
+    checkpoint_path: str,
     model_name_or_path: str = "bert-base-uncased",
     dataset_name: str = "sst2",
     dataset_split: str = "train",
@@ -64,6 +65,10 @@ def infer(
     # Load model
     model = AutoModelForSequenceClassification.from_pretrained(model_name_or_path)
     model.eval()
+
+    # Load checkpoint
+    checkpoint = torch.load(checkpoint_path)
+    model.load_state_dict(checkpoint['state_dict'])
 
     # Start inference
     data = {
