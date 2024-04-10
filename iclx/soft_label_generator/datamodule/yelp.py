@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from transformers import AutoTokenizer
 
 
-class YELPDataModule(pl.LightningDataModule):
+class YelpDataModule(pl.LightningDataModule):
     def __init__(self, model_name_or_path: str, batch_size: int):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)

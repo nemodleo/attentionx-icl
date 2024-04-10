@@ -9,6 +9,7 @@ from iclx.soft_label_generator.datamodule.sst2 import SST2DataModule
 from iclx.soft_label_generator.datamodule.sst5 import SST5DataModule
 from iclx.soft_label_generator.datamodule.trec import TRECDataModule
 from iclx.soft_label_generator.datamodule.ag_news import AGNewsDataModule
+from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
 
 
 class BERTTrainingModule(pl.LightningModule):
@@ -68,6 +69,11 @@ def train(
         )
     elif dataset == "ag_news":
         data_module = AGNewsDataModule(
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+        )
+    elif dataset == "yelp":
+        data_module = YelpDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
         )
