@@ -14,6 +14,7 @@ from datasets import DatasetDict
 from loguru import logger
 from datetime import datetime
 import argparse
+import torch
 
 retriever_dict = {"topk": TopkRetriever,
                 "random": RandomRetriever}
