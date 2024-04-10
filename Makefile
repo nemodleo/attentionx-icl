@@ -66,8 +66,8 @@ vessl-run-trec:
 	vessl run create -f vessl_exp/trec.yaml
 
 check-quality:
-	$(AUTO_POETRY) flake8 iclx
-	$(AUTO_POETRY) mypy iclx
+	$(AUTO_POETRY) flake8 --ignore=E501 iclx data_utils scripts
+	$(AUTO_POETRY) mypy iclx data_utils scripts
 
 docker-build:
 	# mv ~/.cache/huggingface/ huggingface/
