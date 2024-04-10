@@ -18,7 +18,7 @@ class AGNewsDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         dataset = load_dataset("ag_news")
         self.train_dataset = self._tokenize(dataset['train'])
-        self.val_dataset = self._tokenize(dataset['validation'])
+        self.val_dataset = self._tokenize(dataset['test'])
         self.test_dataset = self._tokenize(dataset['test'])
 
     def _tokenize(self, dataset):
