@@ -74,4 +74,4 @@ class SST5DataModule(pl.LightningDataModule):
         )
 
     def num_labels(self):
-        return 2
+        return 5

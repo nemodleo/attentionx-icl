@@ -18,7 +18,7 @@ class TRECDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         dataset = load_dataset("trec")
         self.train_dataset = self._tokenize(dataset['train'])
-        self.val_dataset = self._tokenize(dataset['validation'])
+        self.val_dataset = self._tokenize(dataset['test'])
         self.test_dataset = self._tokenize(dataset['test'])
 
     def _tokenize(self, dataset):
@@ -44,7 +44,7 @@ class TRECDataModule(pl.LightningDataModule):
             batch_first=True,
             padding_value=0,
         )
-        labels = torch.tensor([x['label'] for x in batch])
+        labels = torch.tensor([x['coarse_label'] for x in batch])
         return {
             'input_ids': input_ids,
             'attention_mask': attention_mask,
@@ -74,4 +74,4 @@ class TRECDataModule(pl.LightningDataModule):
         )
 
     def num_labels(self):
-        return 2
+        return 6

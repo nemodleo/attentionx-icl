@@ -74,4 +74,4 @@ class AGNewsDataModule(pl.LightningDataModule):
         )
 
     def num_labels(self):
-        return 2
+        return 4

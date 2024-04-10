@@ -74,4 +74,4 @@ class YelpDataModule(pl.LightningDataModule):
         )
 
     def num_labels(self):
-        return 2
+        return 5
