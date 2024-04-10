@@ -20,7 +20,7 @@ class BaseInferencer:
         Base class of In-context Learning Inferencer, with no inference method.
 
     Attributes:
-        model (:obj:`AutoModelForCausalLM`, optional): Local PLM (loaded from Hugging Face), which can be initialized by name or a config class. 
+        model (:obj:`AutoModelForCausalLM`, optional): Local PLM (loaded from Hugging Face), which can be initialized by name or a config class.
         tokenizer (:obj:`AutoTokenizer` or :obj:`GPT2Tokenizer`, optional): Tokenizer for :obj:`model`.
         max_model_token_num (:obj:`int`, optional): Maximum number of tokenized words allowed by the LM.
         batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`.
