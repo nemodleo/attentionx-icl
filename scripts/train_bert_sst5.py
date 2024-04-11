@@ -9,7 +9,6 @@ if __name__ == "__main__":
     train(
         dataset="sst5",
         max_epochs=100,
-        n_gpus=8,
         batch_size=32,
         lr=2e-5,
     )

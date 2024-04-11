@@ -8,7 +8,6 @@ from iclx.soft_label_generator.infer_bert import infer
 if __name__ == "__main__":
     infer(
         dataset_name="trec",
-        dataset_split="train",
         batch_size=512,
-        output_path="result_trec.csv"
+        output_path="train_trec.jsonl"
     )

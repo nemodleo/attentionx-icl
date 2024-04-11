@@ -1,5 +1,9 @@
+import json
+from typing import List
+from typing import Dict
+from typing import Any
+
 import fire
-import pandas as pd
 from tqdm import tqdm
 
 import torch
@@ -14,44 +18,58 @@ from iclx.soft_label_generator.datamodule.ag_news import AGNewsDataModule
 from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
 
 
+def save_to_jsonl(data: List[Dict[str, Any]], output_path: str):
+    with open(output_path, 'w') as f:
+        for d in data:
+            f.write(json.dumps(d) + '\n')   
+
+
 def infer(
-    checkpoint_path: str = "/home/alan-k/workspace/fork/attentionx-icl/lightning_logs/version_9/checkpoints/epoch=03-val_loss=0.20.ckpt",
+    checkpoint_path: str,
     model_name_or_path: str = "bert-base-uncased",
     dataset_name: str = "sst2",
     dataset_split: str = "train",
     batch_size: int = 512,
-    output_path: str = "result.csv"
+    max_token_len: int = 512,
+    output_path: str = "result.jsonl"
 ):
     # Load data
     if dataset_name == "sst2":
         data_module = SST2DataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset_name == "sst5":
         data_module = SST5DataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset_name == "trec":
         data_module = TRECDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset_name == "ag_news":
         data_module = AGNewsDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset_name == "yelp":
         data_module = YelpDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     else:
         raise ValueError(f"Invalid dataset name: {dataset_name}")
     
     data_module.setup()
+
+    num_labels = data_module.num_labels
 
     if dataset_split == "train":
         dataloader = data_module.train_dataloader()
@@ -72,15 +90,10 @@ def infer(
     model.load_state_dict(checkpoint['state_dict'])
 
     # Start inference
-    data = {
-        "index": [],
-        "sentence": [],
-        "label": [],
-        "positive_prob": [],
-        "negative_prob": []
-    }
+    data = []
 
     for batch in tqdm(dataloader):
+        texts = batch['text']
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
         labels = batch['labels']
@@ -88,19 +101,21 @@ def infer(
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)
             probs = F.softmax(outputs.logits, dim=-1)
-            positive_prob = probs[:, 1]
-            negative_prob = probs[:, 0]
+            probs = probs.cpu().numpy()
+            labels = labels.cpu().numpy()
+            label_texts = [data_module.label_texts()[label] for label in labels]
+            data.extend([
+                {
+                    "text": text,
+                    "label": label,
+                    "label_text": label_text,
+                    **{str(i): prob for i, prob in enumerate(probs_)}
+                }
+                for text, label, label_text, probs_ in zip(texts, labels, label_texts, probs)
+            ])
 
-        idx = len(data["index"])
-        label = "positive" if labels[0].item() else "negative"
-
-        data["index"].append(idx)
-        data["label"].append(label)
-        data["positive_prob"].append(positive_prob.tolist())
-        data["negative_prob"].append(negative_prob.tolist())
-
-    pd.DataFrame(data).to_csv(output_path, index=False)
-
+    save_to_jsonl(data, output_path)
+        
 
 if __name__ == "__main__":
     fire.Fire(infer)

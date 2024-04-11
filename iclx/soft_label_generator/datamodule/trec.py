@@ -1,39 +1,20 @@
 from datasets import load_dataset
 
 import torch
-from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 
-import pytorch_lightning as pl
-
-from transformers import AutoTokenizer
+from iclx.soft_label_generator.datamodule.base import BaseDataModule
 
 
-class TRECDataModule(pl.LightningDataModule):
-    def __init__(self, model_name_or_path: str, batch_size: int):
-        super().__init__()
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-        self.batch_size = batch_size
-
+class TRECDataModule(BaseDataModule):
     def setup(self, stage=None):
         dataset = load_dataset("trec")
         self.train_dataset = self._tokenize(dataset['train'])
         self.val_dataset = self._tokenize(dataset['test'])
         self.test_dataset = self._tokenize(dataset['test'])
 
-    def _tokenize(self, dataset):
-        tokenized_dataset = dataset.map(
-            lambda examples: self.tokenizer(
-                examples['text'],
-                padding=True,
-                truncation=True,
-                max_length=512,
-            ),
-            batched=True,
-        )
-        return tokenized_dataset
-    
     def _collate_fn(self, batch):
+        text = [x['text'] for x in batch]
         input_ids = pad_sequence(
             [torch.tensor(x['input_ids']) for x in batch],
             batch_first=True,
@@ -46,32 +27,10 @@ class TRECDataModule(pl.LightningDataModule):
         )
         labels = torch.tensor([x['coarse_label'] for x in batch])
         return {
+            'text': text,
             'input_ids': input_ids,
             'attention_mask': attention_mask,
             'labels': labels,
         }
-
-    def train_dataloader(self):
-        return DataLoader(
-            self.train_dataset,
-            batch_size=self.batch_size,
-            shuffle=True,
-            collate_fn=self._collate_fn,
-        )
-
-    def val_dataloader(self):
-        return DataLoader(
-            self.val_dataset,
-            batch_size=self.batch_size,
-            collate_fn=self._collate_fn,
-        )
-    
-    def test_dataloader(self):
-        return DataLoader(
-            self.test_dataset,
-            batch_size=self.batch_size,
-            collate_fn=self._collate_fn,
-        )
-
-    def num_labels(self):
-        return 6
+    def label_texts(self):
+        return ["DESC", "ENTY", "ABBR", "HUM", "NUM", "LOC"]
