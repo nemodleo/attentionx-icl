@@ -1,3 +1,4 @@
+import os
 import fire
 
 import pytorch_lightning as pl
@@ -51,31 +52,37 @@ def train(
     n_gpus: int = 8,
     batch_size: int = 32,
     lr: float = 2e-5,
+    max_token_len: int = 512,
 ):
     if dataset == "sst2":
         data_module = SST2DataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset == "sst5":
         data_module = SST5DataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset == "trec":
         data_module = TRECDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset == "ag_news":
         data_module = AGNewsDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     elif dataset == "yelp":
         data_module = YelpDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
+            max_token_len=max_token_len,
         )
     else:
         raise ValueError(f"Unknown dataset: {dataset}")
@@ -87,14 +94,19 @@ def train(
         lr=lr,
     )
 
-    # Start training
+    # Set checkpoint callback
+    checkpoint_dir = f"checkpoints/{dataset}/{model_name_or_path}__lr_{lr}__bs_{batch_size}__n_gpus_{n_gpus}"
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
         filename="{epoch:02d}-{val_loss:.2f}",
         save_top_k=1,
         mode="min",
+        dirpath=checkpoint_dir,
     )
 
+    # Start training
     trainer = pl.Trainer(
         max_epochs=max_epochs,
         callbacks=[checkpoint_callback],

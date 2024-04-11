@@ -1,3 +1,4 @@
+import os
 import json
 from typing import List
 from typing import Dict
@@ -31,7 +32,7 @@ def infer(
     dataset_split: str = "train",
     batch_size: int = 512,
     max_token_len: int = 512,
-    output_path: str = "result.jsonl"
+    file_name: str = "result.jsonl"
 ):
     # Load data
     if dataset_name == "sst2":
@@ -69,8 +70,6 @@ def infer(
     
     data_module.setup()
 
-    num_labels = data_module.num_labels
-
     if dataset_split == "train":
         dataloader = data_module.train_dataloader()
     elif dataset_split == "val":
@@ -81,7 +80,11 @@ def infer(
         raise ValueError(f"Invalid dataset split: {dataset_split}")
 
     # Load model
-    model = AutoModelForSequenceClassification.from_pretrained(model_name_or_path)
+    num_labels = data_module.num_labels()
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name_or_path,
+        num_labels=num_labels,
+    )
     model.eval()
 
     # Load checkpoint
@@ -101,8 +104,8 @@ def infer(
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)
             probs = F.softmax(outputs.logits, dim=-1)
-            probs = probs.cpu().numpy()
-            labels = labels.cpu().numpy()
+            probs = probs.cpu().numpy().tolist()
+            labels = labels.cpu().numpy().tolist()
             label_texts = [data_module.label_texts()[label] for label in labels]
             data.extend([
                 {
@@ -114,6 +117,7 @@ def infer(
                 for text, label, label_text, probs_ in zip(texts, labels, label_texts, probs)
             ])
 
+    output_path = f"./data/{dataset_name}/{file_name}"
     save_to_jsonl(data, output_path)
         
 

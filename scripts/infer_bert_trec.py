@@ -7,7 +7,8 @@ from iclx.soft_label_generator.infer_bert import infer
 
 if __name__ == "__main__":
     infer(
+        checkpoint_path="",  # Add the path to the checkpoint
         dataset_name="trec",
         batch_size=512,
-        output_path="train_trec.jsonl"
+        file_name="train_trec.jsonl"
     )

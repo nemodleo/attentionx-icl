@@ -83,4 +83,4 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         raise NotImplementedError
 
     def num_labels(self):
-        raise len(self.label_texts())
+        return len(self.label_texts())
