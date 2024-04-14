@@ -4,7 +4,7 @@
     "retriever": "<random/topk>",
     "retriever_base": "all-mpnet-base-v2",
     "student": "distilgpt2",
-    "shot_num": 10,
+    "shots": [1, 4, 8, 16, 32],
 
     "train_path":"",
     "val_path": null,

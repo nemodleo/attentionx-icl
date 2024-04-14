@@ -20,7 +20,7 @@ retriever_dict = {"topk": TopkRetriever,
                 "random": RandomRetriever}
 
 
-def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever_base='all-mpnet-base-v2', batch_size = 1):
+def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRetriever, retriever_base='all-mpnet-base-v2', batch_size = 1):
 
     def gen(file_path):
         with open(file_path, 'r') as f:
@@ -36,14 +36,13 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever
 
     # naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
     sequence, binning, gt, pseudo_gt = [], [], [], []
-    x = [n for n in range(shots)]
 
-    with open(f"{FOLDER_NAME}/acc_{EXP_NAME}_{shots}shots.txt", 'a') as f:
+    with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         # f.write("naive, sequence, binning, gt, pseudo_gt\n")
         f.write("sequence, binning, gt, pseudo_gt\n")
 
         # number of shots to run
-        for i in [1,4,8,16,32]:
+        for i in shots:
             # naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             # logger.info(f"naive for shot {i} done")
             sequence.append(test_sequence(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
@@ -74,13 +73,13 @@ def test(shots=10, model_name='distilgpt2', retriever=RandomRetriever, retriever
     logger.info(pseudo_gt)
 
     # plt.plot(x, naive, label = 'naive')
-    plt.plot(x, sequence, label = 'sequence')
-    plt.plot(x, binning, label = 'binning')
-    plt.plot(x, gt, label = 'gt')
-    plt.plot(x, pseudo_gt, label = 'pseudo_gt')
+    plt.plot(shots, sequence, label = 'sequence')
+    plt.plot(shots, binning, label = 'binning')
+    plt.plot(shots, gt, label = 'gt')
+    plt.plot(shots, pseudo_gt, label = 'pseudo_gt')
 
     plt.legend()
-    plt.savefig(f"{FOLDER_NAME}/plot_{EXP_NAME}_{shots}shots.png")
+    plt.savefig(f"{FOLDER_NAME}/plot_{EXP_NAME}.png")
 
     logger.info(f"Finished running and saving artifacts for experiment {EXP_NAME}")
 
@@ -227,7 +226,7 @@ if __name__ == '__main__':
     RETRIEVER = retriever_dict[setup['retriever']]
     RETRIEVER_BASE = setup['retriever_base']
     STUDENT = setup['student']
-    SHOT_NUM = setup['shot_num']
+    SHOTS = setup['shots']
 
     
     TRAIN_PATH = setup['train_path']
@@ -249,8 +248,8 @@ if __name__ == '__main__':
     os.makedirs(FOLDER_NAME, exist_ok=True)
 
     logger.info(f"Experiment: {EXP_NAME}")
-    logger.info(f"Starting distillation of {SHOT_NUM} shots using {STUDENT} student with {setup['retriever']} retriever.")
+    logger.info(f"Starting distillation of {SHOTS} shots using {STUDENT} student with {setup['retriever']} retriever.")
     logger.info(f"Using training data from {TRAIN_PATH}")
     logger.info(f"output will be saved to {FOLDER_NAME}")
     
-    test(shots=SHOT_NUM, model_name = STUDENT, retriever=RETRIEVER, retriever_base=RETRIEVER_BASE, batch_size=BATCH_SIZE)
+    test(shots=SHOTS, model_name = STUDENT, retriever=RETRIEVER, retriever_base=RETRIEVER_BASE, batch_size=BATCH_SIZE)
