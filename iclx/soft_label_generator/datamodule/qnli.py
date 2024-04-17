@@ -11,8 +11,8 @@ class QNLIDataModule(BaseDataModule):
         dataset = load_dataset("SetFit/qnli")
 
         train_dataset = dataset['train'].map(self._merge_premise_hypothesis)
-        val_dataset = dataset['validation_matched'].map(self._merge_premise_hypothesis)
-        test_dataset = dataset['validation_matched'].map(self._merge_premise_hypothesis)
+        val_dataset = dataset['validation'].map(self._merge_premise_hypothesis)
+        test_dataset = dataset['test'].map(self._merge_premise_hypothesis)
 
         self.train_dataset = self._tokenize(train_dataset)
         self.val_dataset = self._tokenize(val_dataset)
