@@ -26,10 +26,12 @@ class ParentInferencer(PPLInferencer):
                  output_json_filepath: Optional[str] = "./iclx_output",
                  output_json_filename: Optional[str] = "predictions",
                  labels: Optional[List] = None,
+                 task_description: str = None,
                  **kwargs
                  ) -> None:
         super().__init__(model_name, tokenizer_name, max_model_token_num, batch_size, accelerator,
                          output_json_filepath, output_json_filename, **kwargs)
+        self.task_description = task_description
         self.labels = labels
 
     def inference(self,
@@ -86,6 +88,7 @@ class ParentInferencer(PPLInferencer):
                         ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template)
                         prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template,
                                                                  prompt_template=prompt_template)
+                        prompt = self.task_description + retriever.ice_separator + prompt
                         prompt_token_num = self.get_input_token_num(prompt)
 
                 if normalizing_str is not None:

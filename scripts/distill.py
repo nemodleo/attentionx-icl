@@ -101,7 +101,10 @@ def test_naive(ice_num, data, model_name, retriever, retriever_base, batch_size)
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num)
-    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_descrition=TASK_DESC)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -129,7 +132,11 @@ def test_sequence(ice_num, data, model_name, retriever, retriever_base, batch_si
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
-    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_descrition=TASK_DESC)
+
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -157,7 +164,10 @@ def test_binning(ice_num, data, model_name, retriever, retriever_base, batch_siz
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)  
-    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_descrition=TASK_DESC)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -181,7 +191,10 @@ def test_GT(ice_num, data, model_name, retriever, retriever_base, batch_size):
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num)
-    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_descrition=TASK_DESC)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
@@ -206,7 +219,10 @@ def test_pseudo_GT(ice_num, data, model_name, retriever, retriever_base, batch_s
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
     retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num)
-    inferencer = PPLInferencer(model_name=model_name, labels=list(LABEL_DICT.keys()), batch_size=batch_size)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_descrition=TASK_DESC)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, pseudo_gt='pseudo_gt')
@@ -232,7 +248,7 @@ if __name__ == '__main__':
     TRAIN_PATH = setup['train_path']
     VAL_PATH = setup['val_path']
     TEST_PATH = setup['test_path']
-    
+    TASK_DESC = setup['task_description']
     
     DATA_COLUMNS = setup['data_columns']
     ICE_DICT = setup['ice_dict']

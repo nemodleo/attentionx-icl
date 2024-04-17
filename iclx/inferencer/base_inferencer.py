@@ -51,7 +51,7 @@ class BaseInferencer:
         self.model.to(self.device)
         self.model.eval()
 
-        self.max_model_token_num = max_model_token_num
+        self.max_model_token_num = max_model_token_num or self.tokenizer.model_max_length
         self.batch_size = batch_size
         self.output_json_filepath = output_json_filepath
         self.output_json_filename = output_json_filename
