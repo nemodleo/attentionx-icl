@@ -10,5 +10,5 @@ if __name__ == "__main__":
         checkpoint_path="",  # Add the path to the checkpoint
         dataset_name="yelp",
         batch_size=512,
-        file_name="train_yelp.jsonl"
+        file_name="yelp-jsonl.jsonl"
     )
