@@ -31,57 +31,57 @@ def save_to_jsonl(data: List[Dict[str, Any]], output_path: str):
 def infer(
     checkpoint_path: str,
     model_name_or_path: str = "bert-base-uncased",
-    dataset_name: str = "sst2",
+    dataset: str = "sst2",
     dataset_split: str = "train",
     batch_size: int = 512,
     max_token_len: int = 512,
     file_name: str = "result.jsonl"
 ):
     # Load data
-    if dataset_name == "sst2":
+    if dataset == "sst2":
         data_module = SST2DataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
         )
-    elif dataset_name == "sst5":
+    elif dataset == "sst5":
         data_module = SST5DataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
         )
-    elif dataset_name == "trec":
+    elif dataset == "trec":
         data_module = TRECDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
         )
-    elif dataset_name == "ag_news":
+    elif dataset == "ag_news":
         data_module = AGNewsDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
         )
-    elif dataset_name == "yelp":
+    elif dataset == "yelp":
         data_module = YelpDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
         )
-    elif dataset_name == "mnli":
+    elif dataset == "mnli":
         data_module = MNLIDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
         )
-    elif dataset_name == "qnli":
+    elif dataset == "qnli":
         data_module = QNLIDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
         )
     else:
-        raise ValueError(f"Invalid dataset name: {dataset_name}")
+        raise ValueError(f"Invalid dataset name: {dataset}")
     
     data_module.setup()
 
@@ -136,7 +136,7 @@ def infer(
                 for text, label, label_text, probs_ in zip(texts, labels, label_texts, probs)
             ])
 
-    output_path = f"./data/{dataset_name}/{file_name}"
+    output_path = f"./data/{dataset}/{file_name}"
     save_to_jsonl(data, output_path)
         
 
