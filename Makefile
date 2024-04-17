@@ -34,6 +34,18 @@ train-bert-trec:
 infer-bert-trec:
 	$(AUTO_POETRY) python scripts/infer_bert_trec.py
 
+train-bert-mnli:
+	$(AUTO_POETRY) python scripts/train_bert_mnli.py
+
+infer-bert-mnli:
+	$(AUTO_POETRY) python scripts/infer_bert_mnli.py
+
+train-bert-qnli:
+	$(AUTO_POETRY) python scripts/train_bert_qnli.py
+
+infer-bert-qnli:
+	$(AUTO_POETRY) python scripts/infer_bert_qnli.py
+
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py
 

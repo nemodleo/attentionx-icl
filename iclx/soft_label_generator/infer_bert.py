@@ -17,6 +17,8 @@ from iclx.soft_label_generator.datamodule.sst5 import SST5DataModule
 from iclx.soft_label_generator.datamodule.trec import TRECDataModule
 from iclx.soft_label_generator.datamodule.ag_news import AGNewsDataModule
 from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
+from iclx.soft_label_generator.datamodule.mnli import MNLIDataModule
+from iclx.soft_label_generator.datamodule.qnli import QNLIDataModule
 
 
 def save_to_jsonl(data: List[Dict[str, Any]], output_path: str):
@@ -61,6 +63,18 @@ def infer(
         )
     elif dataset_name == "yelp":
         data_module = YelpDataModule(
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+            max_token_len=max_token_len,
+        )
+    elif dataset_name == "mnli":
+        data_module = MNLIDataModule(
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+            max_token_len=max_token_len,
+        )
+    elif dataset_name == "qnli":
+        data_module = QNLIDataModule(
             model_name_or_path=model_name_or_path,
             batch_size=batch_size,
             max_token_len=max_token_len,
