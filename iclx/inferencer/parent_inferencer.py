@@ -134,6 +134,6 @@ class ParentInferencer(PPLInferencer):
         # 6. DO NOT lowest PPL class as predictions. rather, save them all.
         ppl = list(zip(*ppl))
         for single_ppl in ppl:
-            sub_predictions.append({idx : ppl for idx, ppl in enumerate(single_ppl)})
+            sub_predictions.append({idx: ppl for idx, ppl in enumerate(single_ppl)})
 
         return sub_predictions

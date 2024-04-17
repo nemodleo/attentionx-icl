@@ -31,7 +31,7 @@ class TopkRetriever(BaseRetriever):
         index_ds (:obj:`Dataset`): The index dataset. Used to select data for in-context examples.
         test_ds (:obj:`Dataset`): The test dataset. Used to generate prompts for each data.
         accelerator (:obj:`Accelerator`, optional): An instance of the :obj:`Accelerator` class, used for multiprocessing.
-        batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`. 
+        batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`.
         model (:obj:`SentenceTransformer`): An instance of :obj:`SentenceTransformer` class, used to calculate embeddings.
         tokenizer (:obj:`AutoTokenizer`): Tokenizer for :obj:`model`.
         index (:obj:`IndexIDMap`): Index generated with FAISS.
@@ -90,7 +90,8 @@ class TopkRetriever(BaseRetriever):
     def knn_search(self, ice_num):
         res_list = self.forward(self.dataloader, process_bar=True, information="Embedding test set...")
         rtr_idx_list = [[] for _ in range(len(res_list))]
-        if ice_num == 0: return rtr_idx_list
+        if ice_num == 0:
+            return rtr_idx_list
         logger.info("Retrieving data for test set...")
         for entry in tqdm.tqdm(res_list, disable=not self.is_main_process):
             idx = entry['metadata']['id']

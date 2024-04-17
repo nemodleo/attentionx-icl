@@ -166,12 +166,20 @@ cython_debug/
 
 poetry.lock
 
-# ckpt and data
-ckpt
-data
-
 # iclx outputs
 iclx_output/*
 
+# experiment outputs
+output/*
+
+# configs
+config/*
+!config/data
+config/data/*
+!config/data/template_datagen-config.json
+
+!config/distill
+config/distill/*
+!config.distill/template_distill-config.json
 #.DS_Store
 .DS_Store
