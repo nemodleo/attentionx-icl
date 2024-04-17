@@ -40,8 +40,7 @@ class PPLInferencer(BaseInferencer):
                  **kwargs
                  ) -> None:
         super().__init__(model_name, tokenizer_name, max_model_token_num, batch_size, accelerator,
-                         output_json_filepath, output_json_filename, **kwargs)
-        self.task_description = task_description
+                         output_json_filepath, output_json_filename, task_description, **kwargs)
         self.labels = labels
 
     def inference(self,
@@ -86,13 +85,14 @@ class PPLInferencer(BaseInferencer):
             # 5.1 Generate prompts of current label and truncate
             for idx in range(len(ice_idx_list)):
                 prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template, remain_sep=None)
+                prompt = self._add_task_description(retriever.ice_separator, prompt)
                 if self.max_model_token_num is not None:
                     prompt_token_num = self.get_input_token_num(prompt)
                     while len(ice_idx_list[idx]) > 0 and prompt_token_num > self.max_model_token_num:
                         ice_idx_list[idx] = ice_idx_list[idx][:-1]
                         ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template)
                         prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template)
-                        prompt = self.task_description + retriever.ice_separator + prompt
+                        prompt = self._add_task_description(retriever.ice_separator, prompt)
                         prompt_token_num = self.get_input_token_num(prompt)
 
                 prompt_list.append(prompt)

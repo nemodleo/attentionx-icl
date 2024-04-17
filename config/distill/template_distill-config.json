@@ -9,7 +9,7 @@
     "train_path":"",
     "val_path": null,
     "test_path":"",
-    "task_description": "Task Instruction: Sentiment of the sentence:\nLabel Space: {great, good, okay, bad, terrible}",
+    "task_description": "Task Instruction: Sentiment of the sentence\nLabel Space: {great, good, okay, bad, terrible}",
 
     "data_columns": {
     "input_columns": ["text"],
