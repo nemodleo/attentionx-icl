@@ -14,6 +14,7 @@ class PromptTemplate:
     def __init__(self,
                  template: Dict,
                  column_token_map: Dict,
+                 label_dict: Optional[Dict] = None,
                  ice_token: Optional[str] = None,
                  sep_token: Optional[str] = None,
                  binning: Optional[Dict] = None,
@@ -23,6 +24,8 @@ class PromptTemplate:
         self.column_token_map = column_token_map
         self.ice_token = ice_token
         self.sep_token = sep_token
+        self.label_dict = label_dict
+        self.binning = binning
 
     def generate_ice_item(self, entry: Dict, label: Hashable, use_ordering=False) -> str:
         """Generate in-context example based on the provided :obj:`entry` data.
@@ -35,7 +38,7 @@ class PromptTemplate:
             :obj:`str`: The generated in-context example.
         """
         # Select the corresponding template
-        tp = self.template[label]
+        tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template
         # Remove sep token
         if self.sep_token is not None:
             tp.replace(self.sep_token, '')
