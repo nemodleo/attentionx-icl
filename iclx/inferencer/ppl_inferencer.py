@@ -48,7 +48,7 @@ class PPLInferencer(BaseInferencer):
                   prompt_template: Optional[PromptTemplate] = None,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None,
-                   pseudo_gt: Optional[str] = None) -> List:
+                pseudo_gt: Optional[str] = None) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
