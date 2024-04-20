@@ -99,7 +99,7 @@ class BaseRetriever:
         return generated_ice
 
     def generate_label_prompt(self, idx: int, ice: str, label, ice_template: Optional[PromptTemplate] = None,
-                              prompt_template: Optional[PromptTemplate] = None, remain_sep: Optional[bool] = False) -> str:
+                              prompt_template: Optional[PromptTemplate] = None, remain_sep: Optional[bool] = False, instructions: Optional[str] = None) -> str:
         if prompt_template is not None:
             return prompt_template.generate_label_prompt_item(self.test_ds[idx], ice, label, remain_sep) + self.prompt_eos_token
         elif ice_template is not None and ice_template.ice_token is not None:
@@ -107,4 +107,4 @@ class BaseRetriever:
         else:
             prefix_prompt = ' '.join(
                 list(map(str, [self.test_ds[idx][ctx] for ctx in self.dataset_reader.input_columns])))
-            return ice + prefix_prompt + ' ' + str(label) + self.prompt_eos_token
+            return instructions + ice + prefix_prompt + ' ' + str(label) + self.prompt_eos_token
