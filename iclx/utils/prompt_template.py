@@ -37,7 +37,6 @@ class PromptTemplate:
         Returns:
             :obj:`str`: The generated in-context example.
         """
-
         # Select the corresponding template
         tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template
         # Remove sep token
