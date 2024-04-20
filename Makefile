@@ -50,26 +50,11 @@ vessl-workspace-init:
 	mkdir /root/.cache
 	ln -s /opt/.cache/huggingface /root/.cache/huggingface
 
-vessl-run-sst2:
-	vessl run create -f vessl_exp/sst2.yaml
+run-create_train:
+	$(AUTO_POETRY) python scripts/create_train_with_pseudo.py $(SETUP_DICT)
 
-vessl-run-sst2_gpt_j_6B:
-	vessl run create -f vessl_exp/sst2_gpt_j_6B.yaml
-
-vessl-run-sst2_gpt_neo_2.7B:
-	vessl run create -f vessl_exp/sst2_gpt_neo_2.7B.yaml
-
-vessl-run-sst2_topk:
-	vessl run create -f vessl_exp/sst2_topk.yaml
-
-vessl-run-sst5:
-	vessl run create -f vessl_exp/sst5.yaml
-
-vessl-run-ag_news:
-	vessl run create -f vessl_exp/ag_news.yaml
-
-vessl-run-trec:
-	vessl run create -f vessl_exp/trec.yaml
+run-distill:
+	$(AUTO_POETRY) python scripts/distill.py $(SETUP_DICT)
 
 check-quality:
 	$(AUTO_POETRY) flake8 --ignore=E501 iclx data_utils scripts
