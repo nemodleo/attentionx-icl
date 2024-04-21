@@ -102,7 +102,7 @@ class PPLInferencer(BaseInferencer):
             for idx in trange(0, len(prompt_list), self.batch_size, disable=not self.is_main_process):
                 sub_prompt_list = prompt_list[idx:idx + self.batch_size]
                 with torch.no_grad():
-                    sub_res = self.__get_ppl(sub_prompt_list).tolist()
+                    sub_res = self._get_ppl(sub_prompt_list).tolist()
                 for res, prompt in zip(sub_res, sub_prompt_list):
                     sub_ppl_list.append(res)
                     output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
@@ -124,7 +124,7 @@ class PPLInferencer(BaseInferencer):
 
         return [sample['prediction'] for sample in output_handler.results_dict.values()]
 
-    def __get_ppl(self, input_texts: List[str], mask_length=None):
+    def _get_ppl(self, input_texts: List[str], mask_length=None):
         self.tokenizer.padding_side = "right"
         inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
