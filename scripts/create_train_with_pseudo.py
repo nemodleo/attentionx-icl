@@ -5,7 +5,6 @@ from loguru import logger
 import argparse
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import json
-import vessl
 
 from iclx import DatasetReader
 from iclx import PromptTemplate
@@ -14,13 +13,12 @@ from iclx.inferencer.parent_inferencer import ParentInferencer
 
 import numpy as np
 
+
 def rec_softmax(x):
     e_x = np.exp(x)
     e_x = 1/e_x
     return e_x / e_x.sum(axis=0)
 
-
-vessl.init()
 
 def create_data():
     
