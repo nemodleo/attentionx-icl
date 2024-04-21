@@ -11,10 +11,10 @@ poetry-export:
 	poetry export -f requirements.txt --without-hashes --output requirements.txt
 
 train-bert:
-	$(AUTO_POETRY) python scripts/train_bert.py $(DATASET)
+	$(AUTO_POETRY) python scripts/train_bert.py --dataset=$(DATASET)
 
 infer-bert:
-	$(AUTO_POETRY) python scripts/infer_bert.py $(CHECKPOINT_PATH) $(DATASET) $(BATCH_SIZE) $(FILE_NAME)
+	$(AUTO_POETRY) python scripts/infer_bert.py --checkpoint_path=$(CHECKPOINT_PATH) --dataset=$(DATASET) --batch_size=$(BATCH_SIZE) --file_name=$(FILE_NAME)
 
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py
