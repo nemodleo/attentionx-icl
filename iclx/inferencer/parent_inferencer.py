@@ -118,13 +118,13 @@ class ParentInferencer(PPLInferencer):
 
                 with torch.no_grad():
                     if normalizing_str is not None:
-                        res1 = self.__get_ppl(input_texts=sub_prompt_list, mask_length=sub_context_length_list)
-                        res2 = self.__get_ppl(input_texts=sub_normalizing_prompt_list,
+                        res1 = self._get_ppl(input_texts=sub_prompt_list, mask_length=sub_context_length_list)
+                        res2 = self._get_ppl(input_texts=sub_normalizing_prompt_list,
                                               mask_length=[normalizing_str_len for i in range(len(sub_prompt_list))]
                                               )
                         sub_res = res1 - res2
                     else:
-                        sub_res = self.__get_ppl(sub_prompt_list).tolist()
+                        sub_res = self._get_ppl(sub_prompt_list).tolist()
                 for res, prompt in zip(sub_res, sub_prompt_list):
                     sub_ppl_list.append(res)
                     output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
@@ -137,3 +137,4 @@ class ParentInferencer(PPLInferencer):
             sub_predictions.append({idx: ppl for idx, ppl in enumerate(single_ppl)})
 
         return sub_predictions
+
