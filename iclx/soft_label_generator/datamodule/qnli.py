@@ -14,9 +14,21 @@ class QNLIDataModule(BaseDataModule):
         val_dataset = dataset['validation'].map(self._merge_premise_hypothesis)
         test_dataset = dataset['test'].map(self._merge_premise_hypothesis)
 
+        if self.sampling_rate < 1.0:
+            train_dataset = train_dataset.filter(
+                lambda example, idx: idx % 10 < self.sampling_rate * 10,
+                with_indices=True,
+            )
+
         self.train_dataset = self._tokenize(train_dataset)
         self.val_dataset = self._tokenize(val_dataset)
         self.test_dataset = self._tokenize(test_dataset)
+
+        if self.sampling_rate < 1.0:
+            self.train_dataset = self.train_dataset.filter(
+                lambda example, idx: idx % 10 < self.sampling_rate * 10,
+                with_indices=True,
+            )
 
     def _merge_premise_hypothesis(self, examples):
         return {

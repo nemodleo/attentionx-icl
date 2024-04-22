@@ -10,11 +10,12 @@ from transformers import AutoTokenizer
 
 
 class BaseDataModule(pl.LightningDataModule, ABC):
-    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int):
+    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         self.batch_size = batch_size
         self.max_token_len = max_token_len
+        self.sampling_rate = sampling_rate
         self.num_workers = 0
 
     @abstractmethod
