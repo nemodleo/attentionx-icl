@@ -1,13 +1,9 @@
-# attentionx-icl
+# ICKD: In-Context Knowledge Distillation
 
-exp environments for icl
+*This repository is built upon Shark-NLP's [OpenICL]( https://github.com/Shark-NLP/OpenICL) framework*
 
-this repository is a modification of https://github.com/Shark-NLP/OpenICL
-
-[vessl-run env guide](https://www.notion.so/minchan0502/vessl-run-env-guide-620e400e19754fcdb6819773f818318c)
-
-## Env
-
+## Environment Setup
+Refer to [vessl-run env guide](https://www.notion.so/minchan0502/vessl-run-env-guide-620e400e19754fcdb6819773f818318c) for detailed explanation on how to setup environment in vessl
 1. using poetry 
 ```bash
 make poetry-install
@@ -20,31 +16,29 @@ make poetry-install
 3. symlinking for using cache ```ln -s /opt/.cache/huggingface /root/.cache/huggingface```
 
 
-## Ex
+## Preparing Dataset (Generating Soft Label)
+#### 1. Using a non-BERT teacher model
+1. Download the `json` format data into an appropriate `data` folder
+2. Create a config file under `config/data` following the [template](https://github.com/nemodleo/attentionx-icl/blob/develop/config/data/template_datagen-config.json) ([More information](https://www.notion.so/minchan0502/5795f433a8c74a728305be7937d0fb42?pvs=4) on template fields)
+3. Run below command
+   ```bash
+   make run-create_train SETUP_DICT="config/data/<config_file_name>.json"
+   ```
+4. Use `data_utils/generated_train_dist.ipynb` to get dataset statistics
 
-```
-make run-sst2
-make run-sst2_gpt_j_6B
-make run-sst2_gpt_neo_2.7B
-make run-sst2_topk
-make run-sst5
-make run-ag_news
-make run-trec
-```
+#### 2. Using BERT as a teacher model
+Currently supports: `sst2, sst5, trec, ag_news, yelp, qnli, mnli`
+```bash
+# to pretrain BERT
+make train-bert dataset="<dataset_name>"
 
-```
-make vessl-run-sst2
-make vessl-run-sst2_gpt_j_6B
-make vessl-run-sst2_gpt_neo_2.7B
-make vessl-run-sst2_topk
-make vessl-run-sst5
-make vessl-run-ag_news
-make vessl-run-trec
+# create train data using pretrained BERT
+make infer-bert checkpoint_path="<path_to_ckpt>" dataset="<dataset_name>" file_name="<output_file_name>"
 ```
 
-
-## TODO
-
-[wip] implementation iclx more feature
-
-[wip] more examples
+## Running Experiments (Knowledge Distillation to Student)
+1. Create a config file under `config/distill` following the [template](https://github.com/nemodleo/attentionx-icl/blob/develop/config/distill/template_distill-config.json) ([More information](https://www.notion.so/minchan0502/5795f433a8c74a728305be7937d0fb42?pvs=4) on template fields)
+2. Run below command
+    ```bash
+    make run-distill SETUP_DICT="config/distill/<config_file_name>.json"
+    ```
