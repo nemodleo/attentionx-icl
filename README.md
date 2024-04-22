@@ -1,6 +1,10 @@
 # ICKD: In-Context Knowledge Distillation
 
-*This repository is built upon Shark-NLP's [OpenICL]( https://github.com/Shark-NLP/OpenICL) framework*
+*built using Shark-NLP's [OpenICL]( https://github.com/Shark-NLP/OpenICL) framework*
+
+**Can we beat the ground truth using soft label during In-Context Learning?** This repository helps users to answer this question by allowing them to create soft labels on dataset of their own choice, and distill this soft label information to the student model during in-context learning.
+
+-----
 
 ## Environment Setup
 Refer to [vessl-run env guide](https://www.notion.so/minchan0502/vessl-run-env-guide-620e400e19754fcdb6819773f818318c) for detailed explanation on how to setup environment in vessl
@@ -42,3 +46,4 @@ make infer-bert checkpoint_path="<path_to_ckpt>" dataset="<dataset_name>" file_n
     ```bash
     make run-distill SETUP_DICT="config/distill/<config_file_name>.json"
     ```
+3. `.txt` file with accuracies and `.png` file of corrresponding plots will be saved as artifacts
