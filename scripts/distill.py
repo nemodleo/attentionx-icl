@@ -72,11 +72,13 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
     logger.info(gt)
     logger.info(pseudo_gt)
 
+    xticks = range(len(shots))
     # plt.plot(x, naive, label = 'naive')
-    plt.plot(shots, sequence, label = 'sequence')
-    plt.plot(shots, binning, label = 'binning')
-    plt.plot(shots, gt, label = 'gt')
-    plt.plot(shots, pseudo_gt, label = 'pseudo_gt')
+    plt.plot(xticks, sequence, label = 'sequence')
+    plt.plot(xticks, binning, label = 'binning')
+    plt.plot(xticks, gt, label = 'gt')
+    plt.plot(xticks, pseudo_gt, label = 'pseudo_gt')
+    plt.xticks(xticks, shots)
 
     plt.legend()
     plt.savefig(f"{FOLDER_NAME}/plot_{EXP_NAME}.png")
