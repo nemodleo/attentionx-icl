@@ -2,7 +2,7 @@ import os
 import fire
 
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from transformers import AutoModelForSequenceClassification, AdamW
 
@@ -13,6 +13,27 @@ from iclx.soft_label_generator.datamodule.ag_news import AGNewsDataModule
 from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
 from iclx.soft_label_generator.datamodule.mnli import MNLIDataModule
 from iclx.soft_label_generator.datamodule.qnli import QNLIDataModule
+
+
+def initialize_data_module(dataset, model_name_or_path, batch_size, max_token_len, sampling_rate):
+    data_modules = {
+        "sst2": SST2DataModule,
+        "sst5": SST5DataModule,
+        "trec": TRECDataModule,
+        "ag_news": AGNewsDataModule,
+        "yelp": YelpDataModule,
+        "mnli": MNLIDataModule,
+        "qnli": QNLIDataModule,
+    }
+    if dataset in data_modules:
+        return data_modules[dataset](
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+            max_token_len=max_token_len,
+            sampling_rate=sampling_rate,
+        )
+    else:
+        raise ValueError(f"Unknown dataset: {dataset}")
 
 
 class BERTTrainingModule(pl.LightningModule):
@@ -48,58 +69,24 @@ class BERTTrainingModule(pl.LightningModule):
 
 
 def train(
-    model_name_or_path: str = "bert-base-uncased",
     dataset: str = "sst2",
-    max_epochs: int = 100,
-    n_gpus: int = 8,
-    batch_size: int = 32,
     lr: float = 2e-5,
+    batch_size: int = 32,
+    sampling_rate: float = 1.0,
     max_token_len: int = 512,
+    n_gpus: int = 8,
+    max_epochs: int = 100,
+    model_name_or_path: str = "bert-base-uncased",
 ):
-    if dataset == "sst2":
-        data_module = SST2DataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "sst5":
-        data_module = SST5DataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "trec":
-        data_module = TRECDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "ag_news":
-        data_module = AGNewsDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "yelp":
-        data_module = YelpDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "mnli":
-        data_module = MNLIDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "qnli":
-        data_module = QNLIDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    else:
-        raise ValueError(f"Unknown dataset: {dataset}")
+    data_module = initialize_data_module(
+        dataset,
+        model_name_or_path,
+        batch_size,
+        max_token_len,
+        sampling_rate,
+    )
+
+    data_module.setup()
 
     # Load model
     model = BERTTrainingModule(
@@ -120,10 +107,17 @@ def train(
         dirpath=checkpoint_dir,
     )
 
+    early_stopping_callback = EarlyStopping(
+        monitor="val_loss",
+        patience=5,
+        verbose=True,
+        mode="min"
+    )
+
     # Start training
     trainer = pl.Trainer(
         max_epochs=max_epochs,
-        callbacks=[checkpoint_callback],
+        callbacks=[checkpoint_callback, early_stopping_callback],
         devices=n_gpus,
         accelerator="cuda",
     )
