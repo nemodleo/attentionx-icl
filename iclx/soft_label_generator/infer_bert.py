@@ -57,13 +57,14 @@ def infer(
     file_name: str = "result.jsonl",
     dataset_split: str = "train",
     model_name_or_path: str = "bert-base-uncased",
+    sampling_rate: float = 1.0,
 ):
     data_module = initialize_data_module(
         dataset,
         model_name_or_path,
         batch_size,
         max_token_len,
-        sampling_rate=0.0,
+        sampling_rate,
     )
     
     data_module.setup()

@@ -11,7 +11,7 @@ poetry-export:
 	poetry export -f requirements.txt --without-hashes --output requirements.txt
 
 train-bert:
-	$(AUTO_POETRY) python scripts/train_bert.py --dataset=$(DATASET)
+	$(AUTO_POETRY) python scripts/train_bert.py --dataset=$(DATASET) --lr=$(LR) --batch_size=$(BATCH_SIZE) --sampling_rate=$(SAMPLING_RATE) --n_gpus=$(N_GPUS)
 
 infer-bert:
 	$(AUTO_POETRY) python scripts/infer_bert.py --checkpoint_path=$(CHECKPOINT_PATH) --dataset=$(DATASET) --batch_size=$(BATCH_SIZE) --file_name=$(FILE_NAME)
