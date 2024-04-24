@@ -1,56 +1,58 @@
 from abc import ABC, abstractmethod
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 import pytorch_lightning as pl
 
 from transformers import AutoTokenizer
 
 
-class BaseDataModule(pl.LightningDataModule, ABC):
-    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float):
-        super().__init__()
+class BaseDataSet(Dataset):
+    def __init__(self, dataset, model_name_or_path, max_token_len):
+        self.super().__init__()
+        self.dataset = dataset
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+        self.max_token_len = max_token_len
+
+    def __getitem__(self, idx):
+        example = self.dataset[idx]
+        result = self.tokenizer(
+            example['text'],
+            padding="max_length",
+            truncation=True,
+            max_length=self.max_token_len,
+        )
+        return {
+            'text': result['text'],
+            'input_ids': torch.tensor(result['input_ids']),
+            'attention_mask': torch.tensor(result['attention_mask']),
+            'labels': torch.tensor(result['label'])
+        }
+
+    def __len__(self):
+        return len(self.dataset)
+
+
+
+class BaseDataModule(pl.LightningDataModule, ABC):
+    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float, num_workers: int = 16):
+        super().__init__()
         self.batch_size = batch_size
         self.max_token_len = max_token_len
         self.sampling_rate = sampling_rate
-        self.num_workers = 8
+        self.num_workers = num_workers
 
     @abstractmethod
     def setup(self, stage=None):
         raise NotImplementedError
-
-    def _tokenize(self, dataset):
-        tokenized_dataset = dataset.map(
-            lambda examples: self.tokenizer(
-                examples['text'],
-                padding="max_length",
-                truncation=True,
-                max_length=self.max_token_len,
-            ),
-            batched=True,
-        )
-        return tokenized_dataset
     
-    def _collate_fn(self, batch):
-        text = [x['text'] for x in batch]
-        input_ids = torch.stack([torch.tensor(x['input_ids']) for x in batch])
-        attention_mask = torch.stack([torch.tensor(x['attention_mask']) for x in batch])
-        labels = torch.stack([torch.tensor(x['label']) for x in batch])
-        return {
-            'text': text,
-            'input_ids': input_ids,
-            'attention_mask': attention_mask,
-            'labels': labels,
-        }
 
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
-            collate_fn=self._collate_fn,
             shuffle=True,
             pin_memory=True,
         )
@@ -60,7 +62,6 @@ class BaseDataModule(pl.LightningDataModule, ABC):
             self.val_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
-            collate_fn=self._collate_fn,
         )
     
     def test_dataloader(self):
@@ -68,7 +69,6 @@ class BaseDataModule(pl.LightningDataModule, ABC):
             self.test_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
-            collate_fn=self._collate_fn,
         )
     
     @abstractmethod
