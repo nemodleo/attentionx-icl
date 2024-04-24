@@ -22,24 +22,5 @@ class TRECDataModule(BaseDataModule):
         self.val_dataset = self._tokenize(dataset['test'])
         self.test_dataset = self._tokenize(dataset['test'])
 
-    def _collate_fn(self, batch):
-        text = [x['text'] for x in batch]
-        input_ids = pad_sequence(
-            [torch.tensor(x['input_ids']) for x in batch],
-            batch_first=True,
-            padding_value=self.tokenizer.pad_token_id,
-        )
-        attention_mask = pad_sequence(
-            [torch.tensor(x['attention_mask']) for x in batch],
-            batch_first=True,
-            padding_value=0,
-        )
-        labels = torch.tensor([x['coarse_label'] for x in batch])
-        return {
-            'text': text,
-            'input_ids': input_ids,
-            'attention_mask': attention_mask,
-            'labels': labels,
-        }
     def label_texts(self):
         return ["DESC", "ENTY", "ABBR", "HUM", "NUM", "LOC"]

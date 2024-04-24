@@ -36,26 +36,6 @@ class QNLIDataModule(BaseDataModule):
             'label': examples['label'],
         }
 
-    def _collate_fn(self, batch):
-        text = [x['text'] for x in batch]
-        input_ids = pad_sequence(
-            [torch.tensor(x['input_ids']) for x in batch],
-            batch_first=True,
-            padding_value=self.tokenizer.pad_token_id,
-        )
-        attention_mask = pad_sequence(
-            [torch.tensor(x['attention_mask']) for x in batch],
-            batch_first=True,
-            padding_value=0,
-        )
-        labels = torch.tensor([x['label'] for x in batch])
-        return {
-            'text': text,
-            'input_ids': input_ids,
-            'attention_mask': attention_mask,
-            'labels': labels,
-        }
-
     def label_texts(self):
         return ["entailment", "not_entailment"]
     

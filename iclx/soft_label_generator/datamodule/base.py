@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 import torch
 from torch.utils.data import DataLoader
-from torch.nn.utils.rnn import pad_sequence
 
 import pytorch_lightning as pl
 
@@ -16,7 +15,7 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         self.batch_size = batch_size
         self.max_token_len = max_token_len
         self.sampling_rate = sampling_rate
-        self.num_workers = 0
+        self.num_workers = 8
 
     @abstractmethod
     def setup(self, stage=None):
@@ -26,7 +25,7 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         tokenized_dataset = dataset.map(
             lambda examples: self.tokenizer(
                 examples['text'],
-                padding=True,
+                padding="max_length",
                 truncation=True,
                 max_length=self.max_token_len,
             ),
@@ -36,17 +35,9 @@ class BaseDataModule(pl.LightningDataModule, ABC):
     
     def _collate_fn(self, batch):
         text = [x['text'] for x in batch]
-        input_ids = pad_sequence(
-            [torch.tensor(x['input_ids']) for x in batch],
-            batch_first=True,
-            padding_value=self.tokenizer.pad_token_id,
-        )
-        attention_mask = pad_sequence(
-            [torch.tensor(x['attention_mask']) for x in batch],
-            batch_first=True,
-            padding_value=0,
-        )
-        labels = torch.tensor([x['label'] for x in batch])
+        input_ids = torch.stack([torch.tensor(x['input_ids']) for x in batch])
+        attention_mask = torch.stack([torch.tensor(x['attention_mask']) for x in batch])
+        labels = torch.stack([torch.tensor(x['label']) for x in batch])
         return {
             'text': text,
             'input_ids': input_ids,
@@ -61,6 +52,7 @@ class BaseDataModule(pl.LightningDataModule, ABC):
             num_workers=self.num_workers,
             collate_fn=self._collate_fn,
             shuffle=True,
+            pin_memory=True,
         )
 
     def val_dataloader(self):
