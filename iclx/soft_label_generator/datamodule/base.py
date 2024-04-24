@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 
 class BaseDataSet(Dataset):
     def __init__(self, dataset, model_name_or_path, max_token_len):
-        self.super().__init__()
+        super().__init__()
         self.dataset = dataset
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         self.max_token_len = max_token_len
@@ -24,10 +24,10 @@ class BaseDataSet(Dataset):
             max_length=self.max_token_len,
         )
         return {
-            'text': result['text'],
+            'text': example['text'],
             'input_ids': torch.tensor(result['input_ids']),
             'attention_mask': torch.tensor(result['attention_mask']),
-            'labels': torch.tensor(result['label'])
+            'labels': torch.tensor(example['label'])
         }
 
     def __len__(self):
