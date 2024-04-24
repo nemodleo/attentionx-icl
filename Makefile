@@ -14,7 +14,7 @@ train-bert:
 	$(AUTO_POETRY) python scripts/train_bert.py --dataset=$(DATASET) --lr=$(LR) --batch_size=$(BATCH_SIZE) --sampling_rate=$(SAMPLING_RATE) --n_gpus=$(N_GPUS)
 
 infer-bert:
-	$(AUTO_POETRY) python scripts/infer_bert.py --checkpoint_path=$(CHECKPOINT_PATH) --dataset=$(DATASET) --batch_size=$(BATCH_SIZE) --file_name=$(FILE_NAME) --sampling_rate=$(SAMPLING_RATE)
+	$(AUTO_POETRY) python scripts/infer_bert.py --checkpoint_path=$(CHECKPOINT_PATH) --dataset=$(DATASET) --dataset_split=$(PHASE) --batch_size=$(BATCH_SIZE) --file_name=$(FILE_NAME) --sampling_rate=$(SAMPLING_RATE)
 
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py

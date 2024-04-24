@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="sst2")
     parser.add_argument("--batch_size", type=int, default=512)
     parser.add_argument("--max_token_len", type=int, default=512)
+    parser.add_argument("--dataset_split", type=str, default="train")
     parser.add_argument("--file_name", type=str, default="sst2-train.jsonl")
     parser.add_argument("--sampling_rate", type=float, default=1.0)
     args = parser.parse_args()
