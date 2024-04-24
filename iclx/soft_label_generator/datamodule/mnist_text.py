@@ -5,7 +5,7 @@ from iclx.soft_label_generator.datamodule.base import BaseDataModule
 
 class MNISTTextDataModule(BaseDataModule):
     def setup(self, stage=None):
-        dataset = load_dataset("Fraser/mnist-text-default")
+        dataset = load_dataset("nemodleo/mnist-text-small14")
         self.train_dataset = self._tokenize(dataset['train'])
         self.val_dataset = self._tokenize(dataset['test'])
         self.test_dataset = self._tokenize(dataset['test'])
