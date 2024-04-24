@@ -25,63 +25,47 @@ def save_to_jsonl(data: List[Dict[str, Any]], output_path: str):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         for d in data:
-            f.write(json.dumps(d) + '\n')   
+            f.write(json.dumps(d) + '\n')
+
+
+def initialize_data_module(dataset, model_name_or_path, batch_size, max_token_len, sampling_rate):
+    data_modules = {
+        "sst2": SST2DataModule,
+        "sst5": SST5DataModule,
+        "trec": TRECDataModule,
+        "ag_news": AGNewsDataModule,
+        "yelp": YelpDataModule,
+        "mnli": MNLIDataModule,
+        "qnli": QNLIDataModule,
+    }
+    if dataset in data_modules:
+        return data_modules[dataset](
+            model_name_or_path=model_name_or_path,
+            batch_size=batch_size,
+            max_token_len=max_token_len,
+            sampling_rate=sampling_rate,
+        )
+    else:
+        raise ValueError(f"Unknown dataset: {dataset}")
 
 
 def infer(
     checkpoint_path: str,
-    model_name_or_path: str = "bert-base-uncased",
     dataset: str = "sst2",
-    dataset_split: str = "train",
     batch_size: int = 512,
     max_token_len: int = 512,
-    file_name: str = "result.jsonl"
+    file_name: str = "result.jsonl",
+    dataset_split: str = "train",
+    model_name_or_path: str = "bert-base-uncased",
+    sampling_rate: float = 1.0,
 ):
-    # Load data
-    if dataset == "sst2":
-        data_module = SST2DataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "sst5":
-        data_module = SST5DataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "trec":
-        data_module = TRECDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "ag_news":
-        data_module = AGNewsDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "yelp":
-        data_module = YelpDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "mnli":
-        data_module = MNLIDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    elif dataset == "qnli":
-        data_module = QNLIDataModule(
-            model_name_or_path=model_name_or_path,
-            batch_size=batch_size,
-            max_token_len=max_token_len,
-        )
-    else:
-        raise ValueError(f"Invalid dataset name: {dataset}")
+    data_module = initialize_data_module(
+        dataset,
+        model_name_or_path,
+        batch_size,
+        max_token_len,
+        sampling_rate,
+    )
     
     data_module.setup()
 

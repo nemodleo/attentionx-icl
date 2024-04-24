@@ -14,6 +14,12 @@ class QNLIDataModule(BaseDataModule):
         val_dataset = dataset['validation'].map(self._merge_premise_hypothesis)
         test_dataset = dataset['test'].map(self._merge_premise_hypothesis)
 
+        if self.sampling_rate < 1.0:
+            train_dataset = train_dataset.filter(
+                lambda example, idx: idx % 10 < self.sampling_rate * 10,
+                with_indices=True,
+            )
+
         self.train_dataset = self._tokenize(train_dataset)
         self.val_dataset = self._tokenize(val_dataset)
         self.test_dataset = self._tokenize(test_dataset)
@@ -22,26 +28,6 @@ class QNLIDataModule(BaseDataModule):
         return {
             'text': examples['text1'] + ' [SEP] ' + examples['text2'],
             'label': examples['label'],
-        }
-
-    def _collate_fn(self, batch):
-        text = [x['text'] for x in batch]
-        input_ids = pad_sequence(
-            [torch.tensor(x['input_ids']) for x in batch],
-            batch_first=True,
-            padding_value=self.tokenizer.pad_token_id,
-        )
-        attention_mask = pad_sequence(
-            [torch.tensor(x['attention_mask']) for x in batch],
-            batch_first=True,
-            padding_value=0,
-        )
-        labels = torch.tensor([x['label'] for x in batch])
-        return {
-            'text': text,
-            'input_ids': input_ids,
-            'attention_mask': attention_mask,
-            'labels': labels,
         }
 
     def label_texts(self):

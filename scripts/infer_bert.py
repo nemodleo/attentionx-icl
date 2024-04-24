@@ -12,13 +12,16 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint_path", type=str, default="")
     parser.add_argument("--dataset", type=str, default="sst2")
     parser.add_argument("--batch_size", type=int, default=512)
+    parser.add_argument("--max_token_len", type=int, default=512)
     parser.add_argument("--file_name", type=str, default="sst2-train.jsonl")
+    parser.add_argument("--sampling_rate", type=float, default=1.0)
     args = parser.parse_args()
-    dataset = args.dataset
 
     infer(
         checkpoint_path=args.checkpoint_path,
         dataset=args.dataset,
         batch_size=args.batch_size,
+        max_token_len=args.max_token_len,
         file_name=args.file_name,
+        sampling_rate=args.sampling_rate
     )
