@@ -24,12 +24,6 @@ class QNLIDataModule(BaseDataModule):
         self.val_dataset = self._tokenize(val_dataset)
         self.test_dataset = self._tokenize(test_dataset)
 
-        if self.sampling_rate < 1.0:
-            self.train_dataset = self.train_dataset.filter(
-                lambda example, idx: idx % 10 < self.sampling_rate * 10,
-                with_indices=True,
-            )
-
     def _merge_premise_hypothesis(self, examples):
         return {
             'text': examples['text1'] + ' [SEP] ' + examples['text2'],

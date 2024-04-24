@@ -19,12 +19,6 @@ class SST2DataModule(BaseDataModule):
         self.val_dataset = self._tokenize(dataset['validation'])
         self.test_dataset = self._tokenize(dataset['test'])
 
-        if self.sampling_rate < 1.0:
-            self.train_dataset = self.train_dataset.filter(
-                lambda example, idx: idx % 10 < self.sampling_rate * 10,
-                with_indices=True,
-            )
-
     def label_texts(self):
         return ["positive", "negative"]
     
