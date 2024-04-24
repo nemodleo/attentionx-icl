@@ -38,7 +38,7 @@ def initialize_data_module(dataset, model_name_or_path, batch_size, max_token_le
         "yelp": YelpDataModule,
         "mnli": MNLIDataModule,
         "qnli": QNLIDataModule,
-        ",mnist-text": MNISTTextDataModule,
+        "mnist-text": MNISTTextDataModule,
     }
     if dataset in data_modules:
         return data_modules[dataset](
