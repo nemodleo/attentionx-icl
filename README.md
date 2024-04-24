@@ -7,17 +7,9 @@
 -----
 
 ## Environment Setup
-Refer to [vessl-run env guide](https://www.notion.so/minchan0502/vessl-run-env-guide-620e400e19754fcdb6819773f818318c) for detailed explanation on how to setup environment in vessl
-1. using poetry 
 ```bash
 make poetry-install
 ```
-
-2. using docker
-```bash
-```
-
-3. symlinking for using cache ```ln -s /opt/.cache/huggingface /root/.cache/huggingface```
 
 
 ## Preparing Dataset (Generating Soft Label)
