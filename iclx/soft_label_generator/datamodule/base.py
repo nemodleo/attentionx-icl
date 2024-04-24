@@ -38,6 +38,7 @@ class BaseDataSet(Dataset):
 class BaseDataModule(pl.LightningDataModule, ABC):
     def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float, num_workers: int = 16):
         super().__init__()
+        self.model_name_or_path = model_name_or_path
         self.batch_size = batch_size
         self.max_token_len = max_token_len
         self.sampling_rate = sampling_rate

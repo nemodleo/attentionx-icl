@@ -3,7 +3,7 @@ from torch.nn.utils.rnn import pad_sequence
 
 from datasets import load_dataset
 
-from iclx.soft_label_generator.datamodule.base import BaseDataModule
+from iclx.soft_label_generator.datamodule.base import BaseDataModule, BaseDataSet
 
 
 class QNLIDataModule(BaseDataModule):
@@ -20,9 +20,9 @@ class QNLIDataModule(BaseDataModule):
                 with_indices=True,
             )
 
-        self.train_dataset = self._tokenize(train_dataset)
-        self.val_dataset = self._tokenize(val_dataset)
-        self.test_dataset = self._tokenize(test_dataset)
+        self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
+        self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
+        self.test_dataset = BaseDataSet(test_dataset, self.model_name_or_path, self.max_token_len)
 
     def _merge_premise_hypothesis(self, examples):
         return {
@@ -32,4 +32,3 @@ class QNLIDataModule(BaseDataModule):
 
     def label_texts(self):
         return ["entailment", "not_entailment"]
-    
