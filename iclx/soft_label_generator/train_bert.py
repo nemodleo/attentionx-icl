@@ -71,10 +71,10 @@ class BERTTrainingModule(pl.LightningModule):
 def train(
     dataset: str = "sst2",
     lr: float = 2e-5,
-    batch_size: int = 32,
+    batch_size: int = 64,
     sampling_rate: float = 1.0,
     max_token_len: int = 512,
-    n_gpus: int = 8,
+    n_gpus: int = 1,
     max_epochs: int = 100,
     model_name_or_path: str = "bert-base-uncased",
     device: str = "cuda"
