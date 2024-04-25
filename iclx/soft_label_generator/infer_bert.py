@@ -58,6 +58,7 @@ def infer(
     dataset_split: str = "train",
     model_name_or_path: str = "bert-base-uncased",
     sampling_rate: float = 1.0,
+    device: str = "cuda"
 ):
     data_module = initialize_data_module(
         dataset,
@@ -67,7 +68,7 @@ def infer(
         sampling_rate,
     )
     
-    data_module.setup()
+    data_module.setup(stage=dataset_split)
 
     if dataset_split == "train":
         dataloader = data_module.train_dataloader()
@@ -84,6 +85,7 @@ def infer(
         model_name_or_path,
         num_labels=num_labels,
     )
+    model.to(device)
     model.eval()
 
     # Load checkpoint
@@ -96,9 +98,9 @@ def infer(
 
     for batch in tqdm(dataloader):
         texts = batch['text']
-        input_ids = batch['input_ids']
-        attention_mask = batch['attention_mask']
-        labels = batch['labels']
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
+        labels = batch['labels'].to(device)
 
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)

@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
 
 from transformers import AutoTokenizer
+from tictectoc import TicTecToc
 
 
 class BaseDataSet(Dataset):
@@ -16,19 +17,20 @@ class BaseDataSet(Dataset):
         self.max_token_len = max_token_len
 
     def __getitem__(self, idx):
-        example = self.dataset[idx]
-        result = self.tokenizer(
-            example['text'],
-            padding="max_length",
-            truncation=True,
-            max_length=self.max_token_len,
-        )
-        return {
-            'text': example['text'],
-            'input_ids': torch.tensor(result['input_ids']),
-            'attention_mask': torch.tensor(result['attention_mask']),
-            'labels': torch.tensor(example['label'])
-        }
+            example = self.dataset[idx]
+            result = self.tokenizer(
+                example['text'],
+                padding="max_length",
+                truncation=True,
+                max_length=self.max_token_len,
+            )
+        
+            return {
+                'text': example['text'],
+                'input_ids': torch.tensor(result['input_ids']),
+                'attention_mask': torch.tensor(result['attention_mask']),
+                'labels': torch.tensor(example['label'])
+            }
 
     def __len__(self):
         return len(self.dataset)
@@ -36,7 +38,7 @@ class BaseDataSet(Dataset):
 
 
 class BaseDataModule(pl.LightningDataModule, ABC):
-    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float, num_workers: int = 16):
+    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float, num_workers: int = 1):
         super().__init__()
         self.model_name_or_path = model_name_or_path
         self.batch_size = batch_size
