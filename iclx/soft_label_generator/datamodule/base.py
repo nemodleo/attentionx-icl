@@ -38,7 +38,7 @@ class BaseDataSet(Dataset):
 
 
 class BaseDataModule(pl.LightningDataModule, ABC):
-    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float, num_workers: int = 1):
+    def __init__(self, model_name_or_path: str, batch_size: int, max_token_len: int, sampling_rate: float, num_workers: int = 16):
         super().__init__()
         self.model_name_or_path = model_name_or_path
         self.batch_size = batch_size
@@ -49,7 +49,6 @@ class BaseDataModule(pl.LightningDataModule, ABC):
     @abstractmethod
     def setup(self, stage=None):
         raise NotImplementedError
-    
 
     def train_dataloader(self):
         return DataLoader(
@@ -64,16 +63,19 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
-            num_workers=self.num_workers,
+            shuffle=False,
+            num_workers=4,
         )
-    
+
     def test_dataloader(self):
         return DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
             num_workers=self.num_workers,
+            shuffle=False,
+            pin_memory=True,
         )
-    
+
     @abstractmethod
     def label_texts(self):
         raise NotImplementedError
