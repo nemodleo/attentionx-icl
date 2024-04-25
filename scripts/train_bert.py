@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=512)
     parser.add_argument("--sampling_rate", type=float, default=1.0)
     parser.add_argument("--max_token_len", type=int, default=512)
-    parser.add_argument("--n_gpus", type=int, default=8)
+    parser.add_argument("--n_gpus", type=int, default=1)
     args = parser.parse_args()
 
     train(
