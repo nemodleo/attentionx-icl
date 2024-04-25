@@ -14,7 +14,7 @@ class SST5DataModule(BaseDataModule):
                     lambda example, idx: idx % 10 < self.sampling_rate * 10,
                     with_indices=True,
                 )
-             self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
+            self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
         
         if stage == 'validation' or stage is 'all':
             val_dataset = dataset['validation']
