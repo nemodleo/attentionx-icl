@@ -124,7 +124,7 @@ def infer(
 
     output_path = f"./data/{dataset}/{file_name}"
     save_to_jsonl(data, output_path)
-        
+
 
 if __name__ == "__main__":
     fire.Fire(infer)

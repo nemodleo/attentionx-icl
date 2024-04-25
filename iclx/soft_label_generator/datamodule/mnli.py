@@ -6,22 +6,25 @@ from iclx.soft_label_generator.datamodule.base import BaseDataModule, BaseDataSe
 
 
 class MNLIDataModule(BaseDataModule):
-    def setup(self, stage=None):
+    def setup(self, stage='all'):
         dataset = load_dataset("nyu-mll/multi_nli")
 
-        train_dataset = dataset['train'].map(self._merge_premise_hypothesis)
-        val_dataset = dataset['validation_matched'].map(self._merge_premise_hypothesis)
-        test_dataset = dataset['validation_matched'].map(self._merge_premise_hypothesis)
+        if stage == 'train' or stage is 'all':
+            train_dataset = dataset['train'].map(self._merge_premise_hypothesis)
+            if self.sampling_rate < 1.0:
+                train_dataset = train_dataset.filter(
+                    lambda example, idx: idx % 10 < self.sampling_rate * 10,
+                    with_indices=True,
+                )
+            self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
 
-        if self.sampling_rate < 1.0:
-            train_dataset = train_dataset.filter(
-                lambda example, idx: idx % 10 < self.sampling_rate * 10,
-                with_indices=True,
-            )
+        if stage == 'validation' or stage is 'all':
+            val_dataset = dataset['validation_matched'].map(self._merge_premise_hypothesis)
+            self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
 
-        self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
-        self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
-        self.test_dataset = BaseDataSet(test_dataset, self.model_name_or_path, self.max_token_len)
+        if stage == 'test' or stage == 'all':
+            test_dataset = dataset['validation_matched'].map(self._merge_premise_hypothesis)
+            self.test_dataset = BaseDataSet(test_dataset, self.model_name_or_path, self.max_token_len)
 
     def _merge_premise_hypothesis(self, examples):
         return {

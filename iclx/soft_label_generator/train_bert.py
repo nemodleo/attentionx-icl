@@ -77,6 +77,7 @@ def train(
     n_gpus: int = 8,
     max_epochs: int = 100,
     model_name_or_path: str = "bert-base-uncased",
+    device: str = "cuda"
 ):
     data_module = initialize_data_module(
         dataset,
@@ -119,7 +120,7 @@ def train(
         max_epochs=max_epochs,
         callbacks=[checkpoint_callback, early_stopping_callback],
         devices=n_gpus,
-        accelerator="cuda",
+        accelerator=device,
     )
 
     trainer.fit(model, data_module)
