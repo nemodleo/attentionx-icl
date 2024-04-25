@@ -7,7 +7,7 @@ class AGNewsDataModule(BaseDataModule):
     def setup(self, stage='all'):
         dataset = load_dataset("ag_news")
 
-        if stage == 'train' or stage is 'all':
+        if stage == 'train' or stage == 'all':
             train_dataset = dataset['train']
             if self.sampling_rate < 1.0:
                 train_dataset = train_dataset.filter(
@@ -16,7 +16,7 @@ class AGNewsDataModule(BaseDataModule):
                 )
             self.train_dataset = self._tokenize(train_dataset)
 
-        if stage == 'validation' or stage is 'all':
+        if stage == 'validation' or stage == 'all':
             val_dataset = dataset['test']
             self.val_dataset = self._tokenize(val_dataset)
 

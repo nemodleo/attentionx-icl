@@ -10,7 +10,7 @@ class TRECDataModule(BaseDataModule):
     def setup(self, stage='all'):
         dataset = load_dataset("trec")
 
-        if stage == 'train' or stage is 'all':
+        if stage == 'train' or stage == 'all':
             train_dataset = dataset['train']
             if self.sampling_rate < 1.0:
                 train_dataset = train_dataset.filter(
@@ -19,7 +19,7 @@ class TRECDataModule(BaseDataModule):
                 )
             self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
 
-        if stage == 'validation' or stage is 'all':
+        if stage == 'validation' or stage == 'all':
             self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
             val_dataset = dataset['test']
 

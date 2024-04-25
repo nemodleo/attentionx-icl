@@ -7,7 +7,7 @@ class SST5DataModule(BaseDataModule):
     def setup(self, stage='all'):
         dataset = load_dataset("SetFit/sst5")
 
-        if stage == 'train' or stage is 'all':
+        if stage == 'train' or stage == 'all':
             train_dataset = dataset['train']
             if self.sampling_rate < 1.0:
                 train_dataset = train_dataset.filter(
@@ -16,7 +16,7 @@ class SST5DataModule(BaseDataModule):
                 )
             self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
         
-        if stage == 'validation' or stage is 'all':
+        if stage == 'validation' or stage == 'all':
             val_dataset = dataset['validation']
             self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
 
