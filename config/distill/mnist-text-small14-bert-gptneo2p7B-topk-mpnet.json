@@ -9,7 +9,7 @@
 
     "train_path":"data/mnist-text/mnist-text-small14-train-bert-240426.jsonl",
     "val_path": null,
-    "test_path": "data/mnist-text/mnist-text-small14gi-test-bert-240426.jsonl",
+    "test_path": "data/mnist-text/mnist-text-small14-test-bert-240426.jsonl",
     "task_description": "Task Instruction: What is the number?\nLabel Space: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}",
 
     "data_columns": {
