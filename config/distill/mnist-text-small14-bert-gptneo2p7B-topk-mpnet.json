@@ -1,7 +1,7 @@
 {   
     "experiment_name":"mnist-text-small14-bert-gptneo2p7B-topk-mpnet",
 
-    "batch_size": 64,
+    "batch_size": 128,
     "retriever": "topk",
     "retriever_base": "all-mpnet-base-v2",
     "student": "EleutherAI/gpt-neo-2.7B",
