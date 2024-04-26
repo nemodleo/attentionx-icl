@@ -24,5 +24,6 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         max_token_len=args.max_token_len,
         file_name=args.file_name,
+        dataset_split=args.dataset_split,
         sampling_rate=args.sampling_rate
     )
