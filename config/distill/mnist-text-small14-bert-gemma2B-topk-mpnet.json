@@ -1,0 +1,58 @@
+{   
+    "experiment_name":"mnist-text-small14-bert-gemma2B-topk-mpnet",
+
+    "batch_size": 1,
+    "retriever": "topk",
+    "retriever_base": "all-mpnet-base-v2",
+    "student": "EleutherAI/gpt-neo-2.7B",
+    "shots": [1, 2, 4, 8, 16, 32, 64],
+
+    "train_path":"data/mnist-text/mnist-text-small14-train-bert-240426.jsonl",
+    "val_path": null,
+    "test_path": "data/mnist-text/mnist-text-small14-test-bert-240426.jsonl",
+    "task_description": "Task Instruction: What is the number?\nLabel Space: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}",
+
+    "data_columns": {
+        "input_columns": ["text"],
+        "output_columns": ["label"]
+    },
+
+    "ice_dict":{
+        "naive": "</E>Review: </text>\nNumber: 0 is </0>%, 1 is </1>%, 2 is </2>%, 3 is </3>%, 4 is </4>%, 5 is </5>%, 6 is </6>%, 7 is </7>%, 8 is </8>%, 9 is </9>%.",
+        "sequence": "</E>Review: </text>\nNumber: </Label0> is </0>%, </Label1> is </1>%, </Label2> is </2>%, </Label3> is </3>%, </Label4> is </4>%, </Label5> is </5>%, </Label6> is </6>%, </Label7> is </7>%, </Label8> is </8>%, </Label9> is </9>%.",
+        "binning": "</E>Review: </text>\nNumber: </Label1> is very likely, </Label2> is likely, </Label3> could be likely, </Label8> is not likely, </Label9> is not very likely"
+    },
+
+    "template_dict": {
+        "0" : "</E>Review: </text>\nNumber: 0",
+        "1" : "</E>Review: </text>\nNumber: 1",
+        "2" : "</E>Review: </text>\nNumber: 2",
+        "3" : "</E>Review: </text>\nNumber: 3",
+        "4" : "</E>Review: </text>\nNumber: 4",
+        "5" : "</E>Review: </text>\nNumber: 5",
+        "6" : "</E>Review: </text>\nNumber: 6",
+        "7" : "</E>Review: </text>\nNumber: 7",
+        "8" : "</E>Review: </text>\nNumber: 8",
+        "9" : "</E>Review: </text>\nNumber: 9"
+    },
+
+    "label_dict": {
+        "0": "0",
+        "1": "1",
+        "2": "2",
+        "3": "3",
+        "4": "4",
+        "5": "5",
+        "6": "6",
+        "7": "7",
+        "8": "8",
+        "9": "9"
+    },
+
+    "column_token_map": {
+        "naive":{"text": "</text>", "0": "</0>", "1": "</1>", "2": "</2>", "3": "</3>", "4": "</4>", "5": "</5>", "6": "</6>", "7": "</7>", "8": "</8>", "9": "</9>"},
+        "sequence":{"text": "</text>", "0": "</0>", "Label0": "</Label0>", "1": "</1>", "Label1" : "</Label1>", "2" : "</2>", "Label2" : "</Label2>", "3" : "</3>", "Label3" : "</Label3>", "4" : "</4>", "Label4" : "</Label4>", "5" : "</5>", "Label5" : "</Label5>", "6" : "</6>", "Label6" : "</Label6>", "7" : "</7>", "Label7" : "</Label7>", "8" : "</8>", "Label8" : "</Label8>", "9" : "</9>", "Label9" : "</Label9>"},
+        "binning":{"text": "</text>", "Label0": "</Label0>", "Label1": "</Label1>", "Label2": "</Label2>", "Label3": "</Label3>", "Label4": "</Label4>", "Label5": "</Label5>", "Label6": "</Label6>", "Label7": "</Label7>", "Label8": "</Label8>", "Label9": "</Label9>"},
+        "GT": {"text": "</text>"}
+    }
+}
