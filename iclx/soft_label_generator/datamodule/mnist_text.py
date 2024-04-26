@@ -14,7 +14,7 @@ class MNISTTextDataModule(BaseDataModule):
             val_dataset = dataset['test']
             self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
 
-        if stage == 'train' or stage == 'all':
+        if stage == 'test' or stage == 'all':
             test_dataset = dataset['test']
             self.test_dataset = BaseDataSet(test_dataset, self.model_name_or_path, self.max_token_len)
 
