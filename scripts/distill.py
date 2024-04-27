@@ -35,7 +35,7 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
     # naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
-    sequinning, sequence, binning, gt, pseudo_gt = [], [], [], []
+    sequinning, sequence, binning, gt, pseudo_gt = [], [], [], [], []
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         # f.write("naive, sequence, binning, gt, pseudo_gt\n")
