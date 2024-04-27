@@ -58,14 +58,14 @@ class PromptTemplate:
                 tp = tp.replace(token, labels[key])
             elif key != 'text' and use_ordering:
                 if self.binning is None:
-                    text = str(round(float(probs[int(key)])*100, 2))
+                    text = str(round(float(probs[int(key)])*100, 5))
                 else:
                     text = self.binning[key]
                 tp = tp.replace(token, text)
             else:
                 text = str(entry[key])
                 if key != 'text':
-                    text = str(round(float(text)*100, 2))
+                    text = str(round(float(text)*100, 5))
                 tp = tp.replace(token, text)
 
         return tp
