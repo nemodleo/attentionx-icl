@@ -35,16 +35,20 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
     # naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
-    sequence, binning, gt, pseudo_gt = [], [], [], []
+    sequinning, sequence, binning, gt, pseudo_gt = [], [], [], []
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         # f.write("naive, sequence, binning, gt, pseudo_gt\n")
-        f.write("sequence, binning, gt, pseudo_gt\n")
+        f.write("sequinning, sequence, binning, gt, pseudo_gt\n")
 
         # number of shots to run
         for i in shots:
             # naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             # logger.info(f"naive for shot {i} done")
+            sequinning.append(test_sequinning(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequinning for shot {i} done")
+            
             sequence.append(test_sequence(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             torch.cuda.empty_cache()
             logger.info(f"sequence for shot {i} done")
@@ -62,11 +66,12 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
             logger.info(f"pseudo_gt for shot {i} done")
 
             # f.write(f"{naive[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
-            f.write(f"{sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
+            f.write(f"{sequinning[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
     # logger.info(naive)
+    logger.info(sequinning)
     logger.info(sequence)
     logger.info(binning)
     logger.info(gt)
@@ -74,6 +79,7 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
 
     xticks = range(len(shots))
     # plt.plot(x, naive, label = 'naive')
+    plt.plot(xticks, sequinning, label = 'sequinning')
     plt.plot(xticks, sequence, label = 'sequence')
     plt.plot(xticks, binning, label = 'binning')
     plt.plot(xticks, gt, label = 'gt')
@@ -115,6 +121,36 @@ def test_naive(ice_num, data, model_name, retriever, retriever_base, batch_size)
 
     return score
 
+def test_sequinning(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequinning"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
 
 def test_sequence(ice_num, data, model_name, retriever, retriever_base, batch_size):
 
