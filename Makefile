@@ -50,11 +50,11 @@ vessl-workspace-init:
 	mkdir /root/.cache
 	ln -s /opt/.cache/huggingface /root/.cache/huggingface
 
-run-create_train:
-	$(AUTO_POETRY) python scripts/create_train_with_pseudo.py $(SETUP_DICT)
-
 run-distill:
 	$(AUTO_POETRY) python scripts/distill.py $(SETUP_DICT)
+
+run-distill-mixup:
+	$(AUTO_POETRY) python scripts/distill_mixup.py $(SETUP_DICT)
 
 check-quality:
 	$(AUTO_POETRY) flake8 --ignore=E501 iclx data_utils scripts

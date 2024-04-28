@@ -37,7 +37,7 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
     # naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
-    sequence, binning, gt, pseudo_gt = [], [], [], []
+    mixup, sequence, binning, gt, pseudo_gt = [], [], [], [], []
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         # f.write("naive, sequence, binning, gt, pseudo_gt\n")
@@ -45,8 +45,10 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
 
         # number of shots to run
         for i in shots:
-            # naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
-            # logger.info(f"naive for shot {i} done")
+            mixup.append(test_mixup(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"mixup for shot {i} done")
+
             sequence.append(test_sequence(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             torch.cuda.empty_cache()
             logger.info(f"sequence for shot {i} done")
@@ -68,14 +70,14 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
-    # logger.info(naive)
+    logger.info(mixup)
     logger.info(sequence)
     logger.info(binning)
     logger.info(gt)
     logger.info(pseudo_gt)
 
     xticks = range(len(shots))
-    # plt.plot(x, naive, label = 'naive')
+    plt.plot(x, mixup, label = 'mixup')
     plt.plot(xticks, sequence, label = 'sequence')
     plt.plot(xticks, binning, label = 'binning')
     plt.plot(xticks, gt, label = 'gt')
@@ -90,15 +92,10 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
 
 def test_mixup(ice_num, data, model_name, retriever, retriever_base, batch_size):
 
-    # Inference prompt template
-    ice_dict = TP_DICT
-
-    tp_dict = TP_DICT
-
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["GT"]
-    ice_template = PromptTemplate(ice_dict["0"], column_token_map, ice_token='</E>')
-    prompt_template = PromptTemplate(tp_dict["0"], {'text': '</text>'}, ice_token='</E>')
+    ice_template = MixupPromptTemplate(TP, column_token_map, ice_token='</E>', label_dict=LABEL_DICT)
+    prompt_template = MixupPromptTemplate(TP, {'text': '</text>'}, ice_token='</E>', label_dict=LABEL_DICT)
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
@@ -111,6 +108,7 @@ def test_mixup(ice_num, data, model_name, retriever, retriever_base, batch_size)
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
     # compute accuracy for the prediction
+    print(predictions[:10])
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
     return score
@@ -286,6 +284,7 @@ if __name__ == '__main__':
 
     DATA_COLUMNS = setup['data_columns']
     ICE_DICT = setup['ice_dict']
+    TP = setup['template']
     TP_DICT = setup['template_dict']
 
     LABEL_DICT = setup['label_dict']

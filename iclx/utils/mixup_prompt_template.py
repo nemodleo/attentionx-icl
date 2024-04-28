@@ -75,7 +75,7 @@ class MixupPromptTemplate:
         if self.ice_token is None:
             raise ValueError("PromptTemplate.ice_token should be not None when generates prompt")
         # Select the corresponding template
-        tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template + " " + label
+        tp = self.template[str(label)] if isinstance(self.template, Dict) else self.template + " " + self.label_dict[str(label)]
         # Remove sep token
         if not remain_sep and self.sep_token is not None:
             tp.replace(self.sep_token, '')

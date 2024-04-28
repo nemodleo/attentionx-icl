@@ -60,15 +60,16 @@ class MixupInferencer(BaseInferencer):
             labels = self.labels
 
         # 4. Generate in-context examples for testing inputs
-        for idx in range(len(ice_idx_list)):
-            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
-        output_handler.save_ice(ice)
+        # for idx in range(len(ice_idx_list)):
+        #     ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
+        # output_handler.save_ice(ice)
 
         # 5. Calculating PPL for prompts in each label's class
         for label in labels:
             index = 0
             inputs_list = []
             prompt_list = []
+            postfix_list = []
             sub_ppl_list = []
 
             # 5.1 Generate prompts of current label and truncate
@@ -79,35 +80,37 @@ class MixupInferencer(BaseInferencer):
                 postfix = retriever.generate_label_prompt(idx, "", label, ice_template=ice_template, prompt_template=prompt_template)
                 postfix_inputs = self.tokenizer(postfix, padding=True, return_tensors='pt', truncation=True)
                 postfix_inputs = self.__convert_input_ids_to_embeds(postfix_inputs)
-                postfix_length = postfix_inputs["inputs_embeds"].shape[0]
+                postfix_length = postfix_inputs["inputs_embeds"].shape[1]
                 for ice_idx in ice_idx_list[idx]:
                     item = retriever.index_ds[ice_idx]
-                    label = item[retriever.dataset_reader.output_column]
-                    tp, labels, probs = ice_template.generate_ice_item(item)
-                    mixup_inputs = self.__get_mixup_results(tp, labels, probs)
-                    mixup_length = mixup_inputs["inputs_embeds"].shape[0]
+                    label_idx = item[retriever.dataset_reader.output_column]
+                    tp, label_tokens, probs = ice_template.generate_ice_item(item)
+                    mixup_inputs = self.__get_mixup_results(tp, label_tokens, probs)
+                    mixup_length = mixup_inputs["inputs_embeds"].shape[1]
 
                     if self.max_model_token_num is not None \
-                        and inputs["inputs_embeds"].shape[0] + mixup_length + postfix_length > self.max_model_token_num:
+                        and inputs["inputs_embeds"].shape[1] + mixup_length + postfix_length > self.max_model_token_num:
                         break
                     else:
                         inputs = self.__merge_processed_results(inputs, mixup_inputs)
-                        prompt += tp + " " + label
+                        prompt += tp + " " + label_tokens[label_idx] + "\n"
 
                 inputs_list.append(self.__merge_processed_results(inputs, postfix_inputs))
                 prompt_list.append(prompt + postfix)
+                postfix_list.append(postfix)
 
             # 5.2 Get PPL
             logger.info(f"Calculating PPL for prompts labeled '{label}'")
             self.batch_size = 1
             for idx in trange(0, len(inputs_list), self.batch_size, disable=not self.is_main_process):
                 sub_prompt_list = prompt_list[idx:idx + self.batch_size]
+                sub_postfix_list = postfix_list[idx:idx + self.batch_size]
                 inputs = inputs_list[idx]
                 with torch.no_grad():
                     sub_res = self.__get_ppl(inputs).tolist()
-                for res, prompt in zip(sub_res, sub_prompt_list):
+                for res, prompt, postfix in zip(sub_res, sub_prompt_list, sub_postfix_list):
                     sub_ppl_list.append(res)
-                    output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
+                    output_handler.save_prompt_and_ppl(label, postfix, prompt, res, index)
                     index = index + 1
             ppl.append(sub_ppl_list)
 
@@ -128,17 +131,19 @@ class MixupInferencer(BaseInferencer):
 
     def __merge_processed_results(self, res1: Dict, res2: Dict):
         merged = dict()
-        for k, v in merged.items():
-            merged[k] = torch.cat((res1, res2), -1)
+        with torch.no_grad():
+            for k, v in res1.items():
+                merged[k] = torch.cat((res1[k], res2[k]), 1)
         return merged
 
     def __convert_input_ids_to_embeds(self, inputs: Dict):
-        # TODO: remove side effect
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-        embed_layer = self.model.get_input_embeddings()
-        input_ids = inputs["input_ids"]
-        inputs_embeds = embed_layer(input_ids)
-        inputs["inputs_embeds"] = inputs_embeds
+        with torch.no_grad():
+            # TODO: remove side effect
+            inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+            embed_layer = self.model.get_input_embeddings()
+            input_ids = inputs["input_ids"]
+            inputs_embeds = embed_layer(input_ids)
+            inputs["inputs_embeds"] = inputs_embeds
         return inputs
 
     def __get_mixup_results(self,
@@ -147,13 +152,13 @@ class MixupInferencer(BaseInferencer):
                             probs: List[float]):
         self.tokenizer.padding_side = "right"
         inputs = self.tokenizer(ice_text, padding=True, return_tensors='pt', truncation=True)
+        inputs = self.__convert_input_ids_to_embeds(inputs)
 
         answer_embed = None
         for answer_token, prob in zip(answer_tokens, probs):
-            answer_token_inputs = self.tokenizer(" " + answer_token, padding=True, return_tensors='pt', truncation=True)
+            answer_token_inputs = self.tokenizer(" " + answer_token + "\n", padding=True, return_tensors='pt', truncation=True)
             answer_token_inputs = self.__convert_input_ids_to_embeds(answer_token_inputs)
-
-            if answer_embed:
+            if answer_embed is not None:
                 answer_embed += prob * answer_token_inputs["inputs_embeds"]
             else:
                 answer_embed = prob * answer_token_inputs["inputs_embeds"]
@@ -161,7 +166,7 @@ class MixupInferencer(BaseInferencer):
         prob_sum = np.sum(probs)
         answer_embed /= prob_sum
 
-        answer_token_inputs["input_embeds"] = answer_embed
+        answer_token_inputs["inputs_embeds"] = answer_embed
         inputs = self.__merge_processed_results(inputs, answer_token_inputs)
 
         return inputs
