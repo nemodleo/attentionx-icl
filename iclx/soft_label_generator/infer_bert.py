@@ -107,8 +107,8 @@ def infer(
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)
             probs = F.softmax(outputs.logits, dim=-1)
-            pseudo_gt = F.softmax(outputs.logits, dim=-1).max(dim=-1)[1].cpu().numpy().tolist()
-            pseudo_gt_text = [data_module.label_texts()[label] for label in pseudo_gt]
+            pseudo_gts = F.softmax(outputs.logits, dim=-1).max(dim=-1)[1].cpu().numpy().tolist()
+            pseudo_gt_texts = [data_module.label_texts()[label] for label in pseudo_gts]
             probs = probs.cpu().numpy().tolist()
             labels = labels.cpu().numpy().tolist()
             label_texts = [data_module.label_texts()[label] for label in labels]
@@ -121,7 +121,7 @@ def infer(
                     "pseudo_gt_text": pseudo_gt_text,
                     **{str(i): prob for i, prob in enumerate(probs_)}
                 }
-                for text, label, label_text, probs_ in zip(texts, labels, label_texts, probs)
+                for text, label, label_text, pseudo_gt, pseudo_gt_text, probs_ in zip(texts, labels, label_texts, pseudo_gts, pseudo_gt_texts, probs)
             ])
 
     output_path = f"./data/{dataset}/{file_name}"
