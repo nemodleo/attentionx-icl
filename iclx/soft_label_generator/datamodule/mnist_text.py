@@ -5,7 +5,7 @@ from iclx.soft_label_generator.datamodule.base import BaseDataModule, BaseDataSe
 
 class MNISTTextDataModule(BaseDataModule):
     def setup(self, stage='all'):
-        dataset = load_dataset("nemodleo/mnist-text-small14")
+        dataset = load_dataset("ICKD/mnist-text-small")
         if stage == 'train' or stage == 'all':
             train_dataset = dataset['train']
             self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
