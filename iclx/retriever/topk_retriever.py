@@ -94,7 +94,7 @@ class TopkRetriever(BaseRetriever):
             dim = self.model.get_sentence_embedding_dimension()
             index = faiss.GpuIndexFlatIP(res, dim, flat_config)
             res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
-            id_list = np.array([res['metadata']['id'] for res in res_list])
+            id_list = torch.tensor([res['metadata']['id'] for res in res_list])
             self.embed_list = torch.stack([res['embed'] for res in res_list])
             index.add_with_ids(self.embed_list, id_list)
         else:
@@ -110,7 +110,7 @@ class TopkRetriever(BaseRetriever):
         logger.info("Retrieving data for test set...")
         for entry in tqdm.tqdm(res_list, disable=not self.is_main_process):
             idx = entry['metadata']['id']
-            embed = np.expand_dims(entry['embed'], axis=0)
+            embed = np.expand_dims(entry['embed'], axis=0) if self.device == 'cpu' else torch.tensor(entry['embed']).unsqueeze(0)
             near_ids = self.index.search(embed, ice_num)[1][0].tolist()
             rtr_idx_list[idx] = near_ids
         return rtr_idx_list
