@@ -81,13 +81,14 @@ class TopkRetriever(BaseRetriever):
         co = DataCollatorWithPaddingAndCuda(tokenizer=self.tokenizer, device=self.device)
         dataloader = DataLoader(encode_datalist, batch_size=self.batch_size, collate_fn=co)
         if self.device == 'cpu':
+            logger.info("Creating faiss-gpu index")
             index = faiss.IndexIDMap(faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension()))
             res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
             id_list = np.array([res['metadata']['id'] for res in res_list])
             self.embed_list = np.stack([res['embed'] for res in res_list])
             index.add_with_ids(self.embed_list, id_list)
-
         elif self.device == 'cuda':
+            logger.info("Creating faiss-gpu index")
             res = faiss.StandardGpuResources()
             flat_config = faiss.GpuIndexFlatConfig()
             flat_config.device = 0
@@ -99,7 +100,7 @@ class TopkRetriever(BaseRetriever):
             index.add_with_ids(self.embed_list, id_list)
         else:
             raise ValueError("Invalid device type. Please specify either 'cpu' or 'cuda'.")
-
+        logger.info("Index created")
         return index
 
     def knn_search(self, ice_num):
