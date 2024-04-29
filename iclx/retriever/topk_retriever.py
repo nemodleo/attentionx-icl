@@ -80,13 +80,15 @@ class TopkRetriever(BaseRetriever):
         encode_datalist = DatasetEncoder(self.select_datalist, tokenizer=self.tokenizer)
         co = DataCollatorWithPaddingAndCuda(tokenizer=self.tokenizer, device=self.device)
         dataloader = DataLoader(encode_datalist, batch_size=self.batch_size, collate_fn=co)
+
         if self.device == 'cpu':
-            logger.info("Creating faiss-gpu index")
+            logger.info("Creating faiss-cpu index")
             index = faiss.IndexIDMap(faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension()))
             res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
             id_list = np.array([res['metadata']['id'] for res in res_list])
             self.embed_list = np.stack([res['embed'] for res in res_list])
             index.add_with_ids(self.embed_list, id_list)
+
         elif self.device == 'cuda':
             logger.info("Creating faiss-gpu index")
             res = faiss.StandardGpuResources()
@@ -95,9 +97,8 @@ class TopkRetriever(BaseRetriever):
             dim = self.model.get_sentence_embedding_dimension()
             index = faiss.GpuIndexFlatIP(res, dim, flat_config)
             res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
-            id_list = torch.tensor([res['metadata']['id'] for res in res_list])
-            self.embed_list = torch.stack([res['embed'] for res in res_list])
-            index.add_with_ids(self.embed_list, id_list)
+            self.embed_list = np.stack([res['embed'] for res in res_list])
+            index.add(self.embed_list)
         else:
             raise ValueError("Invalid device type. Please specify either 'cpu' or 'cuda'.")
         logger.info("Index created")
@@ -111,7 +112,7 @@ class TopkRetriever(BaseRetriever):
         logger.info("Retrieving data for test set...")
         for entry in tqdm.tqdm(res_list, disable=not self.is_main_process):
             idx = entry['metadata']['id']
-            embed = np.expand_dims(entry['embed'], axis=0) if self.device == 'cpu' else torch.tensor(entry['embed']).unsqueeze(0)
+            embed = np.expand_dims(entry['embed'], axis=0)
             near_ids = self.index.search(embed, ice_num)[1][0].tolist()
             rtr_idx_list[idx] = near_ids
         return rtr_idx_list
