@@ -80,10 +80,8 @@ class TopkRetriever(BaseRetriever):
         encode_datalist = DatasetEncoder(self.select_datalist, tokenizer=self.tokenizer)
         co = DataCollatorWithPaddingAndCuda(tokenizer=self.tokenizer, device=self.device)
         dataloader = DataLoader(encode_datalist, batch_size=self.batch_size, collate_fn=co)
-
         if self.device == 'cpu':
-            index = faiss.IndexIDMap(faiss.IndexFlatIP())
-
+            index = faiss.IndexIDMap(faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension()))
             res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
             id_list = np.array([res['metadata']['id'] for res in res_list])
             self.embed_list = np.stack([res['embed'] for res in res_list])
