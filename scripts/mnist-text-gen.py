@@ -221,27 +221,40 @@ class MnistText(datasets.GeneratorBasedBuilder):
                 yield id_, row
 
 
-def make_small_mnist_text(x):
+def make_small_mnist_text(x, return_binary=False):
     x = MnistText.text_to_array(x)
     x = torch.tensor(x.copy()).unsqueeze(0).unsqueeze(0)
     x = F.interpolate(x, size=(14, 14), mode='nearest-exact')
     x = x.squeeze(0).squeeze(0).numpy()
-    return MnistText.array_to_text_binary(x)[0]
-    
+    if return_binary:
+        return MnistText.array_to_text_binary(x)[0]
+    return x
+
 
 if __name__ == "__main__":
     dataset = load_dataset("Fraser/mnist-text-default")
-
     small_dataset_test = dataset['test'].map(
-        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'])},
+        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=False)},
         batched=False,
     )
-
     small_dataset_train = dataset['train'].map(
-        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'])},
+        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=False)},
         batched=False,
     )
-
     dataset = DatasetDict({'train': small_dataset_train, 'test': small_dataset_test})
-    dataset.push_to_hub("nemodleo/mnist-text-small14")
+    dataset.push_to_hub("ICKD/mnist-text-small")
     print(dataset)
+
+    dataset = load_dataset("Fraser/mnist-text-default")
+    small_dataset_test = dataset['test'].map(
+        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=True)},
+        batched=False,
+    )
+    small_dataset_train = dataset['train'].map(
+        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=True)},
+        batched=False,
+    )
+    dataset = DatasetDict({'train': small_dataset_train, 'test': small_dataset_test})
+    dataset.push_to_hub("ICKD/mnist-text-small-binary")
+    print(dataset)
+
