@@ -228,7 +228,7 @@ def make_small_mnist_text(x, return_binary=False):
     x = x.squeeze(0).squeeze(0).numpy()
     if return_binary:
         return MnistText.array_to_text_binary(x)[0]
-    return x
+    return MnistText.array_to_text(x)[0]
 
 
 if __name__ == "__main__":
@@ -245,16 +245,16 @@ if __name__ == "__main__":
     dataset.push_to_hub("ICKD/mnist-text-small")
     print(dataset)
 
-    dataset = load_dataset("Fraser/mnist-text-default")
-    small_dataset_test = dataset['test'].map(
-        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=True)},
-        batched=False,
-    )
-    small_dataset_train = dataset['train'].map(
-        lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=True)},
-        batched=False,
-    )
-    dataset = DatasetDict({'train': small_dataset_train, 'test': small_dataset_test})
-    dataset.push_to_hub("ICKD/mnist-text-small-binary")
-    print(dataset)
+    # dataset = load_dataset("Fraser/mnist-text-default")
+    # small_dataset_test = dataset['test'].map(
+    #     lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=True)},
+    #     batched=False,
+    # )
+    # small_dataset_train = dataset['train'].map(
+    #     lambda batch: {'label': batch['label'], 'text': make_small_mnist_text(batch['text'], return_binary=True)},
+    #     batched=False,
+    # )
+    # dataset = DatasetDict({'train': small_dataset_train, 'test': small_dataset_test})
+    # dataset.push_to_hub("ICKD/mnist-text-small-binary")
+    # print(dataset)
 
