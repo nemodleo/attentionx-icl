@@ -24,16 +24,12 @@ def clean_up_memory():
     gc.collect()
     torch.cuda.empty_cache()
 
-def test(shots = [32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', batch_size = 1):
+def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', batch_size=1):
     assert all(shots[i] > shots[i+1] for i in range(len(shots)-1)), "Shots should be in descending order"
 
     def gen(file_path):
         with open(file_path, 'r') as f:
-            n=0 #!
             for line in f:
-                n+=1
-                if n==10:
-                    break
                 yield json.loads(line)
 
     train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TRAIN_PATH})
@@ -54,6 +50,7 @@ def test(shots = [32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Ra
 
         # number of shots to run
         for i in shots:
+            logger.info(f"Running for shot {i}")
             retriever.ice_num = i
 
             sequence.append(test_sequence(data, model_name, retriever, batch_size)['accuracy'])
