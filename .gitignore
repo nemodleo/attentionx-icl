@@ -173,13 +173,13 @@ iclx_output/*
 output/*
 
 # configs
-# config/*
-# !config/data
-# config/data/*
-# !config/data/template_datagen-config.json
+config/*
+!config/data
+config/data/*
+!config/data/template_datagen-config.json
 
-# !config/distill
-# config/distill/*
-# !config.distill/template_distill-config.json
+!config/distill
+config/distill/*
+!config.distill/template_distill-config.json
 #.DS_Store
 .DS_Store
