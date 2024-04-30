@@ -1,0 +1,42 @@
+{   
+    "experiment_name":"mnli-topk-gemma2b",
+
+    "batch_size": 8,
+    "retriever": "topk",
+    "retriever_base": "bert-base-uncased",
+    "student": "google/gemma-2b",
+    "shots": [32, 16, 8, 4, 1],
+
+    "train_path":"data/mnli/mnli-train-bert-240426.jsonl",
+    "val_path": null,
+    "test_path": "data/mnli/mnli-test-bert-240426.jsonl",
+    "task_description": "Task Instruction: Recognizing textual entailment between these 2 texts.\nLabel Space: {entailment, neutral, contradiction}",
+
+    "data_columns": {
+        "input_columns": ["text"],
+        "output_columns": ["label"]
+    },
+
+    "ice_dict":{
+        "sequence": "</E>Texts: </text>\nAnswer: </Label1> is </1>%, </Label2> is </2>%, </Label3> is </3>%.",
+        "binning": "</E>Texts: </text>\nAnswer: </Label1> is very likely, </Label2> is likely, </Label3> is not likely"
+    },
+
+    "template_dict": {
+        "0" : "</E>Texts: </text>\nAnswer: entailment",
+        "1" : "</E>Texts: </text>\nAnswer: neutral",
+        "2" : "</E>Texts: </text>\nAnswer: contradiction"
+    },
+
+    "label_dict": {
+        "0": "entailment",
+        "1": "neutral",
+        "2": "contradiction"
+    },
+
+    "column_token_map": {
+        "sequence":{"text": "</text>", "0": "</1>", "Label1": "</Label1>", "1": "</2>", "Label2" : "</Label2>", "2" : "</3>", "Label3" : "</Label3>"},
+        "binning":{"text": "</text>", "Label1": "</Label1>", "Label2": "</Label2>", "Label3": "</Label3>"},
+        "GT": {"text": "</text>"}
+    }
+}
