@@ -7,9 +7,9 @@
     "student": "EleutherAI/gpt-neo-2.7B",
     "shots": [32, 16, 8, 4, 1],
 
-    "train_path":"data/qnli/qnli-train-bert-240426.jsonl",
+    "train_path":"data/qnli/qnli-train.jsonl",
     "val_path": null,
-    "test_path": "data/qnli/qnli-test-bert-240426.jsonl",
+    "test_path": "data/qnli/qnli-test.jsonl",
     "task_description": "Task Instruction: Recognizing textual entailment between these 2 texts.\nLabel Space: {entailment, not_entailment}",
 
     "data_columns": {

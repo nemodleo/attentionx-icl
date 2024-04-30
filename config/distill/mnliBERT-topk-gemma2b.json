@@ -7,9 +7,9 @@
     "student": "google/gemma-2b",
     "shots": [32, 16, 8, 4, 1],
 
-    "train_path":"data/mnli/mnli-train-bert-240426.jsonl",
+    "train_path":"data/mnli/mnli-train.jsonl",
     "val_path": null,
-    "test_path": "data/mnli/mnli-test-bert-240426.jsonl",
+    "test_path": "data/mnli/mnli-test.jsonl",
     "task_description": "Task Instruction: Recognizing textual entailment between these 2 texts.\nLabel Space: {entailment, neutral, contradiction}",
 
     "data_columns": {
