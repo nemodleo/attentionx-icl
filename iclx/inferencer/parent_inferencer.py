@@ -26,10 +26,11 @@ class ParentInferencer(PPLInferencer):
                  output_json_filepath: Optional[str] = "./iclx_output",
                  output_json_filename: Optional[str] = "predictions",
                  labels: Optional[List] = None,
+                 task_description: str = None,
                  **kwargs
                  ) -> None:
         super().__init__(model_name, tokenizer_name, max_model_token_num, batch_size, accelerator,
-                         output_json_filepath, output_json_filename, **kwargs)
+                         output_json_filepath, output_json_filename, task_description, **kwargs)
         self.labels = labels
 
     def inference(self,
@@ -79,6 +80,7 @@ class ParentInferencer(PPLInferencer):
                 prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template,
                                                          prompt_template=prompt_template,
                                                          remain_sep=normalizing_str is not None)
+                prompt = self._add_task_description(retriever.ice_separator, prompt)
                 if self.max_model_token_num is not None and self.api_name != 'gpt3':
                     prompt_token_num = self.get_input_token_num(prompt)
                     while len(ice_idx_list[idx]) > 0 and prompt_token_num > self.max_model_token_num:
@@ -86,6 +88,7 @@ class ParentInferencer(PPLInferencer):
                         ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template)
                         prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template,
                                                                  prompt_template=prompt_template)
+                        prompt = self._add_task_description(retriever.ice_separator, prompt)
                         prompt_token_num = self.get_input_token_num(prompt)
 
                 if normalizing_str is not None:
@@ -118,13 +121,13 @@ class ParentInferencer(PPLInferencer):
 
                 with torch.no_grad():
                     if normalizing_str is not None:
-                        res1 = self.__get_ppl(input_texts=sub_prompt_list, mask_length=sub_context_length_list)
-                        res2 = self.__get_ppl(input_texts=sub_normalizing_prompt_list,
+                        res1 = self._get_ppl(input_texts=sub_prompt_list, mask_length=sub_context_length_list)
+                        res2 = self._get_ppl(input_texts=sub_normalizing_prompt_list,
                                               mask_length=[normalizing_str_len for i in range(len(sub_prompt_list))]
                                               )
                         sub_res = res1 - res2
                     else:
-                        sub_res = self.__get_ppl(sub_prompt_list).tolist()
+                        sub_res = self._get_ppl(sub_prompt_list).tolist()
                 for res, prompt in zip(sub_res, sub_prompt_list):
                     sub_ppl_list.append(res)
                     output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
@@ -134,6 +137,7 @@ class ParentInferencer(PPLInferencer):
         # 6. DO NOT lowest PPL class as predictions. rather, save them all.
         ppl = list(zip(*ppl))
         for single_ppl in ppl:
-            sub_predictions.append({idx : ppl for idx, ppl in enumerate(single_ppl)})
+            sub_predictions.append({idx: ppl for idx, ppl in enumerate(single_ppl)})
 
         return sub_predictions
+

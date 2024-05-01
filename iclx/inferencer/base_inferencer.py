@@ -20,7 +20,7 @@ class BaseInferencer:
         Base class of In-context Learning Inferencer, with no inference method.
 
     Attributes:
-        model (:obj:`AutoModelForCausalLM`, optional): Local PLM (loaded from Hugging Face), which can be initialized by name or a config class. 
+        model (:obj:`AutoModelForCausalLM`, optional): Local PLM (loaded from Hugging Face), which can be initialized by name or a config class.
         tokenizer (:obj:`AutoTokenizer` or :obj:`GPT2Tokenizer`, optional): Tokenizer for :obj:`model`.
         max_model_token_num (:obj:`int`, optional): Maximum number of tokenized words allowed by the LM.
         batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`.
@@ -37,12 +37,14 @@ class BaseInferencer:
                  accelerator: Optional[Accelerator] = None,
                  output_json_filepath: Optional[str] = "./iclx_output",
                  output_json_filename: Optional[str] = "predictions",
+                 task_description: str = None,
                  **kwargs
                  ) -> None:
         self.model_name = model_name
         self.tokenizer_name = tokenizer_name if tokenizer_name is not None else model_name
         self.accelerator = accelerator
         self.is_main_process = True if self.accelerator is None or self.accelerator.is_main_process else False
+        self.task_description = task_description
 
         self._init_model(self.model_name)
         self._init_tokenizer(self.tokenizer_name)
@@ -51,7 +53,7 @@ class BaseInferencer:
         self.model.to(self.device)
         self.model.eval()
 
-        self.max_model_token_num = max_model_token_num
+        self.max_model_token_num = max_model_token_num or self.tokenizer.model_max_length
         self.batch_size = batch_size
         self.output_json_filepath = output_json_filepath
         self.output_json_filename = output_json_filename
@@ -98,6 +100,12 @@ class BaseInferencer:
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.tokenizer.padding_side = "left"
+
+    def _add_task_description(self, separator, prompt):
+        if not self.task_description:
+            return prompt
+        else:
+            return self.task_description + separator + prompt
 
     def get_input_token_num(self, inputs):
         return len(self.tokenizer(inputs, verbose=False)['input_ids'])

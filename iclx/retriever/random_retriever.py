@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Optional, List
+from typing import Optional
 from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
