@@ -36,6 +36,8 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
 
     # naive, sequence, binning, gt, pseudo_gt = [], [], [], [], []
     sequence, binning, gt, pseudo_gt = [], [], [], []
+    s_1_1, s_1_2, s_2_1, s_2_2, s_2_3, s_3_1, s_3_2 = [], [], [], [], [], [], []
+    b_1_1, b_2_1, b_2_2, b_2_3, b_3_1, b_3_2 = [], [], [], [], [], []
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         # f.write("naive, sequence, binning, gt, pseudo_gt\n")
@@ -45,13 +47,69 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
         for i in shots:
             # naive.append(test_naive(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             # logger.info(f"naive for shot {i} done")
+
+            # sequence family
             sequence.append(test_sequence(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             torch.cuda.empty_cache()
             logger.info(f"sequence for shot {i} done")
-            
+
+            s_1_1.append(test_sequence_1_1(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequence_1_1 for shot {i} done")
+
+            s_1_2.append(test_sequence_1_2(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequence_1_2 for shot {i} done")
+
+            s_2_1.append(test_sequence_2_1(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequence_2_1 for shot {i} done")
+
+            s_2_2.append(test_sequence_2_2(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequence_2_2 for shot {i} done")
+
+            s_2_3.append(test_sequence_2_3(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequence_2_3 for shot {i} done")
+
+            s_3_1.append(test_sequence_3_1(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequence_3_1 for shot {i} done")
+
+            s_3_2.append(test_sequence_3_2(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"sequence_3_2 for shot {i} done")
+
+
+            # binning family
             binning.append(test_binning(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             torch.cuda.empty_cache()
             logger.info(f"binning for shot {i} done")
+
+            b_1_1.append(test_binning_1_1(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"binning_1_1 for shot {i} done")
+
+            b_2_1.append(test_binning_2_1(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"binning_2_1 for shot {i} done")
+
+            b_2_2.append(test_binning_2_2(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"binning_2_2 for shot {i} done")
+
+            b_2_3.append(test_binning_2_3(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"binning_2_3 for shot {i} done")
+
+            b_3_1.append(test_binning_3_1(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"binning_3_1 for shot {i} done")
+
+            b_3_2.append(test_binning_3_2(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
+            torch.cuda.empty_cache()
+            logger.info(f"binning_3_2 for shot {i} done")
             
             gt.append(test_GT(i, data, model_name, retriever, retriever_base, batch_size)['accuracy'])
             torch.cuda.empty_cache()
@@ -62,11 +120,33 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
             logger.info(f"pseudo_gt for shot {i} done")
 
             # f.write(f"{naive[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
-            f.write(f"{sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
+            f.write(f"{sequence[-1]}, {s_1_1[-1]}, {s_1_2[-1]}, {s_2_1[-1]}, {s_2_2[-1]}, {s_2_3[-1]},
+                      {s_3_1[-1]}, {s_3_2[-1]},
+                      {binning[-1]}, {b_1_1[-1]}, {b_2_1[-1]}, {b_2_2[-1]}, {b_2_3[-1]},
+                      {b_3_1[-1]}, {b_3_2[-1]},
+                      {gt[-1]}, {pseudo_gt[-1]}\n")
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
     # logger.info(naive)
+    logger.info(s_1_1)
+    logger.info(s_1_2)
+    
+    logger.info(s_2_1)
+    logger.info(s_2_2)
+    logger.info(s_2_3)
+
+    logger.info(s_3_1)
+    logger.info(s_3_2)
+
+    logger.info(b_1_1)
+    logger.info(b_2_1)
+    logger.info(b_2_2)
+    logger.info(b_2_3)
+
+    logger.info(b_3_1)
+    logger.info(b_3_2)
+
     logger.info(sequence)
     logger.info(binning)
     logger.info(gt)
@@ -74,6 +154,25 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
 
     xticks = range(len(shots))
     # plt.plot(x, naive, label = 'naive')
+
+    plt.plot(x, s_1_1, label='s1.1')
+    plt.plot(x, s_1_2, label='s1.2')
+    
+    plt.plot(x, s_2_1, label='s2.1')
+    plt.plot(x, s_2_2, label='s2.2')
+    plt.plot(x, s_2_3, label='s2.3')
+
+    plt.plot(x, s_3_1, label='s3.1')
+    plt.plot(x, s_3_2, label='s3.2')
+
+    plt.plot(x, b_1_1, label='b1.1')
+    plt.plot(x, b_2_1, label='b2.1')
+    plt.plot(x, b_2_2, label='b2.2')
+    plt.plot(x, b_2_3, label='b2.3')
+
+    plt.plot(x, b_3_1, label='b3.1')
+    plt.plot(x, b_3_2, label='b3.2')
+    
     plt.plot(xticks, sequence, label = 'sequence')
     plt.plot(xticks, binning, label = 'binning')
     plt.plot(xticks, gt, label = 'gt')
@@ -147,6 +246,223 @@ def test_sequence(ice_num, data, model_name, retriever, retriever_base, batch_si
 
     return score
 
+def test_sequence_1_1(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequence"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, shuffle='tags')
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_sequence_1_2(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequence_1_2"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence_1_2"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, shuffle='tags')
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_sequence_2_1(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequence_2_1"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence_2_1"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_sequence_2_2(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequence_2_2"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence_2_2"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_sequence_2_3(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequence_2_3"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence_2_1"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_sequence_3_1(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequence"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, shuffle='labels')
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_sequence_3_2(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["sequence"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, shuffle='labels_except_first')
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
 def test_binning(ice_num, data, model_name, retriever, retriever_base, batch_size):
 
     # ICL exemplar template
@@ -159,8 +475,10 @@ def test_binning(ice_num, data, model_name, retriever, retriever_base, batch_siz
 
     column_token_map = COLUMN_TOKEN_MAP["binning"]
 
+    binning_dict = BINNING_DICT["binning"]
+
     # Define prompt templates for ice and prompt
-    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>', binning=binning_dict)
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
@@ -173,6 +491,204 @@ def test_binning(ice_num, data, model_name, retriever, retriever_base, batch_siz
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_binning_1_1(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["binning"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    column_token_map = COLUMN_TOKEN_MAP["binning"]
+
+    binning_dict = BINNING_DICT["binning"]
+
+    # Define prompt templates for ice and prompt
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>', binning=binning_dict)
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)  
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, shuffle='tags')
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_binning_2_1(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["binning_2_1"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    column_token_map = COLUMN_TOKEN_MAP["binning_2_1"]
+
+    binning_dict = BINNING_DICT["binning_2_1"]
+
+    # Define prompt templates for ice and prompt
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>', binning=binning_dict)
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)  
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_binning_2_2(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["binning_2_2"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    column_token_map = COLUMN_TOKEN_MAP["binning_2_2"]
+
+    binning_dict = BINNING_DICT["binning_2_2"]
+
+    # Define prompt templates for ice and prompt
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>', binning=binning_dict)
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)  
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_binning_2_3(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["binning_2_3"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    column_token_map = COLUMN_TOKEN_MAP["binning_2_1"]
+
+    binning_dict = BINNING_DICT["binning_2_1"]
+
+    # Define prompt templates for ice and prompt
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>', binning=binning_dict)
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)  
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_binning_3_1(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["binning"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    column_token_map = COLUMN_TOKEN_MAP["binning"]
+
+    binning_dict = BINNING_DICT["binning"]
+
+    # Define prompt templates for ice and prompt
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>', binning=binning_dict)
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)  
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, shuffle='labels')
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_binning_3_2(ice_num, data, model_name, retriever, retriever_base, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["binning"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    column_token_map = COLUMN_TOKEN_MAP["binning"]
+
+    binning_dict = BINNING_DICT["binning"]
+
+    # Define prompt templates for ice and prompt
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>', binning=binning_dict)
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    retriever = retriever(data, sentence_transformers_model_name=retriever_base, ice_num=ice_num, use_ordering=True)  
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, shuffle='labels_except_first')
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
@@ -259,6 +775,7 @@ if __name__ == '__main__':
     
     LABEL_DICT = setup['label_dict']
     COLUMN_TOKEN_MAP = setup['column_token_map']
+    BINNING_DICT = setup['binning_dict']
     
     EXP_NAME = setup['experiment_name']
     now = datetime.now().strftime("%Y%m%d_%H%M%S")

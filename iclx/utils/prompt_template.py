@@ -27,7 +27,7 @@ class PromptTemplate:
         self.label_dict = label_dict
         self.binning = binning
 
-    def generate_ice_item(self, entry: Dict, label: Hashable, use_ordering=False) -> str:
+    def generate_ice_item(self, entry: Dict, label: Hashable, use_ordering=False, shuffle=None) -> str:
         """Generate in-context example based on the provided :obj:`entry` data.
 
         Args:
@@ -49,8 +49,32 @@ class PromptTemplate:
         if use_ordering:
             label_dict = {v: entry[k] for k, v in self.label_dict.items()}
             sorted_dict = {k: v for k, v in sorted(label_dict.items(), key=lambda item: item[1], reverse=True)}
-            labels = {'Label'+str(i+1): list(sorted_dict.keys())[i] for i in range(len(sorted_dict.keys()))}
-            probs = list(sorted_dict.values())
+            
+            ordered_labels = list(sorted_dict.keys())
+            ordered_values = list(sorted_dict.values())
+
+            if shuffle == 'tags':
+                random.shuffle(ordered_values)
+
+                if self.binning is not None:
+                    # shuffle the values in binning dict
+                    keys = list(self.binning.keys())
+                    values = list(self.binning.values())
+                    random.shuffle(values)
+                    self.binning = dict(zip(keys, values))
+
+            elif shuffle == 'labels':
+                random.shuffle(ordered_labels)
+            
+            elif shuffle == 'labels_except_first':
+                first_element = ordered_labels[0]
+                rest_of_list = ordered_labels[1:]
+                random.shuffle(rest_of_list)
+
+                ordered_labels = [first_element] + rest_of_list
+
+            labels = {'Label'+str(i+1): ordered_labels[i] for i in range(len(sorted_dict.keys()))}
+            probs = ordered_values
 
         # Replace context token
         for key, token in self.column_token_map.items():

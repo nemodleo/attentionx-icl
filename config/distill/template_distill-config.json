@@ -1,14 +1,14 @@
 {   "experiment_name":"<dataset>-<retriever>-<student>",
 
-    "batch_size": 1,
-    "retriever": "<random/topk>",
-    "retriever_base": "all-mpnet-base-v2",
-    "student": "distilgpt2",
+    "batch_size": 32,
+    "retriever": "<topk>",
+    "retriever_base": "bert-base-uncased",
+    "student": "EleutherAI/gpt-neo-2.7B",
     "shots": [1, 4, 8, 16, 32],
 
-    "train_path":"",
+    "train_path":"data/train_sst5.jsonl",
     "val_path": null,
-    "test_path":"",
+    "test_path":"data/test.jsonl",
     "task_description": "Task Instruction: Sentiment of the sentence\nLabel Space: {great, good, okay, bad, terrible}",
 
     "data_columns": {
@@ -18,8 +18,14 @@
     "ice_dict":{
     "naive": "</E>Review: </text>\nSentiment: great </VP>%% good </P>%% okay </N>%% bad </NG>% terrible </VN>%",
     "sequence": "</E>Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>%",
-    "binning": "</E>Review: </text>\nSentiment: </Label1> is very likely, </Label2> is likely, </Label3> is somewhat likely, </Label4> is unlikely, </Label5> is very unlikely"
-    
+    "sequence_1_2": "</E>Review: </text>\nSentiment: </Label1> </Label2> </Label3> </Label4> </Label5>%",
+    "sequence_2_1": "</E>Review: </text>\nSentiment: </Label1> </1>%",
+    "sequence_2_2": "</E>Review: </text>\nSentiment: </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>%",
+    "sequence_2_3": "</E>Review: </text>\nSentiment: </Label1> </1>% </Label1> </1>% </Label1> </1>% </Label1> </1>% </Label1> </1>%",
+    "binning":  "</E>Review: </text>\nSentiment: </Label1> </Exp1>, </Label2> </Exp2>, </Label3> </Exp3>, </Label4> </Exp4>, </Label5> </Exp5>",
+    "binning_2_1" : "</E>Review: </text>\nSentiment: </Label1> </Exp1>",
+    "binning_2_2":  "</E>Review: </text>\nSentiment: </Label2> </Exp2>, </Label3> </Exp3>, </Label4> </Exp4>, </Label5> </Exp5>",
+    "binning_2_3":  "</E>Review: </text>\nSentiment: </Label1> </Exp1> </Label1> </Exp1> </Label1> </Exp1> </Label1> </Exp1> </Label1> </Exp1>"
     },
 
     "template_dict": {
@@ -41,7 +47,18 @@
     "column_token_map": {
         "naive":{"text": "</text>", "4" : "</VP>", "3" : "</P>", "2" : "</N>", "1" : "</NG>", "0" : "</VN>"},
         "sequence":{"text": "</text>", "0" : "</1>", "Label1" : "</Label1>", "1" : "</2>", "Label2" : "</Label2>", "2" : "</3>", "Label3" : "</Label3>", "3" : "</4>", "Label4" : "</Label4>", "4" : "</5>", "Label5" : "</Label5>" },
-        "binning":{"text": "</text>", "Label1" : "</Label1>", "Label2" : "</Label2>", "Label3" : "</Label3>", "Label4" : "</Label4>", "Label5" : "</Label5>"},
+        "sequence_1_2":{"text": "</text>", "Label1": "</Label1>", "Label2": "</Label2>", "Label3": "</Label3>", "Label4": "</Label4>", "Label5": "</Label5>" },
+        "sequence_2_1":{"text": "</text>", "0" : "</1>", "Label1" : "</Label1>"},
+        "sequence_2_2":{"text": "</text>", "1" : "</2>", "Label2" : "</Label2>", "2" : "</3>", "Label3" : "</Label3>", "3" : "</4>", "Label4" : "</Label4>", "4" : "</5>", "Label5" : "</Label5>" },
+        "binning":{"text": "</text>", "Label1": "</Label1>", "Label2": "</Label2>", "Label3": "</Label3>", "Label4": "</Label4>", "Label5": "</Label5>", "Exp1" : "</Exp1>", "Exp2" : "</Exp2>", "Exp3" : "</Exp3>", "Exp4" : "</Exp4>", "Exp5" : "</Exp5>"},
+        "binning_2_1":{"text": "</text>", "Label1": "</Label1>", "Exp1" : "</Exp1>"},
+        "binning_2_2":{"text": "</text>", "Label2": "</Label2>", "Label3": "</Label3>", "Label4": "</Label4>", "Label5": "</Label5>", "Exp2" : "</Exp2>", "Exp3" : "</Exp3>", "Exp4" : "</Exp4>", "Exp5" : "</Exp5>"},
         "GT": {"text": "</text>"}
+    },
+
+    "binning_dict": {
+        "binning": {"Exp1" : "is very likely", "Exp2" : "is likely", "Exp3" : "could be likely", "Exp4" : "is not likely", "Exp5" : "is not very likely"},
+        "binning_2_1": {"Exp1" : "is very likely"},
+        "binning_2_2": {"Exp2" : "is likely", "Exp3" : "could be likely", "Exp4" : "is not likely", "Exp5" : "is not very likely"}
     }
 }
