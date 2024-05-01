@@ -7,6 +7,41 @@ poetry-install:
 	curl -sSL https://install.python-poetry.org | python3 -
 	poetry install
 
+poetry-faiss-gpu-reinstall:
+	$(MAKE) poetry-remove-faiss-gpu
+	$(MAKE) poetry-install-onemkl
+	$(MAKE) poetry-build-faiss-gpu
+
+poetry-remove-faiss-gpu:
+	poetry remove faiss-gpu
+
+poetry-install-onemkl:
+	curl https://registrationcenter-download.intel.com/akdlm/IRC_NAS/adb8a02c-4ee7-4882-97d6-a524150da358/l_onemkl_p_2023.2.0.49497.sh --output onemkl.sh \
+		&& poetry run bash onemkl.sh -a -s --eula accept \
+		&& rm onemkl.sh
+
+poetry-build-faiss-gpu:
+	poetry shell
+	git clone --depth 1 --branch v1.8.0 https://github.com/facebookresearch/faiss.git \
+		&& cd faiss \
+		&& . /opt/intel/oneapi/setvars.sh \
+		&& cmake -B build . \
+		-DFAISS_ENABLE_GPU=ON \
+		-DFAISS_ENABLE_PYTHON=ON \
+		-DFAISS_ENABLE_RAFT=OFF \
+		-DBUILD_TESTING=ON \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DFAISS_ENABLE_C_API=OFF \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DFAISS_OPT_LEVEL=avx2 \
+		-DBLA_VENDOR=Intel10_64lp \
+		"-DMKL_LIBRARIES=-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl" \
+		-DCUDAToolkit_ROOT=/usr/local/cuda \
+		-DCMAKE_CUDA_ARCHITECTURES="75;61" \
+		&& make -C build -j$(nproc) faiss \
+		&& make -C build -j$(nproc) swigfaiss \
+		&& cd build/faiss/python && python setup.py install
+
 poetry-export:
 	poetry export -f requirements.txt --without-hashes --output requirements.txt
 
