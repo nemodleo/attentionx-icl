@@ -1,16 +1,10 @@
 {
-    "train_path": "",
+    "train_path": "YOUR_PATH_TO_TRAIN_DATA",
     "batch_size": 1,
     "teacher_model": "EleutherAI/gpt-j-6B",
     
-    "template_dict": {
-            "0" : "</E>Review: </text>\nSentiment: terrible",
-            "1" : "</E>Review: </text>\nSentiment: bad",
-            "2" : "</E>Review: </text>\nSentiment: okay" ,
-            "3" : "</E>Review: </text>\nSentiment: good" ,
-            "4" : "</E>Review: </text>\nSentiment: great" 
-        },
-    
+    "prefix_template": "</E>Review: </text>\nSentiment:",
+    "concat_token": " ",
     "data_columns": {
         "input_columns": ["text"],
         "output_columns": ["label"]},
@@ -20,7 +14,8 @@
         "1": "bad",
         "2": "okay",
         "3": "good",
-        "4": "great"},
+        "4": "great"
+    },
     
-    "output_path":""
-    }
+    "output_path":"YOUR_PATH_TO_OUTPUT"
+}

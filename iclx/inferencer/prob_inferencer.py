@@ -120,7 +120,7 @@ class ProbInferencer(BaseInferencer):
         output_handler.merge_to_main_process(output_json_filepath, output_json_filename)
         output_handler.write_to_json(output_json_filepath, output_json_filename)
 
-        return [sample['prediction'] for sample in output_handler.results_dict.values()]
+        return prob, [sample['prediction'] for sample in output_handler.results_dict.values()]
 
     def __get_prob(self, input_texts: List[str], label_tokens: str, mask_length=None):
         self.tokenizer.padding_side = "right"

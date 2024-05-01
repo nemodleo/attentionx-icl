@@ -19,9 +19,6 @@ infer-bert:
 run-sst2:
 	$(AUTO_POETRY) python scripts/sst2.py
 
-run-sst2-prob:
-	$(AUTO_POETRY) python scripts/sst2_prob.py
-
 run-sst2_gpt_neo_2.7B:
 	$(AUTO_POETRY) python scripts/sst2_gpt_neo_2.7B.py
 
