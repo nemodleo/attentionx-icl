@@ -9,19 +9,21 @@ poetry-install:
 
 poetry-faiss-gpu-reinstall:
 	$(MAKE) poetry-remove-faiss-gpu
-	$(MAKE) poetry-install-onemkl
-	$(MAKE) poetry-build-faiss-gpu
+	poetry run $(MAKE) poetry-install-onemkl
+	poetry run $(MAKE) poetry-build-faiss-gpu
+
+test1:
+	poetry run $(MAKE) poetry-install-onemkl
 
 poetry-remove-faiss-gpu:
 	poetry remove faiss-gpu
 
 poetry-install-onemkl:
 	curl https://registrationcenter-download.intel.com/akdlm/IRC_NAS/adb8a02c-4ee7-4882-97d6-a524150da358/l_onemkl_p_2023.2.0.49497.sh --output onemkl.sh \
-		&& poetry run bash onemkl.sh -a -s --eula accept \
+		&& bash onemkl.sh -a -s --eula accept \
 		&& rm onemkl.sh
 
 poetry-build-faiss-gpu:
-	poetry shell
 	git clone --depth 1 --branch v1.8.0 https://github.com/facebookresearch/faiss.git \
 		&& cd faiss \
 		&& . /opt/intel/oneapi/setvars.sh \
@@ -37,7 +39,8 @@ poetry-build-faiss-gpu:
 		-DBLA_VENDOR=Intel10_64lp \
 		"-DMKL_LIBRARIES=-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl" \
 		-DCUDAToolkit_ROOT=/usr/local/cuda \
-		-DCMAKE_CUDA_ARCHITECTURES="75;61" \
+		-DCMAKE_CUDA_ARCHITECTURES="80;75" \
+		-DPython_EXECUTABLE=$(shell which python) \
 		&& make -C build -j$(nproc) faiss \
 		&& make -C build -j$(nproc) swigfaiss \
 		&& cd build/faiss/python && python setup.py install
@@ -84,9 +87,6 @@ run-trec:
 vessl-workspace-init:
 	mkdir /root/.cache
 	ln -s /opt/.cache/huggingface /root/.cache/huggingface
-
-run-create_train:
-	$(AUTO_POETRY) python scripts/create_train_with_pseudo.py $(SETUP_DICT)
 
 run-distill:
 	$(AUTO_POETRY) python scripts/distill.py $(SETUP_DICT)
