@@ -12,9 +12,6 @@ poetry-faiss-gpu-reinstall:
 	poetry run $(MAKE) poetry-install-onemkl
 	poetry run $(MAKE) poetry-build-faiss-gpu
 
-test1:
-	poetry run $(MAKE) poetry-install-onemkl
-
 poetry-remove-faiss-gpu:
 	poetry remove faiss-gpu
 
