@@ -34,7 +34,7 @@ poetry-build-faiss-gpu:
 		-DCMAKE_BUILD_TYPE=Release \
 		-DFAISS_OPT_LEVEL=avx2 \
 		-DBLA_VENDOR=Intel10_64lp \
-		"-DMKL_LIBRARIES=-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl" \
+		"-DMKL_LIBRARIES=-Wl,--start-group /opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_intel_lp64.a /opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_gnu_thread.a /opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl" \
 		-DCUDAToolkit_ROOT=/usr/local/cuda \
 		-DCMAKE_CUDA_ARCHITECTURES="80;75" \
 		-DPython_EXECUTABLE=$(shell which python) \
