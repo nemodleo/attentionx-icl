@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Hashable
-
+import random
 
 class PromptTemplate:
     """In-context Learning Prompt Template Class

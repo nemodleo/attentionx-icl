@@ -120,11 +120,7 @@ def test(shots = [1, 4, 8, 16, 32], model_name='distilgpt2', retriever=RandomRet
             logger.info(f"pseudo_gt for shot {i} done")
 
             # f.write(f"{naive[-1]}, {sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
-            f.write(f"{sequence[-1]}, {s_1_1[-1]}, {s_1_2[-1]}, {s_2_1[-1]}, {s_2_2[-1]}, {s_2_3[-1]},
-                      {s_3_1[-1]}, {s_3_2[-1]},
-                      {binning[-1]}, {b_1_1[-1]}, {b_2_1[-1]}, {b_2_2[-1]}, {b_2_3[-1]},
-                      {b_3_1[-1]}, {b_3_2[-1]},
-                      {gt[-1]}, {pseudo_gt[-1]}\n")
+            f.write(f"{sequence[-1]}, {s_1_1[-1]}, {s_1_2[-1]}, {s_2_1[-1]}, {s_2_2[-1]}, {s_2_3[-1]}, {s_3_1[-1]}, {s_3_2[-1]}, {binning[-1]}, {b_1_1[-1]}, {b_2_1[-1]}, {b_2_2[-1]}, {b_2_3[-1]}, {b_3_1[-1]}, {b_3_2[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
