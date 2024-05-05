@@ -1,14 +1,14 @@
-{   "experiment_name":"sst5-random-gpt-neo",
+{   "experiment_name":"trec-random-distilgpt2",
 
     "batch_size": 4,
     "retriever": "random",
     "retriever_base": "bert-base-uncased",
-    "student": "EleutherAI/gpt-neo-2.7B",
+    "student": "distilgpt2",
     "shots": [1, 4, 8, 16, 32],
 
-    "train_path":"data/train_sst5_bert.jsonl",
+    "train_path":"data/trec-train.jsonl",
     "val_path": null,
-    "test_path":"data/test.jsonl",
+    "test_path":"data/trec-test.jsonl",
     "task_description": "Task Instruction: Sentiment of the sentence\nLabel Space: {great, good, okay, bad, terrible}",
 
     "data_columns": {
