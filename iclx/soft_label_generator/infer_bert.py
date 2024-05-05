@@ -105,8 +105,8 @@ def infer(
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)
             probs = F.softmax(outputs.logits, dim=-1)
-            pseudo_gt = F.softmax(outputs.logits, dim=-1).max(dim=-1)[1].cpu().numpy().tolist()
-            pseudo_gt_text = [data_module.label_texts()[label] for label in pseudo_gt]
+            pseudo_gt = torch.argmax(probs, dim=-1)
+            pseudo_gt_text = data_module.label_texts()[pseudo_gt]
             probs = probs.cpu().numpy().tolist()
             labels = labels.cpu().numpy().tolist()
             label_texts = [data_module.label_texts()[label] for label in labels]
