@@ -21,10 +21,14 @@ poetry-install-onemkl:
 		&& rm onemkl.sh
 
 poetry-build-faiss-gpu:
+    $(eval export CUDA_HOME=/usr/local/cuda)
+    $(eval export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64)
+    $(eval export PATH=$PATH:$CUDA_HOME/bin)
 	git clone --depth 1 --branch v1.8.0 https://github.com/facebookresearch/faiss.git \
-		&& cd faiss \
-		&& . /opt/intel/oneapi/setvars.sh \
-		&& cmake -B build . \
+		&& cd faiss/ \
+		&& . /opt/intel/oneapi/setvars.sh --force \
+        cd faiss/faiss && \
+        cmake -B build . \
 		-DFAISS_ENABLE_GPU=ON \
 		-DFAISS_ENABLE_PYTHON=ON \
 		-DFAISS_ENABLE_RAFT=OFF \
@@ -35,9 +39,10 @@ poetry-build-faiss-gpu:
 		-DFAISS_OPT_LEVEL=avx2 \
 		-DBLA_VENDOR=Intel10_64lp \
 		"-DMKL_LIBRARIES=-Wl,--start-group /opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_intel_lp64.a /opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_gnu_thread.a /opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl" \
-		-DCUDAToolkit_ROOT=/usr/local/cuda \
+		-DCUDAToolkit_ROOT=/usr/local/cuda-12 \
 		-DCMAKE_CUDA_ARCHITECTURES="80;75" \
 		-DPython_EXECUTABLE=$(shell which python) \
+        -Wno-dev \
 		&& make -C build -j$(nproc) faiss \
 		&& make -C build -j$(nproc) swigfaiss \
 		&& cd build/faiss/python && python setup.py install
