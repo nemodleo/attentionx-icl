@@ -33,6 +33,7 @@ fire = "^0.6.0"
 pytorch-lightning = "^2.2.2"
 matplotlib = "^3.8.4"
 swig = "^4.2.1"
+cmake = "^3.29.2"
 
 [build-system]
 requires = ["poetry-core"]
