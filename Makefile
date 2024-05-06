@@ -13,8 +13,8 @@ poetry-install:
 	poetry install
 
 poetry-faiss-gpu-reinstall:
-	$(MAKE) poetry-remove-faiss-gpu
 	$(MAKE) poetry-sync-toml
+	$(MAKE) poetry-remove-faiss-gpu
 	poetry run $(MAKE) poetry-install-onemkl
 	poetry run $(MAKE) poetry-build-faiss-gpu
 
