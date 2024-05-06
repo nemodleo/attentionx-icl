@@ -78,12 +78,13 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
     logger.info(gt)
     logger.info(pseudo_gt)
 
+    # Plotting in reverse order
     xticks = range(len(shots))
-    plt.plot(xticks, sequence, label = 'sequence')
-    plt.plot(xticks, binning, label = 'binning')
-    plt.plot(xticks, gt, label = 'gt')
-    plt.plot(xticks, pseudo_gt, label = 'pseudo_gt')
-    plt.xticks(xticks, shots)
+    plt.plot(xticks, sequence[::-1], label='sequence')
+    plt.plot(xticks, binning[::-1], label='binning')
+    plt.plot(xticks, gt[::-1], label='gt')
+    plt.plot(xticks, pseudo_gt[::-1], label='pseudo_gt')
+    plt.xticks(xticks, shots[::-1])
 
     plt.legend()
     plt.savefig(f"{FOLDER_NAME}/plot_{EXP_NAME}.png")
