@@ -11,6 +11,11 @@
 make poetry-install
 ```
 
+if building faiss index is too slow in your gpu,
+```bash
+make poetry-faiss-gpu-reinstall
+```
+
 
 ## Preparing Dataset (Generating Soft Label)
 #### 1. Using a non-BERT teacher model
