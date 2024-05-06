@@ -183,3 +183,6 @@ config/distill/*
 !config.distill/template_distill-config.json
 #.DS_Store
 .DS_Store
+
+# faiss lib
+faiss/*
