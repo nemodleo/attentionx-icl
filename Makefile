@@ -32,7 +32,7 @@ poetry-install-onemkl:
 
 poetry-build-faiss-gpu:
 	git clone https://github.com/facebookresearch/faiss.git \
-		&& . /opt/intel/oneapi/setvars.sh \
+		&& . /opt/intel/oneapi/setvars.sh --force \
 		&& cd faiss/ \
 		&& cmake -B build . \
 			-DFAISS_ENABLE_GPU=ON \
