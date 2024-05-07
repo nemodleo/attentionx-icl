@@ -47,6 +47,7 @@ class PPLInferencer(BaseInferencer):
                   retriever: BaseRetriever,
                   ice_template: Optional[PromptTemplate] = None,
                   prompt_template: Optional[PromptTemplate] = None,
+                  use_ordering: Optional[bool] = False,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None,
                   pseudo_gt: Optional[str] = None) -> List:
@@ -73,7 +74,7 @@ class PPLInferencer(BaseInferencer):
 
         # 4. Generate in-context examples for testing inputs
         for idx in range(len(ice_idx_list)):
-            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt))
+            ice.append(retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, pseudo_gt=pseudo_gt, use_ordering=use_ordering))
         output_handler.save_ice(ice)
 
         # 5. Calculating PPL for prompts in each label's class
@@ -90,7 +91,7 @@ class PPLInferencer(BaseInferencer):
                     prompt_token_num = self.get_input_token_num(prompt)
                     while len(ice_idx_list[idx]) > 0 and prompt_token_num > self.max_model_token_num:
                         ice_idx_list[idx] = ice_idx_list[idx][:-1]
-                        ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template)
+                        ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, use_ordering=use_ordering)
                         prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template)
                         prompt = self._add_task_description(retriever.ice_separator, prompt)
                         prompt_token_num = self.get_input_token_num(prompt)

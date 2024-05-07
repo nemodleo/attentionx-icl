@@ -30,18 +30,16 @@ class BaseRetriever:
                  index_split: Optional[str] = 'train',
                  test_split: Optional[str] = 'test',
                  accelerator: Optional[Accelerator] = None,
-                 use_ordering: Optional[bool] = False,
                  **kwargs,
                  ) -> None:
         self.dataset_reader = dataset_reader
         self.ice_separator = ice_separator
         self.ice_eos_token = ice_eos_token
         self.prompt_eos_token = prompt_eos_token
-        self.ice_num = ice_num
+        self._ice_num = ice_num
         self.index_split = index_split
         self.test_split = test_split
         self.accelerator = accelerator
-        self.use_ordering = use_ordering
         self.is_main_process = True if self.accelerator is None or self.accelerator.is_main_process else False
         self.index_ds = self.dataset_reader.dataset
         self.test_ds = self.dataset_reader.dataset
@@ -71,6 +69,14 @@ class BaseRetriever:
         """
         raise NotImplementedError("Method hasn't been implemented yet")
 
+    @property
+    def ice_num(self) -> int:
+        return self._ice_num
+
+    @ice_num.setter
+    def ice_num(self, value: int) -> None:
+        self._ice_num = value
+
     def get_labels(self, ice_template: Optional[PromptTemplate] = None, prompt_template: Optional[PromptTemplate] = None):
         labels = []
         if prompt_template is not None and isinstance(prompt_template.template, Dict):
@@ -81,7 +87,7 @@ class BaseRetriever:
             labels = list(set(self.test_ds[self.dataset_reader.output_column]))
         return labels
 
-    def generate_ice(self, idx_list: List[int], ice_template: Optional[PromptTemplate] = None, pseudo_gt: Optional[str] = None) -> str:
+    def generate_ice(self, idx_list: List[int], ice_template: Optional[PromptTemplate] = None, pseudo_gt: Optional[str] = None, use_ordering: Optional[bool] = False) -> str:
         generated_ice_list = []
         dr = self.dataset_reader
         for idx in idx_list:
@@ -91,10 +97,10 @@ class BaseRetriever:
                                                                 self.index_ds[idx][dr.output_column]]))))
             elif pseudo_gt is not None:
                 generated_ice_list.append(
-                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][pseudo_gt], use_ordering=self.use_ordering))
+                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][pseudo_gt], use_ordering=use_ordering))
             else:
                 generated_ice_list.append(
-                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][dr.output_column], use_ordering=self.use_ordering))
+                    ice_template.generate_ice_item(self.index_ds[idx], self.index_ds[idx][dr.output_column], use_ordering=use_ordering))
         generated_ice = self.ice_separator.join(generated_ice_list) + self.ice_eos_token
         return generated_ice
 
