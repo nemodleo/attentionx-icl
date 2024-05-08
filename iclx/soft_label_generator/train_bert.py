@@ -13,6 +13,7 @@ from iclx.soft_label_generator.datamodule.ag_news import AGNewsDataModule
 from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
 from iclx.soft_label_generator.datamodule.mnli import MNLIDataModule
 from iclx.soft_label_generator.datamodule.qnli import QNLIDataModule
+from iclx.soft_label_generator.datamodule.mnist_text import MNISTTextDataModule
 
 
 def initialize_data_module(dataset, model_name_or_path, batch_size, max_token_len, sampling_rate):
@@ -24,6 +25,7 @@ def initialize_data_module(dataset, model_name_or_path, batch_size, max_token_le
         "yelp": YelpDataModule,
         "mnli": MNLIDataModule,
         "qnli": QNLIDataModule,
+        "mnist-text": MNISTTextDataModule,
     }
     if dataset in data_modules:
         return data_modules[dataset](

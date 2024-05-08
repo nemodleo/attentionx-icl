@@ -19,6 +19,7 @@ from iclx.soft_label_generator.datamodule.ag_news import AGNewsDataModule
 from iclx.soft_label_generator.datamodule.yelp import YelpDataModule
 from iclx.soft_label_generator.datamodule.mnli import MNLIDataModule
 from iclx.soft_label_generator.datamodule.qnli import QNLIDataModule
+from iclx.soft_label_generator.datamodule.mnist_text import MNISTTextDataModule
 
 
 def save_to_jsonl(data: List[Dict[str, Any]], output_path: str):
@@ -37,6 +38,7 @@ def initialize_data_module(dataset, model_name_or_path, batch_size, max_token_le
         "yelp": YelpDataModule,
         "mnli": MNLIDataModule,
         "qnli": QNLIDataModule,
+        "mnist-text": MNISTTextDataModule,
     }
     if dataset in data_modules:
         return data_modules[dataset](
@@ -105,8 +107,8 @@ def infer(
         with torch.no_grad():
             outputs = model(input_ids, attention_mask=attention_mask)
             probs = F.softmax(outputs.logits, dim=-1)
-            pseudo_gt = F.softmax(outputs.logits, dim=-1).max(dim=-1)[1].cpu().numpy().tolist()
-            pseudo_gt_text = [data_module.label_texts()[label] for label in pseudo_gt]
+            pseudo_gts = F.softmax(outputs.logits, dim=-1).max(dim=-1)[1].cpu().numpy().tolist()
+            pseudo_gt_texts = [data_module.label_texts()[label] for label in pseudo_gts]
             probs = probs.cpu().numpy().tolist()
             labels = labels.cpu().numpy().tolist()
             label_texts = [data_module.label_texts()[label] for label in labels]
@@ -119,7 +121,7 @@ def infer(
                     "pseudo_gt_text": pseudo_gt_text,
                     **{str(i): prob for i, prob in enumerate(probs_)}
                 }
-                for text, label, label_text, probs_ in zip(texts, labels, label_texts, probs)
+                for text, label, label_text, pseudo_gt, pseudo_gt_text, probs_ in zip(texts, labels, label_texts, pseudo_gts, pseudo_gt_texts, probs)
             ])
 
     output_path = f"./data/{dataset}/{file_name}"
