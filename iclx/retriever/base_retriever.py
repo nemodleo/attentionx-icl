@@ -79,7 +79,9 @@ class BaseRetriever:
 
     def get_labels(self, ice_template: Optional[PromptTemplate] = None, prompt_template: Optional[PromptTemplate] = None):
         labels = []
-        if prompt_template is not None and isinstance(prompt_template.template, Dict):
+        if prompt_template is not None and isinstance(prompt_template.prob_tokens, Dict):
+            labels = list(prompt_template.prob_tokens.keys())[:]
+        elif prompt_template is not None and isinstance(prompt_template.template, Dict):
             labels = list(prompt_template.template.keys())[:]
         elif ice_template is not None and ice_template.ice_token is not None and isinstance(ice_template.template, Dict):
             labels = list(ice_template.template.keys())[:]

@@ -7,9 +7,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import json
 
 from iclx import DatasetReader
-from iclx import PromptTemplate
+from iclx import ProbPromptTemplate
+from iclx import ProbInferencer
 from iclx import RandomRetriever
-from iclx.inferencer.parent_inferencer import ParentInferencer
 
 import numpy as np
 
@@ -37,30 +37,29 @@ def create_data():
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
     
     
-    template = PromptTemplate(TP_DICT, {'text': '</text>'}, ice_token='</E>')
-    retriever = RandomRetriever(data, ice_num=0)
-    inferencer = ParentInferencer(model_name=TEACHER, batch_size=BATCH_SIZE)
-    predictions = inferencer.inference(retriever, ice_template=template)
+    template = ProbPromptTemplate(PREFIX_TP, LABEL_MAP, CONCAT_TOKEN, {'text': '</text>'}, ice_token='</E>')
+    retriever = RandomRetriever(data, ice_num=8)
+    inferencer = ProbInferencer(model_name=TEACHER, batch_size=BATCH_SIZE)
+    probs, predictions = inferencer.inference(retriever, ice_template=template, prompt_template=template)
     
-    for i, p in enumerate(predictions):
+    teacher_data = []
+    for i, (prob, pred) in enumerate(zip(probs, predictions)):
+        new_entry = dict()
         entry = dataset_dict["test"][i]
-        p["text"] = entry["text"] 
-        p["label"] = str(entry["label"])
-        p["label_text"] = label_map[p["label"]]
+        new_entry["text"] = entry["text"] 
+        new_entry["label"] = str(entry["label"])
+        new_entry["label_text"] = LABEL_MAP[str(entry["label"])]
 
         label_keys = list(LABEL_MAP.keys())
-        perplexity_values = [p[int(k)] for k in label_keys]      
-        probabilities = rec_softmax(perplexity_values)
-        max_label_index = int(np.argmax(probabilities))
-        p["pseudo_gt"] = str(max_label_index)
+        new_entry["pseudo_gt"] = str(pred)
+        prob = list(np.array(prob) / np.sum(prob))
 
-        for k in label_keys:
-            p.pop(k, None)
-        p.update({str(k): v for k, v in zip(range(len(label_keys)), probabilities)})
-    
+        new_entry.update({str(k): v for k, v in zip(range(len(label_keys)), prob)})
+        teacher_data.append(new_entry)
+
     # Save predictions as file ! 
     with open(OUTPUT_PATH, 'w') as f:
-        for entry in predictions:
+        for entry in teacher_data:
             json.dump(entry, f)
             f.write('\n')
     logger.info("Finished saving the data to OUTPUT_PATH")
@@ -76,7 +75,8 @@ if __name__ == '__main__':
     TRAIN_PATH = setup['train_path']
     OUTPUT_PATH = setup['output_path']
     
-    TP_DICT = setup['template_dict']
+    PREFIX_TP = setup['prefix_template']
+    CONCAT_TOKEN = setup['concat_token']
     DATA_COLUMNS = setup['data_columns']
     LABEL_MAP = setup['label_map']
     
