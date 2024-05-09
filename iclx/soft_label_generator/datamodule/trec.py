@@ -20,8 +20,8 @@ class TRECDataModule(BaseDataModule):
             self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
 
         if stage == 'validation' or stage == 'all':
-            self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
             val_dataset = dataset['test']
+            self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
 
         if stage == 'test' or stage == 'all':
             test_dataset = dataset['test']
