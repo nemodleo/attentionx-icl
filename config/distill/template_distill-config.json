@@ -16,8 +16,8 @@
     "output_columns": ["label"]},
 
     "ice_dict":{
-    "naive": "</E>Review: </text>\nSentiment: great </VP>%% good </P>%% okay </N>%% bad </NG>% terrible </VN>%",
-    "sequence": "</E>Review: </text>\nSentiment: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>%",
+    "naive": "</E>Review: </text>\nSentiment: great </VP>%, good </P>%, okay </N>%, bad </NG>%, terrible </VN>%",
+    "sequence": "</E>Review: </text>\nSentiment: </Label1> </1>%, </Label2> </2>%, </Label3> </3>%, </Label4> </4>%, </Label5> </5>%",
     "binning": "</E>Review: </text>\nSentiment: </Label1> is very likely, </Label2> is likely, </Label3> is somewhat likely, </Label4> is unlikely, </Label5> is very unlikely"
     
     },
