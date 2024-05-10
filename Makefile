@@ -11,8 +11,14 @@ endif
 train-bert:
 	$(AUTO_POETRY) python scripts/train_bert.py --dataset=$(DATASET) --lr=$(LR) --batch_size=$(BATCH_SIZE) --sampling_rate=$(SAMPLING_RATE) --n_gpus=$(N_GPUS)
 
+
 infer-bert:
 	$(AUTO_POETRY) python scripts/infer_bert.py --checkpoint_path=$(CHECKPOINT_PATH) --dataset=$(DATASET) --dataset_split=$(PHASE) --batch_size=$(BATCH_SIZE) --file_name=$(FILE_NAME) --sampling_rate=$(SAMPLING_RATE)
+
+
+temperature-scale:
+	$(AUTO_POETRY) python scripts/temperature_scale.py --infer_dataset_name=$(DATASET) --target_split=$(SPLIT) --output_folder=$(OUTPUT_FOLDER)
+
 
 run-create_train:
 	$(AUTO_POETRY) python scripts/create_train_with_pseudo.py $(SETUP_DICT)

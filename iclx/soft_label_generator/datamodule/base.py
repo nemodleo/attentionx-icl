@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
 
 from transformers import AutoTokenizer
-from tictectoc import TicTecToc
 
 
 class BaseDataSet(Dataset):
