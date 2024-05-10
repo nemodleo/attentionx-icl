@@ -72,7 +72,7 @@ def infer(
 
     if dataset_split == "train":
         dataloader = data_module.train_dataloader()
-    elif dataset_split == "val":
+    elif dataset_split == "valid":
         dataloader = data_module.val_dataloader()
     elif dataset_split == "test":
         dataloader = data_module.test_dataloader()
