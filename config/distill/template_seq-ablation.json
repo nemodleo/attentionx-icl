@@ -1,10 +1,10 @@
 {   "experiment_name":"trecBERT-topk-gemma2b-seq_ablation",
 
-    "batch_size": 4,
+    "batch_size": 2,
     "retriever": "topk",
     "retriever_base": "bert-base-uncased",
     "student": "google/gemma-2b",
-    "shots": [32, 16, 8, 4, 2, 1],
+    "shots": [32, 16, 8, 4, 2, 1, 0],
 
     "train_path":"data/trec/train.jsonl",
     "val_path": null,
@@ -18,8 +18,8 @@
     "ice_dict":{
         "sequence": "</E>Text: </text>\nTopic: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>% </Label6> </6>%",
         "binning": "</E>Text: </text>\nTopic: </Label1> is extremely likely, </Label2> is very likely, </Label3> is likely, </Label4> is not likely, </Label5> is not very likely, </Label6> is extremely unlikely",
-        "seq_extreme": "</E>Review: </text>\nSentiment: </Label1> 100%, </Label2> 0%, </Label3> 0%, </Label4> 0%, </Label5> 0%, </Label6> 0%",
-        "seq_uniform": "</E>Review: </text>\nSentiment: </Label1> 16%, </Label2> 16%, </Label3> 16%, </Label4> 16%, </Label5> 16%, </Label6> 16%"
+        "seq_extreme": "</E>Review: </text>\nTopic: </Label1> 100%, </Label2> 0%, </Label3> 0%, </Label4> 0%, </Label5> 0%, </Label6> 0%",
+        "seq_uniform": "</E>Review: </text>\nTopic: </Label1> 16%, </Label2> 16%, </Label3> 16%, </Label4> 16%, </Label5> 16%, </Label6> 16%"
     },
 
     "template_dict": {
