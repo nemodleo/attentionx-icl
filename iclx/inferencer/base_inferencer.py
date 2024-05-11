@@ -90,12 +90,12 @@ class BaseInferencer:
         model_config = AutoConfig.from_pretrained(model_name)
         with init_empty_weights():
             empty_model = AutoModelForCausalLM.from_config(model_config)
-        device_map = infer_auto_device_map(empty_model, dtype="float32")
+        device_map = infer_auto_device_map(empty_model, dtype="float16")
         self.model = AutoModelForCausalLM.from_pretrained(model_name,
                                                           device_map=device_map,
                                                           offload_folder="offload",
                                                           offload_state_dict=True,
-                                                          torch_dtype=torch.float32)
+                                                          torch_dtype=torch.float16)
 
     def _init_tokenizer(self, tokenizer_name):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
