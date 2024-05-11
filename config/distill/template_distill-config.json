@@ -6,6 +6,8 @@
     "student": "distilgpt2",
     "shots": [1, 4, 8, 16, 32],
 
+    "hf_dataset_name": "ICKD/agnews-bert-scaled",
+    "load_hf_dataset": true,
     "train_path":"",
     "val_path": null,
     "test_path":"",
