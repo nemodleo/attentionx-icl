@@ -2,10 +2,13 @@ import json
 import numpy as np
 import torch
 from typing import List
+from typing import Tuple
 from typing import Optional
+from tqdm import tqdm
 from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
+from transformers.file_utils import ModelOutput
 
 from iclx.inferencer import BaseInferencer
 from iclx.retriever import BaseRetriever
@@ -50,7 +53,8 @@ class PPLInferencer(BaseInferencer):
                   use_ordering: Optional[bool] = False,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None,
-                  pseudo_gt: Optional[str] = None) -> List:
+                  pseudo_gt: Optional[str] = None,
+                  recycle_token: Optional[bool] = False) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
@@ -78,37 +82,90 @@ class PPLInferencer(BaseInferencer):
         output_handler.save_ice(ice)
 
         # 5. Calculating PPL for prompts in each label's class
-        for label in labels:
-            index = 0
-            prompt_list = []
-            sub_ppl_list = []
-
+        recycle_token=True
+        if recycle_token:
             # 5.1 Generate prompts of current label and truncate
+            _dummy_label = labels[0]
+            prompt_wo_label_list = []
             for idx in range(len(ice_idx_list)):
-                prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template, remain_sep=None)
+                prompt = retriever.generate_label_prompt_wo_label_and_eos(idx, ice[idx], _dummy_label, ice_template=ice_template, prompt_template=prompt_template)
                 prompt = self._add_task_description(retriever.ice_separator, prompt)
                 if self.max_model_token_num is not None:
-                    prompt_token_num = self.get_input_token_num(prompt)
+                    prompt_w_label = retriever.add_label_and_eos(prompt, _dummy_label, ice_template=ice_template, prompt_template=prompt_template)
+                    prompt_token_num = self.get_input_token_num(prompt_w_label)
                     while len(ice_idx_list[idx]) > 0 and prompt_token_num > self.max_model_token_num:
                         ice_idx_list[idx] = ice_idx_list[idx][:-1]
                         ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, use_ordering=use_ordering)
-                        prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template)
+                        prompt = retriever.generate_label_prompt_wo_label_and_eos(idx, ice[idx], _dummy_label, ice_template=ice_template, prompt_template=prompt_template)
                         prompt = self._add_task_description(retriever.ice_separator, prompt)
-                        prompt_token_num = self.get_input_token_num(prompt)
+                        prompt_w_label = retriever.add_label_and_eos(prompt, _dummy_label, ice_template=ice_template, prompt_template=prompt_template)
+                        prompt_token_num = self.get_input_token_num(prompt_w_label)
+                prompt_wo_label_list.append(prompt)
 
-                prompt_list.append(prompt)
-
-            # 5.2 Get PPL
-            logger.info(f"Calculating PPL for prompts labeled '{label}'")
-            for idx in trange(0, len(prompt_list), self.batch_size, disable=not self.is_main_process):
-                sub_prompt_list = prompt_list[idx:idx + self.batch_size]
+            # 5.2 Get PPL without label and eos token for recycle token
+            sub_caches_list = []
+            sub_prompt_wo_label_lists = []
+            for idx in trange(0, len(prompt_wo_label_list), self.batch_size, disable=not self.is_main_process):
+                sub_prompt_wo_label_list = prompt_wo_label_list[idx:idx + self.batch_size]
                 with torch.no_grad():
-                    sub_res = self._get_ppl(sub_prompt_list).tolist()
-                for res, prompt in zip(sub_res, sub_prompt_list):
-                    sub_ppl_list.append(res)
-                    output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
-                    index = index + 1
-            ppl.append(sub_ppl_list)
+                    sub_caches = self._get_cache(sub_prompt_wo_label_list)
+                sub_prompt_wo_label_lists.append(sub_prompt_wo_label_list)
+                sub_caches_list.append(sub_caches)
+
+            for label in labels:
+                index = 0
+                sub_ppl_list = []
+                prompt_label = retriever.get_label_and_eos(label, ice_template=ice_template, prompt_template=prompt_template)
+                add_prompt_label = ' ' + prompt_label
+
+                # 5.3 Get PPL
+                logger.info(f"Calculating PPL for prompts labeled '{label}'")
+                for idx, (sub_prompt_wo_label_list, sub_caches) in enumerate(tqdm(zip(sub_prompt_wo_label_lists, sub_caches_list),
+                                                               disable=not self.is_main_process)):
+                    sub_prompt_label_list = [add_prompt_label] * len(sub_prompt_wo_label_list)
+                    with torch.no_grad():
+                        sub_res = self._get_ppl_recycle_token(sub_prompt_wo_label_list, sub_prompt_label_list, sub_caches).tolist()
+                    for res, prompt_wo_label, _add_prompt_label in zip(sub_res, sub_prompt_wo_label_list, sub_prompt_label_list):
+                        sub_ppl_list.append(res)
+                        prompt = prompt_wo_label + _add_prompt_label
+                        output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
+                        index = index + 1
+                print(sub_ppl_list); exit()
+                ppl.append(sub_ppl_list)
+
+        else:
+            for label in labels:
+                index = 0
+                prompt_list = []
+                sub_ppl_list = []
+
+                # 5.1 Generate prompts of current label and truncate
+                for idx in range(len(ice_idx_list)):
+                    prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template, remain_sep=None)
+                    prompt = self._add_task_description(retriever.ice_separator, prompt)
+                    if self.max_model_token_num is not None:
+                        prompt_token_num = self.get_input_token_num(prompt)
+                        while len(ice_idx_list[idx]) > 0 and prompt_token_num > self.max_model_token_num:
+                            ice_idx_list[idx] = ice_idx_list[idx][:-1]
+                            ice[idx] = retriever.generate_ice(ice_idx_list[idx], ice_template=ice_template, use_ordering=use_ordering)
+                            prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template)
+                            prompt = self._add_task_description(retriever.ice_separator, prompt)
+                            prompt_token_num = self.get_input_token_num(prompt)
+
+                    prompt_list.append(prompt)
+
+                # 5.2 Get PPL
+                logger.info(f"Calculating PPL for prompts labeled '{label}'")
+                for idx in trange(0, len(prompt_list), self.batch_size, disable=not self.is_main_process):
+                    sub_prompt_list = prompt_list[idx:idx + self.batch_size]
+                    with torch.no_grad():
+                        sub_res = self._get_ppl(sub_prompt_list).tolist()
+                    for res, prompt in zip(sub_res, sub_prompt_list):
+                        sub_ppl_list.append(res)
+                        output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
+                        index = index + 1
+                print(sub_ppl_list); exit()
+                ppl.append(sub_ppl_list)
 
         # 6. Get lowest PPL class as predictions
         ppl = list(zip(*ppl))
@@ -125,21 +182,88 @@ class PPLInferencer(BaseInferencer):
 
         return [sample['prediction'] for sample in output_handler.results_dict.values()]
 
-    def _get_ppl(self, input_texts: List[str], mask_length=None):
+    def _get_cache(self,
+                   input_texts: List[str]):
         self.tokenizer.padding_side = "right"
         inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-        outputs = self.model(**inputs)
 
-        shift_logits = outputs.logits[..., :-1, :].contiguous()
-        shift_labels = inputs["input_ids"][..., 1:].contiguous()
+        outputs = self.model(**inputs, use_cache=True)
+        return outputs
+
+    def _get_ppl_recycle_token(self,
+                               input_texts: List[str],
+                               next_texts: List[str],
+                               sub_caches: ModelOutput,
+                               mask_length=None):
+        self.tokenizer.padding_side = "right"
+        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
+        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+        inputs_next = self.tokenizer(next_texts, padding=True, return_tensors='pt', truncation=True)
+        inputs_next = {k: v.to(self.model.device) for k, v in inputs_next.items()}
+
+        outputs = self.model(**inputs_next, past_key_values=sub_caches.past_key_values)
+
+        logits = sub_caches.logits
+        labels = inputs["input_ids"]
+
+        # remove pad token and logit
+        mask_lengths = (labels == self.tokenizer.pad_token_id).argmax(-1)
+        logits = [logit[:mask_length, :] if mask_length > 0 else logit for mask_length, logit in zip(mask_lengths, logits)]
+        labels = [shift_label[:mask_length] if mask_length > 0 else shift_label for mask_length, shift_label in zip(mask_lengths, labels)]
+
+        # add next token and logit
+        logits = [torch.cat([logit, next_logit], dim=0) for logit, next_logit in zip(logits, outputs.logits)]
+        labels = [torch.cat([label, next_label], dim=0) for label, next_label in zip(labels, inputs_next["input_ids"])]
+
+        # pad token and logit
+        # logit: last pad
+        # label: self.tokenizer.pad_token_id pad)
+        logits = torch.stack()
+        labels = torch.stack()
+
+        exit()
+
+        shift_logits = logits[..., :-1, :].contiguous()
+        shift_labels = input_ids[..., 1:].contiguous()
+        print(shift_logits, shift_labels); exit()
 
         loss_fct = torch.nn.CrossEntropyLoss(reduction='none', ignore_index=self.tokenizer.pad_token_id)
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).view(
             shift_labels.size())
 
         if mask_length is not None:
-            mask = torch.zeros_like(shift_labels)  # [batch,seqlen]
+            mask = torch.zeros_like(shift_labels)
+            for i in range(len(mask)):
+                for j in range(mask_length[i] - 1, len(mask[i])):
+                    mask[i][j] = 1
+            loss = loss * mask
+
+        lens = (input_ids != self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
+        if mask_length is not None:
+            lens -= np.array(mask_length)
+        ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
+        return ce_loss
+
+    def _get_ppl(self, input_texts: List[str], mask_length=None):
+        self.tokenizer.padding_side = "right"
+        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
+        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+        outputs = self.model(**inputs)
+
+        shift_logits = outputs.logits[..., :-1, :].contiguous()
+        shift_labels = inputs["input_ids"][..., 1:].contiguous()
+
+        print(shift_logits, shift_labels); exit()
+
+        loss_fct = torch.nn.CrossEntropyLoss(reduction='none', ignore_index=self.tokenizer.pad_token_id)
+        loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).view(
+            shift_labels.size())
+
+        if mask_length is not None:
+            mask = torch.zeros_like(shift_labels)
             for i in range(len(mask)):
                 for j in range(mask_length[i] - 1, len(mask[i])):
                     mask[i][j] = 1

@@ -100,5 +100,43 @@ class PromptTemplate:
             tp = tp.replace(token, str(entry[key]))
         return tp
 
+    def generate_label_prompt_item_wo_label(self, entry: Dict, ice: str, label: Hashable, remain_sep: Optional[bool] = False) -> str:
+        """Generate prompt based on :obj:`entry` data, :obj:`ice` in-context example, and the corresponding :obj:`label`.
+
+        Args:
+
+            entry (:obj:`Dict`): A piece of data containing the input field content.
+            ice (:obj:`str`): The generated in-context example.
+            label (:obj:`Hashable`): The value of the output field.
+            remain_sep (:obj:`bool`): If remain sep_token
+
+        Raises:
+            ValueError: If the :obj:`ice_token` attribute of the :obj:`PromptTemplate` instance is :obj:`None`.
+
+        Returns:
+            :obj:`str`: The generated prompt.
+        """
+        if self.label_dict is None:
+            raise ValueError("PromptTemplate.label_dict should be not None when generates prompt without label token")
+        tp = self.generate_label_prompt_item(entry, ice, label, remain_sep)
+        _label = self.get_label(label)
+        if _label in tp:
+            tp = tp.rstrip(_label)
+        else:
+            raise ValueError(f"Label token {_label} not found in the prompt")
+        tp = tp.rstrip()
+        return tp
+
+    def get_label(self, label: Hashable) -> str:
+        """Get the label string based on the label value.
+
+        Args:
+            label (:obj:`Hashable`): The value of the output field.
+
+        Returns:
+            :obj:`str`: The label string.
+        """
+        return self.label_dict[str(label)]
+
     def __repr__(self):
         return f"PromptTemplate({{\n\ttemplate: {self.template},\n\tcolumn_token_map: {self.column_token_map},\n\tice_token: {self.ice_token}\n}})"
