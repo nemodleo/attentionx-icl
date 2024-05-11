@@ -9,6 +9,7 @@ from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
 from transformers.file_utils import ModelOutput
+from torch.nn import functional as F
 
 from iclx.inferencer import BaseInferencer
 from iclx.retriever import BaseRetriever
@@ -54,7 +55,7 @@ class PPLInferencer(BaseInferencer):
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None,
                   pseudo_gt: Optional[str] = None,
-                  recycle_token: Optional[bool] = False) -> List:
+                  use_cache: Optional[bool] = False) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
@@ -82,8 +83,9 @@ class PPLInferencer(BaseInferencer):
         output_handler.save_ice(ice)
 
         # 5. Calculating PPL for prompts in each label's class
-        recycle_token=True
-        if recycle_token:
+        use_cache = True
+        if use_cache:
+            logger.info("Using cache for PPL calculation")
             # 5.1 Generate prompts of current label and truncate
             _dummy_label = labels[0]
             prompt_wo_label_list = []
@@ -124,16 +126,16 @@ class PPLInferencer(BaseInferencer):
                                                                disable=not self.is_main_process)):
                     sub_prompt_label_list = [add_prompt_label] * len(sub_prompt_wo_label_list)
                     with torch.no_grad():
-                        sub_res = self._get_ppl_recycle_token(sub_prompt_wo_label_list, sub_prompt_label_list, sub_caches).tolist()
+                        sub_res = self._get_ppl_use_cache(sub_prompt_wo_label_list, sub_prompt_label_list, sub_caches).tolist()
                     for res, prompt_wo_label, _add_prompt_label in zip(sub_res, sub_prompt_wo_label_list, sub_prompt_label_list):
                         sub_ppl_list.append(res)
                         prompt = prompt_wo_label + _add_prompt_label
                         output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
                         index = index + 1
-                print(sub_ppl_list); exit()
                 ppl.append(sub_ppl_list)
 
         else:
+            logger.info("Not using cache for PPL calculation")
             for label in labels:
                 index = 0
                 prompt_list = []
@@ -164,11 +166,11 @@ class PPLInferencer(BaseInferencer):
                         sub_ppl_list.append(res)
                         output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
                         index = index + 1
-                print(sub_ppl_list); exit()
                 ppl.append(sub_ppl_list)
 
         # 6. Get lowest PPL class as predictions
         ppl = list(zip(*ppl))
+        logger.info("ppl: {}".format(ppl)); exit()
         for single_ppl in ppl:
             sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
         output_handler.save_predictions(sub_predictions)
@@ -191,18 +193,18 @@ class PPLInferencer(BaseInferencer):
         outputs = self.model(**inputs, use_cache=True)
         return outputs
 
-    def _get_ppl_recycle_token(self,
-                               input_texts: List[str],
-                               next_texts: List[str],
-                               sub_caches: ModelOutput,
-                               mask_length=None):
+    def _get_ppl_use_cache(self,
+                           input_texts: List[str],
+                           next_texts: List[str],
+                           sub_caches: ModelOutput,
+                           mask_length=None):
         self.tokenizer.padding_side = "right"
         inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
         inputs_next = self.tokenizer(next_texts, padding=True, return_tensors='pt', truncation=True)
         inputs_next = {k: v.to(self.model.device) for k, v in inputs_next.items()}
-
+        # print(inputs_next)
         outputs = self.model(**inputs_next, past_key_values=sub_caches.past_key_values)
 
         logits = sub_caches.logits
@@ -218,16 +220,21 @@ class PPLInferencer(BaseInferencer):
         labels = [torch.cat([label, next_label], dim=0) for label, next_label in zip(labels, inputs_next["input_ids"])]
 
         # pad token and logit
-        # logit: last pad
-        # label: self.tokenizer.pad_token_id pad)
-        logits = torch.stack()
-        labels = torch.stack()
+        max_length = max([len(label) for label in labels])
+        for i in range(len(labels)):
+            pad_length = max_length - len(labels[i])
+            if pad_length == 0:
+                continue
+            _dummy_logit = torch.zeros_like(logits[i][0])
+            _pad_label = torch.full((pad_length,), fill_value=self.tokenizer.pad_token_id, device=labels[i].device)
+            logits[i] = torch.cat([logits[i], _dummy_logit.unsqueeze(0).repeat(pad_length, 1)], dim=0)
+            labels[i] = torch.cat([labels[i], _pad_label], dim=0)
 
-        exit()
+        logits = torch.stack(logits)
+        labels = torch.stack(labels)
 
         shift_logits = logits[..., :-1, :].contiguous()
-        shift_labels = input_ids[..., 1:].contiguous()
-        print(shift_logits, shift_labels); exit()
+        shift_labels = labels[..., 1:].contiguous()
 
         loss_fct = torch.nn.CrossEntropyLoss(reduction='none', ignore_index=self.tokenizer.pad_token_id)
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).view(
@@ -240,7 +247,7 @@ class PPLInferencer(BaseInferencer):
                     mask[i][j] = 1
             loss = loss * mask
 
-        lens = (input_ids != self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
+        lens = (labels != self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
         if mask_length is not None:
             lens -= np.array(mask_length)
         ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
@@ -255,8 +262,6 @@ class PPLInferencer(BaseInferencer):
 
         shift_logits = outputs.logits[..., :-1, :].contiguous()
         shift_labels = inputs["input_ids"][..., 1:].contiguous()
-
-        print(shift_logits, shift_labels); exit()
 
         loss_fct = torch.nn.CrossEntropyLoss(reduction='none', ignore_index=self.tokenizer.pad_token_id)
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).view(
