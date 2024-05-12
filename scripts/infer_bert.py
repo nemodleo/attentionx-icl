@@ -21,6 +21,7 @@ if __name__ == "__main__":
     infer(
         checkpoint_path=args.checkpoint_path,
         dataset=args.dataset,
+        dataset_split=args.dataset_split,
         batch_size=args.batch_size,
         max_token_len=args.max_token_len,
         file_name=args.file_name,

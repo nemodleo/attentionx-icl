@@ -10,6 +10,7 @@ from iclx import AccEvaluator
 sys.path.pop()
 import matplotlib.pyplot as plt
 import json
+from datasets import load_dataset
 from datasets import Dataset
 from datasets import DatasetDict
 from loguru import logger
@@ -32,12 +33,15 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             for line in f:
                 yield json.loads(line)
 
-    train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TRAIN_PATH})
-    val_ds = None if not VAL_PATH else Dataset.from_generator(gen, gen_kwargs={"file_path": VAL_PATH})
-    test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TEST_PATH})
+    if LOAD_HF_DATASET:
+        dataset = load_dataset(HF_DATASET_NAME)
+    else:
+        train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TRAIN_PATH})
+        val_ds = None if not VAL_PATH else Dataset.from_generator(gen, gen_kwargs={"file_path": VAL_PATH})
+        test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TEST_PATH})
 
+        dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
 
-    dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
 
@@ -224,6 +228,10 @@ if __name__ == '__main__':
     TRAIN_PATH = setup['train_path']
     VAL_PATH = setup['val_path']
     TEST_PATH = setup['test_path']
+
+    HF_DATASET_NAME = setup['hf_dataset_name']
+    LOAD_HF_DATASET = setup['load_hf_dataset']
+
     TASK_DESC = setup['task_description']
     logger.info(f"Your task description:\n{TASK_DESC}")
 
