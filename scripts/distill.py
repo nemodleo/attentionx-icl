@@ -45,10 +45,10 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
 
-    sequence, binning, gt, pseudo_gt = [], [], [], []
+    sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform = [], [], [], [], [], []
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
-        f.write("sequence, binning, gt, pseudo_gt\n")
+        f.write("sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform\n")
 
         retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0])
 
@@ -73,7 +73,16 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             clean_up_memory()
             logger.info(f"pseudo_gt for shot {i} done")
 
-            f.write(f"{sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}\n")
+            # sequence ablation 
+            seq_extreme.append(test_seq_extreme(data, model_name, retriever, batch_size)['accuracy'])
+            clean_up_memory()
+            logger.info(f"seq_extreme for shot {i} done")
+
+            seq_uniform.append(test_seq_uniform(data, model_name, retriever, batch_size)['accuracy'])
+            clean_up_memory()
+            logger.info(f"seq_uniform for shot {i} done")
+
+            f.write(f"{sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}, {seq_extreme[-1]}, {seq_uniform[-1]}\n")
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
@@ -81,6 +90,8 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
     logger.info(binning)
     logger.info(gt)
     logger.info(pseudo_gt)
+    logger.info(seq_extreme)
+    logger.info(seq_uniform)
 
     # Plotting in reverse order
     xticks = range(len(shots))
@@ -88,6 +99,8 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
     plt.plot(xticks, binning[::-1], label='binning')
     plt.plot(xticks, gt[::-1], label='gt')
     plt.plot(xticks, pseudo_gt[::-1], label='pseudo_gt')
+    plt.plot(xticks, seq_extreme[::-1], label='seq_extreme')
+    plt.plot(xticks, seq_uniform[::-1], label='seq_uniform')
     plt.xticks(xticks, shots[::-1])
 
     plt.legend()
@@ -95,6 +108,65 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
 
     logger.info(f"Finished running and saving artifacts for experiment {EXP_NAME}")
 
+def test_seq_extreme(data, model_name, retriever, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["seq_extreme"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=True)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
+
+def test_seq_uniform(data, model_name, retriever, batch_size):
+
+    # ICL exemplar template
+    ice_dict = ICE_DICT["seq_uniform"]
+
+    # Inference prompt template
+    tp_dict = TP_DICT
+
+    label_dict = LABEL_DICT
+
+    # Define prompt templates for ice and prompt
+    column_token_map = COLUMN_TOKEN_MAP["sequence"]
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+
+    # Define a retriever using the previous `DataLoader`.
+    # `ice_num` stands for the number of data in in-context examples.
+    inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC)
+
+
+    # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
+    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=True)
+    # compute accuracy for the prediction
+    score = AccEvaluator().score(predictions=predictions, references=data.references)
+
+    return score
 
 def test_sequence(data, model_name, retriever, batch_size):
 

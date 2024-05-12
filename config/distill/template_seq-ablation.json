@@ -1,0 +1,48 @@
+{   "experiment_name":"trecBERT-topk-gemma2b-seq_ablation",
+
+    "batch_size": 2,
+    "retriever": "topk",
+    "retriever_base": "bert-base-uncased",
+    "student": "google/gemma-2b",
+    "shots": [32, 16, 8, 4, 2, 1, 0],
+
+    "train_path":"data/trec/train.jsonl",
+    "val_path": null,
+    "test_path":"data/trec/test.jsonl",
+    "task_description": "Task Instruction: Topic of the text\nLabel Space: {Abbreviation, Entity, Description and abstract concept, Human being, Location, Numeric value}",
+
+    "data_columns": {
+    "input_columns": ["text"],
+    "output_columns": ["label"]},
+
+    "ice_dict":{
+        "sequence": "</E>Text: </text>\nTopic: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>% </Label6> </6>%",
+        "binning": "</E>Text: </text>\nTopic: </Label1> is extremely likely, </Label2> is very likely, </Label3> is likely, </Label4> is not likely, </Label5> is not very likely, </Label6> is extremely unlikely",
+        "seq_extreme": "</E>Review: </text>\nTopic: </Label1> 100%, </Label2> 0%, </Label3> 0%, </Label4> 0%, </Label5> 0%, </Label6> 0%",
+        "seq_uniform": "</E>Review: </text>\nTopic: </Label1> 16%, </Label2> 16%, </Label3> 16%, </Label4> 16%, </Label5> 16%, </Label6> 16%"
+    },
+
+    "template_dict": {
+        "0" : "</E>Text: </text>\nTopic: Abbreviation",
+        "1" : "</E>Text: </text>\nTopic: Entity",
+        "2" : "</E>Text: </text>\nTopic: Description and abstract concept",
+        "3" : "</E>Text: </text>\nTopic: Human being",
+        "4" : "</E>Text: </text>\nTopic: Location",
+        "5" : "</E>Text: </text>\nTopic: Numeric value"
+    },
+
+    "label_dict": {
+        "0": "Abbreviation",
+        "1": "Entity",
+        "2": "Description and abstract concept",
+        "3": "Human being",
+        "4": "Location",
+        "5": "Numeric value"
+    },
+
+    "column_token_map": {
+        "sequence":{"text": "</text>", "0" : "</1>", "Label1" : "</Label1>", "1" : "</2>", "Label2" : "</Label2>", "2" : "</3>", "Label3" : "</Label3>", "3" : "</4>", "Label4" : "</Label4>", "4" : "</5>", "Label5" : "</Label5>",  "5" : "</6>", "Label6" : "</Label6>" },
+        "binning":{"text": "</text>", "Label1" : "</Label1>", "Label2" : "</Label2>", "Label3" : "</Label3>", "Label4" : "</Label4>", "Label5" : "</Label5>", "Label6" : "</Label6>"},
+        "GT": {"text": "</text>"}
+    }
+}
