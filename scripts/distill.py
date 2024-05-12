@@ -66,7 +66,6 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
 
         # number of shots to run
         for i in shots:
-            i=1
             logger.info(f"Running for shot {i}")
             retriever.ice_num = i
             for method in test_methods:
