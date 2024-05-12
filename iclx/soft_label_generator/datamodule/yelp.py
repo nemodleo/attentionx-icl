@@ -5,7 +5,7 @@ from iclx.soft_label_generator.datamodule.base import BaseDataModule, BaseDataSe
 
 class YelpDataModule(BaseDataModule):
     def setup(self, stage='all'):
-        dataset = load_dataset("yelp_review_full")
+        dataset = load_dataset("ICKD/yelp-raw")
 
         if stage == 'train' or stage == 'all':
             train_dataset = dataset['train']
@@ -16,8 +16,8 @@ class YelpDataModule(BaseDataModule):
                 )
             self.train_dataset = BaseDataSet(train_dataset, self.model_name_or_path, self.max_token_len)
 
-        if stage == 'validation' or stage == 'all':
-            val_dataset = dataset['test']
+        if stage == 'valid' or stage == 'all':
+            val_dataset = dataset['valid']
             self.val_dataset = BaseDataSet(val_dataset, self.model_name_or_path, self.max_token_len)
 
         if stage == 'test' or stage == 'all':
