@@ -58,7 +58,7 @@ class PromptTemplate:
             ordered_labels = list(sorted_dict.keys())
             ordered_values = list(sorted_dict.values())
 
-            if self.ice_shuffle_type == 'tags':
+            if self.ice_shuffle_type == "scores":
                 random.shuffle(ordered_values)
 
                 if self.binning is not None:
@@ -68,10 +68,10 @@ class PromptTemplate:
                     random.shuffle(values)
                     self.binning = dict(zip(keys, values))
 
-            elif self.ice_shuffle_type == 'labels':
+            elif self.ice_shuffle_type == "labels":
                 random.shuffle(ordered_labels)
 
-            elif self.ice_shuffle_type == 'labels_except_first':
+            elif self.ice_shuffle_type == "labels_except_first":
                 first_element = ordered_labels[0]
                 rest_of_list = ordered_labels[1:]
                 random.shuffle(rest_of_list)
