@@ -6,9 +6,12 @@
     "student": "google/gemma-2b",
     "shots": [32, 16, 8, 4, 2, 1, 0],
 
-    "train_path":"data/trec/train.jsonl",
+    
+    "hf_dataset_name": "ICKD/agnews-bert-scaled",
+    "load_hf_dataset": true,
+    "train_path":"",
     "val_path": null,
-    "test_path":"data/trec/test.jsonl",
+    "test_path":"",
     "task_description": "Task Instruction: Topic of the text\nLabel Space: {Abbreviation, Entity, Description and abstract concept, Human being, Location, Numeric value}",
 
     "data_columns": {
