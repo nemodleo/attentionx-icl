@@ -1,3 +1,4 @@
+import random
 from typing import Dict, Optional, Hashable
 
 
@@ -18,6 +19,7 @@ class PromptTemplate:
                  ice_token: Optional[str] = None,
                  sep_token: Optional[str] = None,
                  binning: Optional[Dict] = None,
+                 ice_shuffle_type: Optional[str] = None,
                  **kwargs,
                  ) -> None:
         self.template = template
@@ -26,6 +28,9 @@ class PromptTemplate:
         self.sep_token = sep_token
         self.label_dict = label_dict
         self.binning = binning
+        self.ice_shuffle_type = ice_shuffle_type
+        if ice_shuffle_type is not None:
+            assert ice_shuffle_type in ["scores", "labels", "labels_except_first"], f"{ice_shuffle_type} is not implemented"
 
     def generate_ice_item(self, entry: Dict, label: Hashable, use_ordering=False) -> str:
         """Generate in-context example based on the provided :obj:`entry` data.
@@ -49,8 +54,32 @@ class PromptTemplate:
         if use_ordering:
             label_dict = {v: entry[k] for k, v in self.label_dict.items()}
             sorted_dict = {k: v for k, v in sorted(label_dict.items(), key=lambda item: item[1], reverse=True)}
-            labels = {'Label'+str(i+1): list(sorted_dict.keys())[i] for i in range(len(sorted_dict.keys()))}
-            probs = list(sorted_dict.values())
+
+            ordered_labels = list(sorted_dict.keys())
+            ordered_values = list(sorted_dict.values())
+
+            if self.ice_shuffle_type == "scores":
+                random.shuffle(ordered_values)
+
+                if self.binning is not None:
+                    # shuffle the values in binning dict
+                    keys = list(self.binning.keys())
+                    values = list(self.binning.values())
+                    random.shuffle(values)
+                    self.binning = dict(zip(keys, values))
+
+            elif self.ice_shuffle_type == "labels":
+                random.shuffle(ordered_labels)
+
+            elif self.ice_shuffle_type == "labels_except_first":
+                first_element = ordered_labels[0]
+                rest_of_list = ordered_labels[1:]
+                random.shuffle(rest_of_list)
+
+                ordered_labels = [first_element] + rest_of_list
+
+            labels = {'Label'+str(i+1): ordered_labels[i] for i in range(len(sorted_dict.keys()))}
+            probs = ordered_values
 
         # Replace context token
         for key, token in self.column_token_map.items():
