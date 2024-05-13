@@ -400,7 +400,10 @@ if __name__ == '__main__':
 
     logger.info(f"Experiment: {EXP_NAME}")
     logger.info(f"Starting distillation of {SHOTS} shots using {STUDENT} student with {setup['retriever']} retriever.")
-    logger.info(f"Using training data from {TRAIN_PATH}")
+    if LOAD_HF_DATASET: 
+        logger.info(f"Using training data from huggingface: {HF_DATASET_NAME}")
+    else:
+        logger.info(f"Using training data from {TRAIN_PATH}")
     logger.info(f"output will be saved to {FOLDER_NAME}")
 
     test(shots=SHOTS, model_name = STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, batch_size=BATCH_SIZE)
