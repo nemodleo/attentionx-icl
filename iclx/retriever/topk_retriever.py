@@ -1,3 +1,4 @@
+import os
 import tqdm
 import copy
 import faiss
@@ -72,9 +73,22 @@ class TopkRetriever(BaseRetriever):
         self.model = self.model.to(self.device)
         self.model.eval()
 
+        self.topk_index_path = kwargs.get('topk_index_path', None)
         self.index = self.create_index()
 
     def create_index(self):
+        # Load index if it exists
+        if self.topk_index_path is not None and os.path.exists(self.topk_index_path):
+            logger.info(f"Loading topk index from file: {self.topk_index_path}")
+            index = faiss.read_index(self.topk_index_path)
+            if self.device == 'cuda':
+                index = faiss.index_cpu_to_gpu(faiss.StandardGpuResources(), 0, index)
+            return index
+        if self.topk_index_path is not None and os.path.exists(self.topk_index_path) is False:
+            logger.info(f"Index file not found: {self.topk_index_path}")
+            logger.info("Creating index and saving to file...")
+
+        # Create index
         self.select_datalist = self.dataset_reader.generate_input_field_corpus(self.index_ds)
         encode_datalist = DatasetEncoder(self.select_datalist, tokenizer=self.tokenizer)
         co = DataCollatorWithPaddingAndCuda(tokenizer=self.tokenizer, device=self.device)
@@ -82,11 +96,7 @@ class TopkRetriever(BaseRetriever):
 
         if self.device == 'cpu':
             logger.info("Creating faiss-cpu index")
-            index = faiss.IndexIDMap(faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension()))
-            res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
-            id_list = np.array([res['metadata']['id'] for res in res_list])
-            self.embed_list = np.stack([res['embed'] for res in res_list])
-            index.add_with_ids(self.embed_list, id_list)
+            index = faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension())
 
         elif self.device == 'cuda':
             logger.info("Creating faiss-gpu index")
@@ -95,12 +105,22 @@ class TopkRetriever(BaseRetriever):
             flat_config.device = 0
             dim = self.model.get_sentence_embedding_dimension()
             index = faiss.GpuIndexFlatIP(res, dim, flat_config)
-            res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
-            self.embed_list = np.stack([res['embed'] for res in res_list])
-            index.add(self.embed_list)
         else:
             raise ValueError("Invalid device type. Please specify either 'cpu' or 'cuda'.")
+
+        res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
+        self.embed_list = np.stack([res['embed'] for res in res_list])
+        index.add(self.embed_list)
+
         logger.info("Index created")
+
+        # Save index to file
+        if self.topk_index_path is not None and os.path.exists(self.topk_index_path) is False:
+            logger.info(f"Saving index to file: {self.topk_index_path}")
+            _index = index if self.device == 'cpu' else faiss.index_gpu_to_cpu(index)
+            os.makedirs(os.path.dirname(self.topk_index_path), exist_ok=True)
+            faiss.write_index(_index, self.topk_index_path)
+
         return index
 
     def knn_search(self, ice_num):
