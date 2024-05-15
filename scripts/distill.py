@@ -32,11 +32,12 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
         # with open(file_path, 'r') as f:
         #     for line in f:
         #         yield json.loads(line)
+
         with open(file_path, 'r') as f:
             n = 0
             for line in f:
-                n+=1
-                if n==10:
+                n += 1
+                if n > 10:
                     break
                 yield json.loads(line)
 
@@ -68,17 +69,17 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             clean_up_memory()
             logger.info(f"sequence for shot {i} done: {sequence[-1]}")
 
-            # binning.append(test_binning(data, model_name, retriever, batch_size)['accuracy'])
-            # clean_up_memory()
-            # logger.info(f"binning for shot {i} done")
+            binning.append(test_binning(data, model_name, retriever, batch_size)['accuracy'])
+            clean_up_memory()
+            logger.info(f"binning for shot {i} done")
 
-            # gt.append(test_GT(data, model_name, retriever, batch_size)['accuracy'])
-            # clean_up_memory()
-            # logger.info(f"gt for shot {i} done")
+            gt.append(test_GT(data, model_name, retriever, batch_size)['accuracy'])
+            clean_up_memory()
+            logger.info(f"gt for shot {i} done")
 
-            # pseudo_gt.append(test_pseudo_GT(data, model_name, retriever, batch_size)['accuracy'])
-            # clean_up_memory()
-            # logger.info(f"pseudo_gt for shot {i} done")
+            pseudo_gt.append(test_pseudo_GT(data, model_name, retriever, batch_size)['accuracy'])
+            clean_up_memory()
+            logger.info(f"pseudo_gt for shot {i} done")
 
             # sequence ablation 
             seq_extreme.append(test_seq_extreme(data, model_name, retriever, batch_size)['accuracy'])
