@@ -75,6 +75,8 @@ class BaseRetriever:
 
     @ice_num.setter
     def ice_num(self, value: int) -> None:
+        if self._ice_num < value:
+            raise ValueError("ice_num should be less than to the number of data in the index dataset.")
         self._ice_num = value
 
     def get_labels(self, ice_template: Optional[PromptTemplate] = None, prompt_template: Optional[PromptTemplate] = None):

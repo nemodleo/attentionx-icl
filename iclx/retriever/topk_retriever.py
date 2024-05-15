@@ -1,3 +1,4 @@
+import gc
 import tqdm
 import copy
 import faiss
@@ -63,9 +64,9 @@ class TopkRetriever(BaseRetriever):
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.tokenizer.padding_side = "right"
 
-        self.encode_dataset = DatasetEncoder(gen_datalist, tokenizer=self.tokenizer)
+        encode_dataset = DatasetEncoder(gen_datalist, tokenizer=self.tokenizer)
         co = DataCollatorWithPaddingAndCuda(tokenizer=self.tokenizer, device=self.device)
-        self.dataloader = DataLoader(self.encode_dataset, batch_size=self.batch_size, collate_fn=co)
+        self.dataloader = DataLoader(encode_dataset, batch_size=self.batch_size, collate_fn=co)
 
         self.model = SentenceTransformer(sentence_transformers_model_name)
 
@@ -73,6 +74,8 @@ class TopkRetriever(BaseRetriever):
         self.model.eval()
 
         self.index = self.create_index()
+        self.rtr_idx_list = self.knn_search(self._ice_num)
+        self.clear_memory()
 
     def create_index(self):
         self.select_datalist = self.dataset_reader.generate_input_field_corpus(self.index_ds)
@@ -85,9 +88,8 @@ class TopkRetriever(BaseRetriever):
             index = faiss.IndexIDMap(faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension()))
             res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
             id_list = np.array([res['metadata']['id'] for res in res_list])
-            self.embed_list = np.stack([res['embed'] for res in res_list])
-            index.add_with_ids(self.embed_list, id_list)
-
+            embed_list = np.stack([res['embed'] for res in res_list])
+            index.add_with_ids(embed_list, id_list)
         elif self.device == 'cuda':
             logger.info("Creating faiss-gpu index")
             res = faiss.StandardGpuResources()
@@ -96,12 +98,21 @@ class TopkRetriever(BaseRetriever):
             dim = self.model.get_sentence_embedding_dimension()
             index = faiss.GpuIndexFlatIP(res, dim, flat_config)
             res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
-            self.embed_list = np.stack([res['embed'] for res in res_list])
-            index.add(self.embed_list)
+            embed_list = np.stack([res['embed'] for res in res_list])
+            index.add(embed_list)
         else:
             raise ValueError("Invalid device type. Please specify either 'cpu' or 'cuda'.")
         logger.info("Index created")
         return index
+
+    def clear_memory(self):
+        self.index.reset()
+        del self.index
+        del self.model
+        del self.tokenizer
+        del self.dataloader
+        gc.collect()
+        torch.cuda.empty_cache()
 
     def knn_search(self, ice_num):
         res_list = self.forward(self.dataloader, process_bar=True, information="Embedding test set...")
@@ -131,4 +142,4 @@ class TopkRetriever(BaseRetriever):
         return res_list
 
     def retrieve(self):
-        return self.knn_search(self._ice_num)
+        return [self.rtr_idx_list[:self._ice_num] for _ in range(len(self.test_ds))]
