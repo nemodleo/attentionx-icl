@@ -8,7 +8,6 @@ from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
 from transformers.file_utils import ModelOutput
-from torch.nn import functional as F
 
 from iclx.inferencer import BaseInferencer
 from iclx.retriever import BaseRetriever
@@ -40,11 +39,13 @@ class PPLInferencer(BaseInferencer):
                  output_json_filename: Optional[str] = "predictions",
                  labels: Optional[List] = None,
                  task_description: str = None,
+                 use_cache: Optional[bool] = False,
                  **kwargs
                  ) -> None:
         super().__init__(model_name, tokenizer_name, max_model_token_num, batch_size, accelerator,
                          output_json_filepath, output_json_filename, task_description, **kwargs)
         self.labels = labels
+        self.use_cache = use_cache
 
     def inference(self,
                   retriever: BaseRetriever,
@@ -53,8 +54,7 @@ class PPLInferencer(BaseInferencer):
                   use_ordering: Optional[bool] = False,
                   output_json_filepath: Optional[str] = None,
                   output_json_filename: Optional[str] = None,
-                  pseudo_gt: Optional[str] = None,
-                  use_cache: Optional[bool] = False) -> List:
+                  pseudo_gt: Optional[str] = None) -> List:
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler(self.accelerator)
 
@@ -82,9 +82,11 @@ class PPLInferencer(BaseInferencer):
         output_handler.save_ice(ice)
 
         # 5. Calculating PPL for prompts in each label's class
-        use_cache = True
-        if use_cache:
+        # self.use_cache = True
+        if self.use_cache:
             logger.info("Using cache for PPL calculation")
+            if self.batch_size != 1:
+                raise ValueError("Batch size must be 1 when using cache for PPL calculation")
             # 5.1 Generate prompts of current label and truncate
             _dummy_label = labels[0]
             prompt_wo_label_list = []
@@ -169,7 +171,7 @@ class PPLInferencer(BaseInferencer):
 
         # 6. Get lowest PPL class as predictions
         ppl = list(zip(*ppl))
-        logger.info("ppl: {}".format(ppl)); exit()
+        # logger.info("ppl: {}".format(ppl)); exit()
         for single_ppl in ppl:
             sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
         output_handler.save_predictions(sub_predictions)
