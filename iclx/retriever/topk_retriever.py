@@ -101,7 +101,6 @@ class TopkRetriever(BaseRetriever):
         if self.device == 'cpu':
             logger.info("Creating faiss-cpu index")
             index = faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension())
-
         elif self.device == 'cuda':
             logger.info("Creating faiss-gpu index")
             res = faiss.StandardGpuResources()
@@ -134,7 +133,8 @@ class TopkRetriever(BaseRetriever):
         del self.tokenizer
         del self.dataloader
         gc.collect()
-        torch.cuda.empty_cache()
+        if self.device == 'cuda':
+            torch.cuda.empty_cache()
 
     def knn_search(self, ice_num):
         res_list = self.forward(self.dataloader, process_bar=True, information="Embedding test set...")
@@ -164,4 +164,4 @@ class TopkRetriever(BaseRetriever):
         return res_list
 
     def retrieve(self):
-        return [self.rtr_idx_list[:self._ice_num] for _ in range(len(self.test_ds))]
+        return [rtr_idx[:self._ice_num] for rtr_idx in self.rtr_idx_list]
