@@ -1,5 +1,6 @@
 import gc
 import os
+import gc
 import tqdm
 import copy
 import faiss
@@ -112,8 +113,8 @@ class TopkRetriever(BaseRetriever):
             raise ValueError("Invalid device type. Please specify either 'cpu' or 'cuda'.")
 
         res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
-        self.embed_list = np.stack([res['embed'] for res in res_list])
-        index.add(self.embed_list)
+        embed_list = np.stack([res['embed'] for res in res_list])
+        index.add(embed_list)
 
         logger.info("Index created")
 
