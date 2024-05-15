@@ -82,11 +82,12 @@ class PPLInferencer(BaseInferencer):
         output_handler.save_ice(ice)
 
         # 5. Calculating PPL for prompts in each label's class
-        # self.use_cache = True
+        # self.use_cache = False
         if self.use_cache:
             logger.info("Using cache for PPL calculation")
             if self.batch_size != 1:
                 raise ValueError("Batch size must be 1 when using cache for PPL calculation. Please set batch_size=1.")
+
             # 5.1 Generate prompts of current label and truncate
             _dummy_label = labels[0]
             prompt_wo_label_list = []
@@ -104,34 +105,29 @@ class PPLInferencer(BaseInferencer):
                         prompt_w_label = retriever.add_label_and_eos(prompt, _dummy_label, ice_template=ice_template, prompt_template=prompt_template)
                         prompt_token_num = self.get_input_token_num(prompt_w_label)
                 prompt_wo_label_list.append(prompt)
-
+            
             # 5.2 Get PPL without label and eos token for recycle token
-            sub_caches_list = []
-            sub_prompt_wo_label_lists = []
+            logger.info(f"Calculating PPL for prompts labeled '{labels}'")
+            index = 0
+            n_labels = len(labels)
             for idx in trange(0, len(prompt_wo_label_list), self.batch_size, disable=not self.is_main_process):
                 sub_prompt_wo_label_list = prompt_wo_label_list[idx:idx + self.batch_size]
                 with torch.no_grad():
                     sub_caches = self._get_cache(sub_prompt_wo_label_list)
-                sub_prompt_wo_label_lists.append(sub_prompt_wo_label_list)
-                sub_caches_list.append(sub_caches)
 
-            for label in labels:
-                index = 0
                 sub_ppl_list = []
-                prompt_label = retriever.get_label_and_eos(label, ice_template=ice_template, prompt_template=prompt_template)
-                add_prompt_label = ' ' + prompt_label
+                for label in labels:
+                    prompt_label = retriever.get_label_and_eos(label, ice_template=ice_template, prompt_template=prompt_template)
+                    add_prompt_label = ' ' + prompt_label
 
-                # 5.3 Get PPL
-                logger.info(f"Calculating PPL for prompts labeled '{label}'")
-                for idx, (sub_prompt_wo_label_list, sub_caches) in enumerate(tqdm(zip(sub_prompt_wo_label_lists, sub_caches_list),
-                                                               disable=not self.is_main_process)):
+                    # 5.3 Get PPL
                     sub_prompt_label_list = [add_prompt_label] * len(sub_prompt_wo_label_list)
                     with torch.no_grad():
                         sub_res = self._get_ppl_use_cache(sub_prompt_wo_label_list, sub_prompt_label_list, sub_caches).tolist()
                     for res, prompt_wo_label, _add_prompt_label in zip(sub_res, sub_prompt_wo_label_list, sub_prompt_label_list):
                         sub_ppl_list.append(res)
                         prompt = prompt_wo_label + _add_prompt_label
-                        output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
+                        output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index//n_labels)
                         index = index + 1
                 ppl.append(sub_ppl_list)
         else:
@@ -167,10 +163,10 @@ class PPLInferencer(BaseInferencer):
                         output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
                         index = index + 1
                 ppl.append(sub_ppl_list)
+            ppl = list(zip(*ppl))
+        # logger.info("ppl: {}".format(ppl)); exit()
 
         # 6. Get lowest PPL class as predictions
-        ppl = list(zip(*ppl))
-        # logger.info("ppl: {}".format(ppl)); exit()
         for single_ppl in ppl:
             sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
         output_handler.save_predictions(sub_predictions)
@@ -293,6 +289,7 @@ class PPLInferencerOutputHandler:
 
     def subprocess_write_to_json(self, output_json_filepath: str, output_json_filename: str):
         if self.accelerator is not None:
+            print(f'{output_json_filepath}/process{self.accelerator.process_index}_{output_json_filename}.json')
             with open(f'{output_json_filepath}/process{self.accelerator.process_index}_{output_json_filename}.json',
                       'w', encoding='utf-8') as json_file:
                 json.dump(self.results_dict, json_file, indent=4, ensure_ascii=False)
