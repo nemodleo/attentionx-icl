@@ -6,6 +6,8 @@
     "student": "google/gemma-2b",
     "shots": [32, 16, 8, 4, 2, 1, 0],
 
+    "hf_dataset_name": null,
+    "load_hf_dataset": false,
     "train_path":"data/trec/train.jsonl",
     "val_path": null,
     "test_path":"data/trec/test.jsonl",
@@ -14,6 +16,8 @@
     "data_columns": {
     "input_columns": ["text"],
     "output_columns": ["label"]},
+
+    "topk_index_path": "data/faiss_cache/trecBERT.faiss",
 
     "ice_dict":{
         "sequence": "</E>Text: </text>\nTopic: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>% </Label6> </6>%",
