@@ -117,10 +117,8 @@ class TopkRetriever(BaseRetriever):
         # Save index to file
         if self.topk_index_path is not None and os.path.exists(self.topk_index_path) is False:
             logger.info(f"Saving index to file: {self.topk_index_path}")
-            if self.device == 'cuda':
-                _index = faiss.index_gpu_to_cpu(index)
-            else:
-                _index = self.index
+            _index = index if self.device == 'cpu' else faiss.index_gpu_to_cpu(index)
+            os.makedirs(os.path.dirname(self.topk_index_path), exist_ok=True)
             faiss.write_index(_index, self.topk_index_path)
 
         return index
