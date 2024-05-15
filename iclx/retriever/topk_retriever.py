@@ -1,4 +1,5 @@
 import os
+import gc
 import tqdm
 import copy
 import faiss
@@ -64,9 +65,9 @@ class TopkRetriever(BaseRetriever):
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.tokenizer.padding_side = "right"
 
-        self.encode_dataset = DatasetEncoder(gen_datalist, tokenizer=self.tokenizer)
+        encode_dataset = DatasetEncoder(gen_datalist, tokenizer=self.tokenizer)
         co = DataCollatorWithPaddingAndCuda(tokenizer=self.tokenizer, device=self.device)
-        self.dataloader = DataLoader(self.encode_dataset, batch_size=self.batch_size, collate_fn=co)
+        self.dataloader = DataLoader(encode_dataset, batch_size=self.batch_size, collate_fn=co)
 
         self.model = SentenceTransformer(sentence_transformers_model_name)
 
@@ -75,6 +76,8 @@ class TopkRetriever(BaseRetriever):
 
         self.topk_index_path = kwargs.get('topk_index_path', None)
         self.index = self.create_index()
+        self.rtr_idx_list = self.knn_search(self._ice_num)
+        self.clear_memory()
 
     def create_index(self):
         # Load index if it exists
@@ -97,7 +100,6 @@ class TopkRetriever(BaseRetriever):
         if self.device == 'cpu':
             logger.info("Creating faiss-cpu index")
             index = faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension())
-
         elif self.device == 'cuda':
             logger.info("Creating faiss-gpu index")
             res = faiss.StandardGpuResources()
@@ -109,8 +111,8 @@ class TopkRetriever(BaseRetriever):
             raise ValueError("Invalid device type. Please specify either 'cpu' or 'cuda'.")
 
         res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
-        self.embed_list = np.stack([res['embed'] for res in res_list])
-        index.add(self.embed_list)
+        embed_list = np.stack([res['embed'] for res in res_list])
+        index.add(embed_list)
 
         logger.info("Index created")
 
@@ -122,6 +124,16 @@ class TopkRetriever(BaseRetriever):
             faiss.write_index(_index, self.topk_index_path)
 
         return index
+
+    def clear_memory(self):
+        self.index.reset()
+        del self.index
+        del self.model
+        del self.tokenizer
+        del self.dataloader
+        gc.collect()
+        if self.device == 'cuda':
+            torch.cuda.empty_cache()
 
     def knn_search(self, ice_num):
         res_list = self.forward(self.dataloader, process_bar=True, information="Embedding test set...")
@@ -151,4 +163,4 @@ class TopkRetriever(BaseRetriever):
         return res_list
 
     def retrieve(self):
-        return self.knn_search(self._ice_num)
+        return [rtr_idx[:self._ice_num] for rtr_idx in self.rtr_idx_list]
