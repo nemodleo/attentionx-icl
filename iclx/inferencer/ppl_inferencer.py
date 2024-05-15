@@ -2,14 +2,12 @@ import json
 import numpy as np
 import torch
 from typing import List
-from typing import Tuple
 from typing import Optional
 from tqdm import tqdm
 from tqdm import trange
 from loguru import logger
 from accelerate import Accelerator
 from transformers.file_utils import ModelOutput
-from torch.nn import functional as F
 
 from iclx.inferencer import BaseInferencer
 from iclx.retriever import BaseRetriever
@@ -166,6 +164,7 @@ class PPLInferencer(BaseInferencer):
                         sub_ppl_list.append(res)
                         output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
                         index = index + 1
+                print(sub_ppl_list); exit()
                 ppl.append(sub_ppl_list)
 
         # 6. Get lowest PPL class as predictions
@@ -274,7 +273,7 @@ class PPLInferencer(BaseInferencer):
                     mask[i][j] = 1
             loss = loss * mask
 
-        lens = (inputs["input_ids"] != self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
+        lens = (inputs["input_ids"] != self.tokenizer.pad_token_id).sum(-1).cpu().numpy() #!
         if mask_length is not None:
             lens -= np.array(mask_length)
         ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
