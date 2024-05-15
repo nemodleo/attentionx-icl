@@ -96,7 +96,7 @@ class TopkRetriever(BaseRetriever):
 
         if self.device == 'cpu':
             logger.info("Creating faiss-cpu index")
-            index = faiss.IndexIDMap(faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension()))
+            index = faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension())
 
         elif self.device == 'cuda':
             logger.info("Creating faiss-gpu index")
