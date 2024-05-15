@@ -86,7 +86,7 @@ class PPLInferencer(BaseInferencer):
         if self.use_cache:
             logger.info("Using cache for PPL calculation")
             if self.batch_size != 1:
-                raise ValueError("Batch size must be 1 when using cache for PPL calculation")
+                raise ValueError("Batch size must be 1 when using cache for PPL calculation. Please set batch_size=1.")
             # 5.1 Generate prompts of current label and truncate
             _dummy_label = labels[0]
             prompt_wo_label_list = []
@@ -134,7 +134,6 @@ class PPLInferencer(BaseInferencer):
                         output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
                         index = index + 1
                 ppl.append(sub_ppl_list)
-
         else:
             logger.info("Not using cache for PPL calculation")
             for label in labels:
@@ -205,14 +204,15 @@ class PPLInferencer(BaseInferencer):
 
         inputs_next = self.tokenizer(next_texts, padding=True, return_tensors='pt', truncation=True)
         inputs_next = {k: v.to(self.model.device) for k, v in inputs_next.items()}
-        # print(inputs_next)
+        inputs_next.pop("attention_mask") #! only batch size 1
+
         outputs = self.model(**inputs_next, past_key_values=sub_caches.past_key_values)
 
         logits = sub_caches.logits
         labels = inputs["input_ids"]
 
         # remove pad token and logit
-        mask_lengths = (labels == self.tokenizer.pad_token_id).argmax(-1)
+        mask_lengths = (labels == self.tokenizer.pad_token_id).int().argmax(-1)
         logits = [logit[:mask_length, :] if mask_length > 0 else logit for mask_length, logit in zip(mask_lengths, logits)]
         labels = [shift_label[:mask_length] if mask_length > 0 else shift_label for mask_length, shift_label in zip(mask_lengths, labels)]
 
