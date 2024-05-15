@@ -29,17 +29,16 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
     assert all(shots[i] > shots[i+1] for i in range(len(shots)-1)), "Shots should be in descending order"
 
     def gen(file_path):
-        # with open(file_path, 'r') as f:
-        #     for line in f:
-        #         yield json.loads(line)
-
         with open(file_path, 'r') as f:
-            n = 0
             for line in f:
-                n += 1
-                if n > 10:
-                    break
                 yield json.loads(line)
+        # with open(file_path, 'r') as f:
+        #     n = 0
+        #     for line in f:
+        #         n += 1
+        #         if n > 10:
+        #             break
+        #         yield json.loads(line)
 
     if LOAD_HF_DATASET:
         dataset = load_dataset(HF_DATASET_NAME)
@@ -68,29 +67,34 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             sequence.append(test_sequence(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
             logger.info(f"sequence for shot {i} done: {sequence[-1]}")
+            f.write(f"{sequence[-1]}")
 
             binning.append(test_binning(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
-            logger.info(f"binning for shot {i} done")
+            logger.info(f"binning for shot {i} done: {binning[-1]}")
+            f.write(f", {binning[-1]}")
 
             gt.append(test_GT(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
-            logger.info(f"gt for shot {i} done")
+            logger.info(f"gt for shot {i} done: {gt[-1}")
+            f.write(f", {gt[-1]}")
 
             pseudo_gt.append(test_pseudo_GT(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
-            logger.info(f"pseudo_gt for shot {i} done")
+            logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
+            f.write(f", {pseudo_gt[-1]}")
 
-            # sequence ablation 
+            sequence ablation 
             seq_extreme.append(test_seq_extreme(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
-            logger.info(f"seq_extreme for shot {i} done")
+            logger.info(f"seq_extreme for shot {i} done: {seq_extreme[-1]}")
+            f.write(f", {seq_extreme[-1]}")
 
             seq_uniform.append(test_seq_uniform(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
-            logger.info(f"seq_uniform for shot {i} done")
+            logger.info(f"seq_uniform for shot {i} done: {seq_uniform[-1]}")
+            f.write(f", {seq_uniform[-1]}\n")
 
-            f.write(f"{sequence[-1]}, {binning[-1]}, {gt[-1]}, {pseudo_gt[-1]}, {seq_extreme[-1]}, {seq_uniform[-1]}\n")
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
@@ -136,7 +140,8 @@ def test_seq_extreme(data, model_name, retriever, batch_size):
     inferencer = PPLInferencer(model_name=model_name,
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
-                               task_description=TASK_DESC)
+                               task_description=TASK_DESC,
+                               use_cache=True)
 
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -166,7 +171,8 @@ def test_seq_uniform(data, model_name, retriever, batch_size):
     inferencer = PPLInferencer(model_name=model_name,
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
-                               task_description=TASK_DESC)
+                               task_description=TASK_DESC,
+                               use_cache=True)
 
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
