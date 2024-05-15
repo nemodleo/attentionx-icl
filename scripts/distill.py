@@ -25,7 +25,7 @@ def clean_up_memory():
     gc.collect()
     torch.cuda.empty_cache()
 
-def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', batch_size=1):
+def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', topk_index_path=None, batch_size=1):
     assert all(shots[i] > shots[i+1] for i in range(len(shots)-1)), "Shots should be in descending order"
 
     def gen(file_path):
@@ -58,7 +58,7 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         f.write("sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform\n")
 
-        retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0])
+        retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0], topk_index_path=topk_index_path)
 
         # number of shots to run
         for i in shots:
@@ -336,9 +336,11 @@ if __name__ == '__main__':
 
     os.makedirs(FOLDER_NAME, exist_ok=True)
 
+    TOPK_INDEX_PATH = setup['topk_index_path']
+
     logger.info(f"Experiment: {EXP_NAME}")
     logger.info(f"Starting distillation of {SHOTS} shots using {STUDENT} student with {setup['retriever']} retriever.")
     logger.info(f"Using training data from {TRAIN_PATH}")
     logger.info(f"output will be saved to {FOLDER_NAME}")
 
-    test(shots=SHOTS, model_name = STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, batch_size=BATCH_SIZE)
+    test(shots=SHOTS, model_name = STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, topk_index_path=TOPK_INDEX_PATH, batch_size=BATCH_SIZE)
