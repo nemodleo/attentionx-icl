@@ -32,13 +32,6 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
         with open(file_path, 'r') as f:
             for line in f:
                 yield json.loads(line)
-        # with open(file_path, 'r') as f:
-        #     n = 0
-        #     for line in f:
-        #         n += 1
-        #         if n > 10:
-        #             break
-        #         yield json.loads(line)
 
     if LOAD_HF_DATASET:
         dataset = load_dataset(HF_DATASET_NAME)
@@ -76,7 +69,7 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
 
             gt.append(test_GT(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
-            logger.info(f"gt for shot {i} done: {gt[-1}")
+            logger.info(f"gt for shot {i} done: {gt[-1]}")
             f.write(f", {gt[-1]}")
 
             pseudo_gt.append(test_pseudo_GT(data, model_name, retriever, batch_size)['accuracy'])
@@ -84,7 +77,7 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
             f.write(f", {pseudo_gt[-1]}")
 
-            sequence ablation 
+            # sequence ablation 
             seq_extreme.append(test_seq_extreme(data, model_name, retriever, batch_size)['accuracy'])
             clean_up_memory()
             logger.info(f"seq_extreme for shot {i} done: {seq_extreme[-1]}")
@@ -133,7 +126,7 @@ def test_seq_extreme(data, model_name, retriever, batch_size):
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
-    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
@@ -164,7 +157,7 @@ def test_seq_uniform(data, model_name, retriever, batch_size):
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
-    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
@@ -349,4 +342,4 @@ if __name__ == '__main__':
     logger.info(f"Using training data from {TRAIN_PATH}")
     logger.info(f"output will be saved to {FOLDER_NAME}")
 
-    test(shots=SHOTS, model_name = STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, topk_index_path=TOPK_INDEX_PATH, batch_size=BATCH_SIZE)
+    test(shots=SHOTS, model_name=STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, topk_index_path=TOPK_INDEX_PATH, batch_size=BATCH_SIZE)
