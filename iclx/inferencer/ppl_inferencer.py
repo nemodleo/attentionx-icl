@@ -1,7 +1,8 @@
 import json
+import copy
 import numpy as np
 import torch
-from typing import List
+from typing import List, Dict
 from typing import Optional
 from tqdm import tqdm
 from tqdm import trange
@@ -105,9 +106,21 @@ class PPLInferencer(BaseInferencer):
                         prompt_w_label = retriever.add_label_and_eos(prompt, _dummy_label, ice_template=ice_template, prompt_template=prompt_template)
                         prompt_token_num = self.get_input_token_num(prompt_w_label)
                 prompt_wo_label_list.append(prompt)
-            
+
             # 5.2 Get PPL without label and eos token for recycle token
             logger.info(f"Calculating PPL for prompts labeled '{labels}'")
+
+            sub_prompt_label_list_dict = {}
+            sub_inputs_next_dict = {}
+            for label in labels:
+                prompt_label = retriever.get_label_and_eos(label, ice_template=ice_template, prompt_template=prompt_template)
+                add_prompt_label = ' ' + prompt_label
+                sub_prompt_label_list = [add_prompt_label] * self.batch_size
+                sub_inputs_next = self._get_inputs(sub_prompt_label_list)
+                sub_prompt_label_list_dict[label] = sub_prompt_label_list
+                sub_inputs_next_dict[label] = sub_inputs_next
+
+
             index = 0
             n_labels = len(labels)
             for idx in trange(0, len(prompt_wo_label_list), self.batch_size, disable=not self.is_main_process):
@@ -121,9 +134,10 @@ class PPLInferencer(BaseInferencer):
                     add_prompt_label = ' ' + prompt_label
 
                     # 5.3 Get PPL
-                    sub_prompt_label_list = [add_prompt_label] * len(sub_prompt_wo_label_list)
+                    sub_prompt_label_list = sub_prompt_label_list_dict[label]
+                    sub_inputs_next = sub_inputs_next_dict[label]
                     with torch.no_grad():
-                        sub_res = self._get_ppl_use_cache(sub_prompt_wo_label_list, sub_prompt_label_list, sub_caches).tolist()
+                        sub_res = self._get_ppl_use_cache(sub_caches, sub_prompt_wo_label_list, inputs_next=sub_inputs_next).tolist()
                     for res, prompt_wo_label, _add_prompt_label in zip(sub_res, sub_prompt_wo_label_list, sub_prompt_label_list):
                         sub_ppl_list.append(res)
                         prompt = prompt_wo_label + _add_prompt_label
@@ -180,6 +194,12 @@ class PPLInferencer(BaseInferencer):
 
         return [sample['prediction'] for sample in output_handler.results_dict.values()]
 
+    def _get_inputs(self,
+                    input_texts: List[str]):
+        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
+        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+        return inputs
+
     def _get_cache(self,
                    input_texts: List[str]):
         self.tokenizer.padding_side = "right"
@@ -190,19 +210,26 @@ class PPLInferencer(BaseInferencer):
         return outputs
 
     def _get_ppl_use_cache(self,
-                           input_texts: List[str],
-                           next_texts: List[str],
                            sub_caches: ModelOutput,
+                           input_texts: List[str],
+                           next_texts: Optional[List[str]]=None,
+                           inputs_next: Optional[Dict[str, torch.Tensor]]=None,
                            mask_length=None):
+        if next_texts is None and inputs_next is None:
+            raise ValueError("Either next_texts or inputs_next must be provided.")
+
         self.tokenizer.padding_side = "right"
         inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
-        inputs_next = self.tokenizer(next_texts, padding=True, return_tensors='pt', truncation=True)
-        inputs_next = {k: v.to(self.model.device) for k, v in inputs_next.items()}
-        inputs_next.pop("attention_mask") #! only batch size 1
+        if inputs_next is not None:
+            _inputs_next = copy.deepcopy(inputs_next)
+        else:
+            _inputs_next = self.tokenizer(next_texts, padding=True, return_tensors='pt', truncation=True)
+            _inputs_next = {k: v.to(self.model.device) for k, v in _inputs_next.items()}
+        _inputs_next.pop("attention_mask") #! only batch size 1
 
-        outputs = self.model(**inputs_next, past_key_values=sub_caches.past_key_values)
+        outputs = self.model(**_inputs_next, past_key_values=sub_caches.past_key_values)
 
         logits = sub_caches.logits
         labels = inputs["input_ids"]
@@ -214,7 +241,7 @@ class PPLInferencer(BaseInferencer):
 
         # add next token and logit
         logits = [torch.cat([logit, next_logit], dim=0) for logit, next_logit in zip(logits, outputs.logits)]
-        labels = [torch.cat([label, next_label], dim=0) for label, next_label in zip(labels, inputs_next["input_ids"])]
+        labels = [torch.cat([label, next_label], dim=0) for label, next_label in zip(labels, _inputs_next["input_ids"])]
 
         # pad token and logit
         max_length = max([len(label) for label in labels])
