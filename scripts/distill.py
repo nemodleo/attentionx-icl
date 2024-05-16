@@ -22,25 +22,43 @@ retriever_dict = {"topk": TopkRetriever,
                 "random": RandomRetriever}
 
 def clean_up_memory():
-    gc.collect()
-    torch.cuda.empty_cache()
+    pass
+    #gc.collect()
+    #torch.cuda.empty_cache()
 
-def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', topk_index_path=None, batch_size=1):
+def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', topk_index_path=None, batch_size=1, debug=False):
     assert all(shots[i] > shots[i+1] for i in range(len(shots)-1)), "Shots should be in descending order"
 
-    def gen(file_path):
-        with open(file_path, 'r') as f:
-            for line in f:
-                yield json.loads(line)
-
-    if LOAD_HF_DATASET:
-        dataset = load_dataset(HF_DATASET_NAME)
+    debug = True
+    if debug:
+        if LOAD_HF_DATASET:
+            train_ds = load_dataset(HF_DATASET_NAME, split='train[:32]')
+            val_ds = load_dataset(HF_DATASET_NAME, split='valid[:10]')
+            test_ds = load_dataset(HF_DATASET_NAME, split='test[:10]')
+            dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
+        else:
+            def gen_debug(file_path, max_length=32):
+                with open(file_path, 'r') as f:
+                    for idx, line in f:
+                        if idx >= max_length: break
+                        yield json.loads(line)
+            train_ds = Dataset.from_generator(gen_debug, gen_kwargs={"file_path": TRAIN_PATH, "max_length": 32})
+            val_ds = None if not VAL_PATH else Dataset.from_generator(gen_debug, gen_kwargs={"file_path": VAL_PATH, "max_length": 10})
+            test_ds = Dataset.from_generator(gen_debug, gen_kwargs={"file_path": TEST_PATH, "max_length": 10})
+            dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
     else:
-        train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TRAIN_PATH})
-        val_ds = None if not VAL_PATH else Dataset.from_generator(gen, gen_kwargs={"file_path": VAL_PATH})
-        test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TEST_PATH})
-
-        dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
+        if LOAD_HF_DATASET:
+            dataset = load_dataset(HF_DATASET_NAME)
+        else:
+            def gen(file_path):
+                with open(file_path, 'r') as f:
+                    for line in f:
+                        yield json.loads(line)
+            train_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TRAIN_PATH})
+            val_ds = None if not VAL_PATH else Dataset.from_generator(gen, gen_kwargs={"file_path": VAL_PATH})
+            test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TEST_PATH})
+            dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
+    
 
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
@@ -250,7 +268,7 @@ def test_GT(data, model_name, retriever, batch_size):
 
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["GT"]
-    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
@@ -280,7 +298,7 @@ def test_pseudo_GT(data, model_name, retriever, batch_size):
 
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["GT"]
-    ice_template = PromptTemplate(ice_dict, column_token_map, ice_token='</E>')
+    ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
