@@ -125,8 +125,9 @@ class PPLInferencer(BaseInferencer):
             n_labels = len(labels)
             for idx in trange(0, len(prompt_wo_label_list), self.batch_size, disable=not self.is_main_process):
                 sub_prompt_wo_label_list = prompt_wo_label_list[idx:idx + self.batch_size]
+                sub_inputs = self._get_inputs(sub_prompt_wo_label_list)
                 with torch.no_grad():
-                    sub_caches = self._get_cache(sub_prompt_wo_label_list)
+                    sub_caches = self._get_cache(inputs=sub_inputs)
 
                 sub_ppl_list = []
                 for label in labels:
@@ -137,7 +138,7 @@ class PPLInferencer(BaseInferencer):
                     sub_prompt_label_list = sub_prompt_label_list_dict[label]
                     sub_inputs_next = sub_inputs_next_dict[label]
                     with torch.no_grad():
-                        sub_res = self._get_ppl_use_cache(sub_caches, sub_prompt_wo_label_list, inputs_next=sub_inputs_next).tolist()
+                        sub_res = self._get_ppl_use_cache(sub_caches, inputs=sub_inputs, inputs_next=sub_inputs_next).tolist()
                     for res, prompt_wo_label, _add_prompt_label in zip(sub_res, sub_prompt_wo_label_list, sub_prompt_label_list):
                         sub_ppl_list.append(res)
                         prompt = prompt_wo_label + _add_prompt_label
@@ -196,43 +197,40 @@ class PPLInferencer(BaseInferencer):
 
     def _get_inputs(self,
                     input_texts: List[str]):
+        self.tokenizer.padding_side = "right"
         inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
         return inputs
 
     def _get_cache(self,
-                   input_texts: List[str]):
-        self.tokenizer.padding_side = "right"
-        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-
-        outputs = self.model(**inputs, use_cache=True)
+                   input_texts: Optional[List[str]]=None,
+                   inputs: Optional[Dict[str, torch.Tensor]]=None):
+        if input_texts is None and inputs is None:
+            raise ValueError("Either input_texts or inputs must be provided.")
+        _inputs = self._get_cache(input_texts) if inputs is None else copy.deepcopy(inputs)
+        outputs = self.model(**_inputs, use_cache=True)
         return outputs
 
     def _get_ppl_use_cache(self,
                            sub_caches: ModelOutput,
-                           input_texts: List[str],
+                           input_texts: Optional[List[str]]=None,
                            next_texts: Optional[List[str]]=None,
+                           inputs: Optional[Dict[str, torch.Tensor]]=None,
                            inputs_next: Optional[Dict[str, torch.Tensor]]=None,
                            mask_length=None):
+        if input_texts is None and inputs is None:
+            raise ValueError("Either input_texts or inputs must be provided.")
         if next_texts is None and inputs_next is None:
             raise ValueError("Either next_texts or inputs_next must be provided.")
 
-        self.tokenizer.padding_side = "right"
-        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-
-        if inputs_next is not None:
-            _inputs_next = copy.deepcopy(inputs_next)
-        else:
-            _inputs_next = self.tokenizer(next_texts, padding=True, return_tensors='pt', truncation=True)
-            _inputs_next = {k: v.to(self.model.device) for k, v in _inputs_next.items()}
+        _inputs = self._get_cache(input_texts) if inputs is None else copy.deepcopy(inputs)
+        _inputs_next = self._get_inputs(next_texts) if inputs_next is None else copy.deepcopy(inputs_next)
         _inputs_next.pop("attention_mask") #! only batch size 1
 
         outputs = self.model(**_inputs_next, past_key_values=sub_caches.past_key_values)
 
         logits = sub_caches.logits
-        labels = inputs["input_ids"]
+        labels = _inputs["input_ids"]
 
         # remove pad token and logit
         mask_lengths = (labels == self.tokenizer.pad_token_id).int().argmax(-1)
