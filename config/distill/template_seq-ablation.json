@@ -1,4 +1,13 @@
-{   "experiment_name":"trecBERT-topk-gemma2b-seq_ablation",
+{
+    "test_methods": [
+        "sequence",
+        "sequence_score_shuffle",
+        "sequence_label_shuffle",
+        "sequence_label_shuffle_except_first",
+        "seq_extreme",
+        "seq_uniform"
+    ],
+    "experiment_name":"trecBERT-topk-gemma2b-seq_ablation",
 
     "batch_size": 2,
     "retriever": "topk",

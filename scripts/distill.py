@@ -44,23 +44,21 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
 
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
-    test_methods = [
+    TEST_METHODS = [
         "sequence",
+        "binning",
+        "gt",
+        "pseudo_gt",
         "sequence_score_shuffle",
         "sequence_label_shuffle",
         "sequence_label_shuffle_except_first",
         "seq_extreme",
         "seq_uniform",
-        # "binning",
-        # "gt",
-        # "pseudo_gt",
-        # "seq_extreme",
-        # "seq_uniform",
     ]
-    results = {method:[] for method in test_methods}
+    results = {method:[] for method in TEST_METHODS}
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
-        f.write(f"{', '.join(test_methods)}\n")
+        f.write(f"{', '.join(TEST_METHODS)}\n")
 
         retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0])
 
@@ -68,10 +66,10 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
         for i in shots:
             logger.info(f"Running for shot {i}")
             retriever.ice_num = i
-            for method in test_methods:
+            for method in TEST_METHODS:
                 results[method].append(eval(f"test_{method}")(data, model_name, retriever, batch_size)['accuracy'])
                 clean_up_memory()
-                logger.info(f"{method} for shot {i} done")
+                logger.info(f"{method} for shot {i} done. accuracy = {results[method][-1]}")
 
             f.write(f"{', '.join([str(res[-1]) for res in results.values()])}\n")
             f.flush()
@@ -82,9 +80,10 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
 
     # Plotting in reverse order
     xticks = range(len(shots))
-    for method in test_methods:
+    for method in TEST_METHODS:
         plt.plot(xticks, results[method][::-1], label=method)
 
+    plt.xticks(xticks, shots[::-1])
     plt.legend()
     plt.savefig(f"{FOLDER_NAME}/plot_{EXP_NAME}.png")
 
@@ -368,6 +367,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     setup = json.load(open(args.setup_dict, 'r'))
+
+    TEST_METHODS = setup['test_methods']
 
     BATCH_SIZE = setup['batch_size']
     RETRIEVER = retriever_dict[setup['retriever']]

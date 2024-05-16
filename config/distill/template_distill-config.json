@@ -1,4 +1,11 @@
-{   "experiment_name":"<dataset>-<retriever>-<student>",
+{
+    "test_methods": [
+        "sequence",
+        "binning",
+        "gt",
+        "pseudo_gt"
+    ],
+    "experiment_name":"<dataset>-<retriever>-<student>",
 
     "batch_size": 1,
     "retriever": "<random/topk>",
