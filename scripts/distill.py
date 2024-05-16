@@ -43,18 +43,6 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
         dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
 
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
-
-    TEST_METHODS = [
-        "sequence",
-        "binning",
-        "gt",
-        "pseudo_gt",
-        "sequence_score_shuffle",
-        "sequence_label_shuffle",
-        "sequence_label_shuffle_except_first",
-        "seq_extreme",
-        "seq_uniform",
-    ]
     results = {method:[] for method in TEST_METHODS}
 
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
