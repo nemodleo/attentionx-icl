@@ -134,7 +134,7 @@ def test_seq_extreme(data, model_name, retriever, batch_size):
     # Define prompt templates for ice and prompt
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
-    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, ice_token='</E>')
+    prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
 
     # Define a retriever using the previous `DataLoader`.
     # `ice_num` stands for the number of data in in-context examples.
