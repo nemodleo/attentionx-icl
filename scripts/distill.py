@@ -1,6 +1,5 @@
 import sys
 import os
-import gc
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from iclx import DatasetReader
 from iclx import PromptTemplate
@@ -16,7 +15,6 @@ from datasets import DatasetDict
 from loguru import logger
 from datetime import datetime
 import argparse
-import torch
 
 retriever_dict = {"topk": TopkRetriever,
                 "random": RandomRetriever}
@@ -54,16 +52,11 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             val_ds = None if not VAL_PATH else Dataset.from_generator(gen, gen_kwargs={"file_path": VAL_PATH})
             test_ds = Dataset.from_generator(gen, gen_kwargs={"file_path": TEST_PATH})
             dataset = DatasetDict({"train": train_ds, "validation": val_ds, "test": test_ds})
-    
-
     data = DatasetReader(dataset, input_columns=DATA_COLUMNS['input_columns'], output_column=DATA_COLUMNS['output_columns'][0])
 
-
     sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform = [], [], [], [], [], []
-
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         f.write("sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform\n")
-
         retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0], topk_index_path=topk_index_path)
 
         # number of shots to run
@@ -87,7 +80,7 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
             f.write(f", {pseudo_gt[-1]}")
 
-            # sequence ablation 
+            # sequence ablation
             seq_extreme.append(test_seq_extreme(data, model_name, retriever, batch_size)['accuracy'])
             logger.info(f"seq_extreme for shot {i} done: {seq_extreme[-1]}")
             f.write(f", {seq_extreme[-1]}")
