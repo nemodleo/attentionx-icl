@@ -21,15 +21,9 @@ import torch
 retriever_dict = {"topk": TopkRetriever,
                 "random": RandomRetriever}
 
-def clean_up_memory():
-    pass
-    #gc.collect()
-    #torch.cuda.empty_cache()
-
 def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', topk_index_path=None, batch_size=1, debug=False):
     assert all(shots[i] > shots[i+1] for i in range(len(shots)-1)), "Shots should be in descending order"
 
-    debug = True
     if debug:
         if LOAD_HF_DATASET:
             train_ds = load_dataset(HF_DATASET_NAME, split='train[:32]')
@@ -39,8 +33,10 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
         else:
             def gen_debug(file_path, max_length=32):
                 with open(file_path, 'r') as f:
-                    for idx, line in f:
-                        if idx >= max_length: break
+                    n = 0
+                    for line in f:
+                        n += 1
+                        if n > max_length: break
                         yield json.loads(line)
             train_ds = Dataset.from_generator(gen_debug, gen_kwargs={"file_path": TRAIN_PATH, "max_length": 32})
             val_ds = None if not VAL_PATH else Dataset.from_generator(gen_debug, gen_kwargs={"file_path": VAL_PATH, "max_length": 10})
@@ -76,33 +72,27 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             retriever.ice_num = i
 
             sequence.append(test_sequence(data, model_name, retriever, batch_size)['accuracy'])
-            clean_up_memory()
             logger.info(f"sequence for shot {i} done: {sequence[-1]}")
             f.write(f"{sequence[-1]}")
 
             binning.append(test_binning(data, model_name, retriever, batch_size)['accuracy'])
-            clean_up_memory()
             logger.info(f"binning for shot {i} done: {binning[-1]}")
             f.write(f", {binning[-1]}")
 
             gt.append(test_GT(data, model_name, retriever, batch_size)['accuracy'])
-            clean_up_memory()
             logger.info(f"gt for shot {i} done: {gt[-1]}")
             f.write(f", {gt[-1]}")
 
             pseudo_gt.append(test_pseudo_GT(data, model_name, retriever, batch_size)['accuracy'])
-            clean_up_memory()
             logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
             f.write(f", {pseudo_gt[-1]}")
 
             # sequence ablation 
             seq_extreme.append(test_seq_extreme(data, model_name, retriever, batch_size)['accuracy'])
-            clean_up_memory()
             logger.info(f"seq_extreme for shot {i} done: {seq_extreme[-1]}")
             f.write(f", {seq_extreme[-1]}")
 
             seq_uniform.append(test_seq_uniform(data, model_name, retriever, batch_size)['accuracy'])
-            clean_up_memory()
             logger.info(f"seq_uniform for shot {i} done: {seq_uniform[-1]}")
             f.write(f", {seq_uniform[-1]}\n")
 
@@ -331,11 +321,11 @@ if __name__ == '__main__':
     SHOTS = setup['shots']
 
     TRAIN_PATH = setup['train_path']
-    VAL_PATH = setup['val_path']
+    VAL_PATH = setup.get('val_path', None)
     TEST_PATH = setup['test_path']
 
-    HF_DATASET_NAME = setup['hf_dataset_name']
-    LOAD_HF_DATASET = setup['load_hf_dataset']
+    HF_DATASET_NAME = setup.get('hf_dataset_name', None)
+    LOAD_HF_DATASET = setup.get('load_hf_dataset', None)
 
     TASK_DESC = setup['task_description']
     logger.info(f"Your task description:\n{TASK_DESC}")
@@ -353,11 +343,13 @@ if __name__ == '__main__':
 
     os.makedirs(FOLDER_NAME, exist_ok=True)
 
-    TOPK_INDEX_PATH = setup['topk_index_path']
+    TOPK_INDEX_PATH = setup.get('topk_index_path', None)
+
+    DEBUG = setup.get('debug', False)
 
     logger.info(f"Experiment: {EXP_NAME}")
     logger.info(f"Starting distillation of {SHOTS} shots using {STUDENT} student with {setup['retriever']} retriever.")
     logger.info(f"Using training data from {TRAIN_PATH}")
     logger.info(f"output will be saved to {FOLDER_NAME}")
 
-    test(shots=SHOTS, model_name=STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, topk_index_path=TOPK_INDEX_PATH, batch_size=BATCH_SIZE)
+    test(shots=SHOTS, model_name=STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, topk_index_path=TOPK_INDEX_PATH, batch_size=BATCH_SIZE, debug=DEBUG)
