@@ -19,6 +19,7 @@
     "output_columns": ["label"]},
 
     "topk_index_path": "data/faiss_cache/trecBERT.faiss",
+    "use_inferencer_cache"  : true,
 
     "ice_dict":{
         "sequence": "</E>Text: </text>\nTopic: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>% </Label6> </6>%",

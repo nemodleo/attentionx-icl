@@ -72,7 +72,7 @@ def test(
                                batch_size=batch_size,
                                task_description=TASK_DESC,
                                max_model_token_num=max_model_token_num,
-                               use_cache=True)
+                               use_cache=USE_INFERECER_CACHE)
 
         # number of shots to run
         for i in shots:
@@ -319,6 +319,7 @@ if __name__ == '__main__':
     RETRIEVER_BASE = setup['retriever_base']
     STUDENT = setup['student']
     MAX_MODEL_TOKEN_NUM = setup.get('max_model_token_num', None)
+    USE_INFERECER_CACHE = setup.get('use_inferencer_cache', False)
     SHOTS = setup['shots']
 
     TRAIN_PATH = setup['train_path']
