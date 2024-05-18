@@ -151,7 +151,7 @@ def test_seq_extreme(data, inferencer, retriever):
         prompt_template=prompt_template,
         use_ordering=True,
         output_json_filepath=FOLDER_NAME,
-        output_json_filename='predictions_seq_extreme'
+        output_json_filename=f'predictions_seq_extreme_{retriever.ice_num}shot'
     )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
@@ -180,7 +180,7 @@ def test_seq_uniform(data, inferencer, retriever):
         prompt_template=prompt_template,
         use_ordering=True,
         output_json_filepath=FOLDER_NAME,
-        output_json_filename='predictions_seq_uniform'
+        output_json_filename=f'predictions_seq_uniform_{retriever.ice_num}shot'
     )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
@@ -209,7 +209,7 @@ def test_sequence(data, inferencer, retriever):
         prompt_template=prompt_template,
         use_ordering=True,
         output_json_filepath=FOLDER_NAME,
-        output_json_filename='predictions_sequence'
+        output_json_filename=f'predictions_sequence_{retriever.ice_num}shot'
     )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
@@ -240,7 +240,7 @@ def test_binning(data, inferencer, retriever):
         prompt_template=prompt_template,
         use_ordering=True,
         output_json_filepath=FOLDER_NAME,
-        output_json_filename='predictions_binning'
+        output_json_filename=f'predictions_binning_{retriever.ice_num}shot'
     )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
@@ -269,7 +269,7 @@ def test_GT(data, inferencer, retriever):
         prompt_template=prompt_template,
         use_ordering=False,
         output_json_filepath=FOLDER_NAME,
-        output_json_filename='predictions_gt'
+        output_json_filename=f'predictions_gt_{retriever.ice_num}shot'
     )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
@@ -299,7 +299,7 @@ def test_pseudo_GT(data, inferencer, retriever):
         use_ordering=False,
         pseudo_gt='pseudo_gt',
         output_json_filepath=FOLDER_NAME,
-        output_json_filename='predictions_pseudo_gt'
+        output_json_filename=f'predictions_pseudo_gt_{retriever.ice_num}shot'
     )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
