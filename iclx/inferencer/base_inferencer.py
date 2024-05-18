@@ -50,7 +50,8 @@ class BaseInferencer:
         self._init_tokenizer(self.tokenizer_name)
 
         self.device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-        self.model.to(self.device)
+        if self.device not in self.model.device.type:
+            raise ValueError(f"Model is not on the same device as the current device, device={self.device} != model.device={self.model.device.type}")
         self.model.eval()
 
         self.max_model_token_num = max_model_token_num or self.tokenizer.model_max_length
@@ -92,15 +93,18 @@ class BaseInferencer:
         raise NotImplementedError("Method hasn't been implemented yet")
 
     def _init_model(self, model_name):
-        model_config = AutoConfig.from_pretrained(model_name)
-        with init_empty_weights():
-            empty_model = AutoModelForCausalLM.from_config(model_config)
-        device_map = infer_auto_device_map(empty_model, dtype="float16")
+        # model_config = AutoConfig.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(model_name,
-                                                          device_map=device_map,
-                                                          offload_folder="offload",
-                                                          offload_state_dict=True,
+                                                          device_map="auto",
                                                           torch_dtype=torch.float16)
+        # with init_empty_weights():
+        #     empty_model = AutoModelForCausalLM.from_config(model_config)
+        # device_map = infer_auto_device_map(empty_model, dtype="float16")
+        # self.model = AutoModelForCausalLM.from_pretrained(model_name,
+        #                                                   device_map=device_map,
+        #                                                   offload_folder="offload",
+        #                                                   offload_state_dict=True,
+        #                                                   torch_dtype=torch.float16)
 
     def _init_tokenizer(self, tokenizer_name):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
