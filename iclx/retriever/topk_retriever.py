@@ -131,7 +131,7 @@ class TopkRetriever(BaseRetriever):
         # https://github.com/facebookresearch/faiss/issues/2752
         # https://github.com/facebookresearch/faiss/issues/2821
         self.index.reset()
-        self.res.noTempMemory()
+        if self.res: self.res.noTempMemory()
         del self.index
         del self.model
         del self.tokenizer
