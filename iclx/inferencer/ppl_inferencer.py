@@ -207,7 +207,7 @@ class PPLInferencer(BaseInferencer):
                    inputs: Optional[Dict[str, torch.Tensor]]=None):
         if input_texts is None and inputs is None:
             raise ValueError("Either input_texts or inputs must be provided.")
-        _inputs = self._get_cache(input_texts) if inputs is None else copy.deepcopy(inputs)
+        _inputs = self._get_inputs(input_texts) if inputs is None else copy.deepcopy(inputs)
         outputs = self.model(**_inputs, use_cache=True)
         return outputs
 
@@ -223,7 +223,7 @@ class PPLInferencer(BaseInferencer):
         if next_texts is None and next_inputs is None:
             raise ValueError("Either next_texts or next_inputs must be provided.")
 
-        _inputs = self._get_cache(input_texts) if inputs is None else copy.deepcopy(inputs)
+        _inputs = self._get_inputs(input_texts) if inputs is None else copy.deepcopy(inputs)
         _next_inputs = self._get_inputs(next_texts) if next_inputs is None else copy.deepcopy(next_inputs)
         _next_inputs.pop("attention_mask") #! only batch size 1
 
