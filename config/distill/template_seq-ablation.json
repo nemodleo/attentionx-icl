@@ -4,6 +4,7 @@
     "retriever": "topk",
     "retriever_base": "bert-base-uncased",
     "student": "google/gemma-2b",
+    "max_model_token_num": 8192,
     "shots": [32, 16, 8, 4, 2, 1, 0],
 
     "hf_dataset_name": null,

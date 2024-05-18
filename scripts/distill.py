@@ -19,7 +19,16 @@ import argparse
 retriever_dict = {"topk": TopkRetriever,
                 "random": RandomRetriever}
 
-def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=RandomRetriever, retriever_base='all-mpnet-base-v2', topk_index_path=None, batch_size=1, debug=False):
+def test(
+        shots=[32, 16, 8, 4, 2, 1],
+        model_name='distilgpt2',
+        max_model_token_num=None,
+        retriever_cls=RandomRetriever,
+        retriever_base='all-mpnet-base-v2',
+        topk_index_path=None,
+        batch_size=1,
+        debug=False
+    ):
     assert all(shots[i] > shots[i+1] for i in range(len(shots)-1)), "Shots should be in descending order"
 
     if debug:
@@ -64,28 +73,28 @@ def test(shots=[32, 16, 8, 4, 2, 1], model_name='distilgpt2', retriever_cls=Rand
             logger.info(f"Running for shot {i}")
             retriever.ice_num = i
 
-            sequence.append(test_sequence(data, model_name, retriever, batch_size)['accuracy'])
+            sequence.append(test_sequence(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
             logger.info(f"sequence for shot {i} done: {sequence[-1]}")
             f.write(f"{sequence[-1]}")
 
-            binning.append(test_binning(data, model_name, retriever, batch_size)['accuracy'])
+            binning.append(test_binning(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
             logger.info(f"binning for shot {i} done: {binning[-1]}")
             f.write(f", {binning[-1]}")
 
-            gt.append(test_GT(data, model_name, retriever, batch_size)['accuracy'])
+            gt.append(test_GT(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
             logger.info(f"gt for shot {i} done: {gt[-1]}")
             f.write(f", {gt[-1]}")
 
-            pseudo_gt.append(test_pseudo_GT(data, model_name, retriever, batch_size)['accuracy'])
+            pseudo_gt.append(test_pseudo_GT(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
             logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
             f.write(f", {pseudo_gt[-1]}")
 
             # sequence ablation
-            seq_extreme.append(test_seq_extreme(data, model_name, retriever, batch_size)['accuracy'])
+            seq_extreme.append(test_seq_extreme(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
             logger.info(f"seq_extreme for shot {i} done: {seq_extreme[-1]}")
             f.write(f", {seq_extreme[-1]}")
 
-            seq_uniform.append(test_seq_uniform(data, model_name, retriever, batch_size)['accuracy'])
+            seq_uniform.append(test_seq_uniform(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
             logger.info(f"seq_uniform for shot {i} done: {seq_uniform[-1]}")
             f.write(f", {seq_uniform[-1]}\n")
 
@@ -135,6 +144,7 @@ def test_seq_extreme(data, model_name, retriever, batch_size):
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
                                task_description=TASK_DESC,
+                               max_model_token_num=max_model_token_num,
                                use_cache=True)
 
 
@@ -145,7 +155,7 @@ def test_seq_extreme(data, model_name, retriever, batch_size):
 
     return score
 
-def test_seq_uniform(data, model_name, retriever, batch_size):
+def test_seq_uniform(data, model_name, max_model_token_num, retriever, batch_size):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["seq_uniform"]
@@ -166,6 +176,7 @@ def test_seq_uniform(data, model_name, retriever, batch_size):
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
                                task_description=TASK_DESC,
+                               max_model_token_num=max_model_token_num,
                                use_cache=True)
 
 
@@ -176,7 +187,7 @@ def test_seq_uniform(data, model_name, retriever, batch_size):
 
     return score
 
-def test_sequence(data, model_name, retriever, batch_size):
+def test_sequence(data, model_name, max_model_token_num, retriever, batch_size):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["sequence"]
@@ -197,6 +208,7 @@ def test_sequence(data, model_name, retriever, batch_size):
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
                                task_description=TASK_DESC,
+                               max_model_token_num=max_model_token_num,
                                use_cache=True)
 
 
@@ -208,7 +220,7 @@ def test_sequence(data, model_name, retriever, batch_size):
     return score
 
 
-def test_binning(data, model_name, retriever, batch_size):
+def test_binning(data, model_name, max_model_token_num, retriever, batch_size):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["binning"]
@@ -230,6 +242,7 @@ def test_binning(data, model_name, retriever, batch_size):
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
                                task_description=TASK_DESC,
+                               max_model_token_num=max_model_token_num,
                                use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -240,7 +253,7 @@ def test_binning(data, model_name, retriever, batch_size):
     return score
 
 
-def test_GT(data, model_name, retriever, batch_size):
+def test_GT(data, model_name, max_model_token_num, retriever, batch_size):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -260,6 +273,7 @@ def test_GT(data, model_name, retriever, batch_size):
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
                                task_description=TASK_DESC,
+                               max_model_token_num=max_model_token_num,
                                use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -270,7 +284,7 @@ def test_GT(data, model_name, retriever, batch_size):
     return score
 
 
-def test_pseudo_GT(data, model_name, retriever, batch_size):
+def test_pseudo_GT(data, model_name, max_model_token_num, retriever, batch_size):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -290,6 +304,7 @@ def test_pseudo_GT(data, model_name, retriever, batch_size):
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
                                task_description=TASK_DESC,
+                               max_model_token_num=max_model_token_num,
                                use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
@@ -311,6 +326,7 @@ if __name__ == '__main__':
     RETRIEVER = retriever_dict[setup['retriever']]
     RETRIEVER_BASE = setup['retriever_base']
     STUDENT = setup['student']
+    MAX_MODEL_TOKEN_NUM = setup.get('max_model_token_num', None)
     SHOTS = setup['shots']
 
     TRAIN_PATH = setup['train_path']
@@ -345,4 +361,13 @@ if __name__ == '__main__':
     logger.info(f"Using training data from {TRAIN_PATH}")
     logger.info(f"output will be saved to {FOLDER_NAME}")
 
-    test(shots=SHOTS, model_name=STUDENT, retriever_cls=RETRIEVER, retriever_base=RETRIEVER_BASE, topk_index_path=TOPK_INDEX_PATH, batch_size=BATCH_SIZE, debug=DEBUG)
+    test(
+        shots=SHOTS,
+        model_name=STUDENT,
+        max_model_token_num=MAX_MODEL_TOKEN_NUM,
+        retriever_cls=RETRIEVER,
+        retriever_base=RETRIEVER_BASE,
+        topk_index_path=TOPK_INDEX_PATH,
+        batch_size=BATCH_SIZE,
+        debug=DEBUG
+    )
