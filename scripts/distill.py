@@ -123,7 +123,7 @@ def test(
 
     logger.info(f"Finished running and saving artifacts for experiment {EXP_NAME}")
 
-def test_seq_extreme(data, model_name, retriever, batch_size):
+def test_seq_extreme(data, model_name, max_model_token_num, retriever, batch_size):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["seq_extreme"]
@@ -149,7 +149,14 @@ def test_seq_extreme(data, model_name, retriever, batch_size):
 
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
-    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=True)
+    predictions = inferencer.inference(
+        retriever,
+        ice_template=ice_template,
+        prompt_template=prompt_template,
+        use_ordering=True,
+        output_json_filepath=FOLDER_NAME,
+        output_json_filename='predictions_seq_extreme'
+    )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
@@ -181,7 +188,14 @@ def test_seq_uniform(data, model_name, max_model_token_num, retriever, batch_siz
 
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
-    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=True)
+    predictions = inferencer.inference(
+        retriever,
+        ice_template=ice_template,
+        prompt_template=prompt_template,
+        use_ordering=True,
+        output_json_filepath=FOLDER_NAME,
+        output_json_filename='predictions_seq_uniform'
+    )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
@@ -213,7 +227,14 @@ def test_sequence(data, model_name, max_model_token_num, retriever, batch_size):
 
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
-    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=True)
+    predictions = inferencer.inference(
+        retriever,
+        ice_template=ice_template,
+        prompt_template=prompt_template,
+        use_ordering=True,
+        output_json_filepath=FOLDER_NAME,
+        output_json_filename='predictions_sequence'
+    )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
@@ -246,7 +267,14 @@ def test_binning(data, model_name, max_model_token_num, retriever, batch_size):
                                use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
-    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=True)
+    predictions = inferencer.inference(
+        retriever,
+        ice_template=ice_template,
+        prompt_template=prompt_template,
+        use_ordering=True,
+        output_json_filepath=FOLDER_NAME,
+        output_json_filename='predictions_binning'
+    )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
@@ -277,7 +305,14 @@ def test_GT(data, model_name, max_model_token_num, retriever, batch_size):
                                use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
-    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=False)
+    predictions = inferencer.inference(
+        retriever,
+        ice_template=ice_template,
+        prompt_template=prompt_template,
+        use_ordering=False,
+        output_json_filepath=FOLDER_NAME,
+        output_json_filename='predictions_gt'
+    )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
@@ -308,7 +343,15 @@ def test_pseudo_GT(data, model_name, max_model_token_num, retriever, batch_size)
                                use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
-    predictions = inferencer.inference(retriever, ice_template=ice_template, prompt_template=prompt_template, use_ordering=False, pseudo_gt='pseudo_gt')
+    predictions = inferencer.inference(
+        retriever,
+        ice_template=ice_template,
+        prompt_template=prompt_template,
+        use_ordering=False,
+        pseudo_gt='pseudo_gt',
+        output_json_filepath=FOLDER_NAME,
+        output_json_filename='predictions_pseudo_gt'
+    )
     # compute accuracy for the prediction
     score = AccEvaluator().score(predictions=predictions, references=data.references)
 
@@ -348,7 +391,7 @@ if __name__ == '__main__':
 
     EXP_NAME = setup['experiment_name']
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    FOLDER_NAME = f"output/{now}_{EXP_NAME}"
+    FOLDER_NAME = os.path.join("iclx_output", f"{now}_{EXP_NAME}")
 
     os.makedirs(FOLDER_NAME, exist_ok=True)
 
