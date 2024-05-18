@@ -75,6 +75,7 @@ class TopkRetriever(BaseRetriever):
         self.model.eval()
 
         self.topk_index_path = kwargs.get('topk_index_path', None)
+        self.res = None
         self.index = self.create_index()
         self.rtr_idx_list = self.knn_search(self._ice_num)
         self.clear_memory()
@@ -85,7 +86,8 @@ class TopkRetriever(BaseRetriever):
             logger.info(f"Loading topk index from file: {self.topk_index_path}")
             index = faiss.read_index(self.topk_index_path)
             if self.device == 'cuda':
-                index = faiss.index_cpu_to_gpu(faiss.StandardGpuResources(), 0, index)
+                self.res = faiss.StandardGpuResources()
+                index = faiss.index_cpu_to_gpu(self.res, 0, index)
             return index
         if self.topk_index_path is not None and os.path.exists(self.topk_index_path) is False:
             logger.info(f"Index file not found: {self.topk_index_path}")
@@ -102,11 +104,11 @@ class TopkRetriever(BaseRetriever):
             index = faiss.IndexFlatIP(self.model.get_sentence_embedding_dimension())
         elif self.device == 'cuda':
             logger.info("Creating faiss-gpu index")
-            res = faiss.StandardGpuResources()
+            self.res = faiss.StandardGpuResources()
             flat_config = faiss.GpuIndexFlatConfig()
             flat_config.device = 0
             dim = self.model.get_sentence_embedding_dimension()
-            index = faiss.GpuIndexFlatIP(res, dim, flat_config)
+            index = faiss.GpuIndexFlatIP(self.res, dim, flat_config)
         else:
             raise ValueError("Invalid device type. Please specify either 'cpu' or 'cuda'.")
 
@@ -126,11 +128,15 @@ class TopkRetriever(BaseRetriever):
         return index
 
     def clear_memory(self):
+        # https://github.com/facebookresearch/faiss/issues/2752
+        # https://github.com/facebookresearch/faiss/issues/2821
         self.index.reset()
+        self.res.noTempMemory()
         del self.index
         del self.model
         del self.tokenizer
         del self.dataloader
+        if self.res: del self.res
         gc.collect()
         if self.device == 'cuda':
             torch.cuda.empty_cache()
