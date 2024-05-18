@@ -67,34 +67,40 @@ def test(
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         f.write("sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform\n")
         retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0], topk_index_path=topk_index_path)
+        inferencer = PPLInferencer(model_name=model_name,
+                               labels=list(LABEL_DICT.keys()),
+                               batch_size=batch_size,
+                               task_description=TASK_DESC,
+                               max_model_token_num=max_model_token_num,
+                               use_cache=True)
 
         # number of shots to run
         for i in shots:
             logger.info(f"Running for shot {i}")
             retriever.ice_num = i
 
-            sequence.append(test_sequence(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
+            sequence.append(test_sequence(data, inferencer, retriever)['accuracy'])
             logger.info(f"sequence for shot {i} done: {sequence[-1]}")
             f.write(f"{sequence[-1]}")
 
-            binning.append(test_binning(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
+            binning.append(test_binning(data, inferencer, retriever)['accuracy'])
             logger.info(f"binning for shot {i} done: {binning[-1]}")
             f.write(f", {binning[-1]}")
 
-            gt.append(test_GT(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
+            gt.append(test_GT(data, inferencer, retriever)['accuracy'])
             logger.info(f"gt for shot {i} done: {gt[-1]}")
             f.write(f", {gt[-1]}")
 
-            pseudo_gt.append(test_pseudo_GT(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
+            pseudo_gt.append(test_pseudo_GT(data, inferencer, retriever)['accuracy'])
             logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
             f.write(f", {pseudo_gt[-1]}")
 
             # sequence ablation
-            seq_extreme.append(test_seq_extreme(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
+            seq_extreme.append(test_seq_extreme(data, inferencer, retriever)['accuracy'])
             logger.info(f"seq_extreme for shot {i} done: {seq_extreme[-1]}")
             f.write(f", {seq_extreme[-1]}")
 
-            seq_uniform.append(test_seq_uniform(data, model_name, max_model_token_num, retriever, batch_size)['accuracy'])
+            seq_uniform.append(test_seq_uniform(data, inferencer, retriever)['accuracy'])
             logger.info(f"seq_uniform for shot {i} done: {seq_uniform[-1]}")
             f.write(f", {seq_uniform[-1]}\n")
 
@@ -123,7 +129,7 @@ def test(
 
     logger.info(f"Finished running and saving artifacts for experiment {EXP_NAME}")
 
-def test_seq_extreme(data, model_name, max_model_token_num, retriever, batch_size):
+def test_seq_extreme(data, inferencer, retriever):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["seq_extreme"]
@@ -137,16 +143,6 @@ def test_seq_extreme(data, model_name, max_model_token_num, retriever, batch_siz
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
-
-    # Define a retriever using the previous `DataLoader`.
-    # `ice_num` stands for the number of data in in-context examples.
-    inferencer = PPLInferencer(model_name=model_name,
-                               labels=list(LABEL_DICT.keys()),
-                               batch_size=batch_size,
-                               task_description=TASK_DESC,
-                               max_model_token_num=max_model_token_num,
-                               use_cache=True)
-
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(
@@ -162,7 +158,7 @@ def test_seq_extreme(data, model_name, max_model_token_num, retriever, batch_siz
 
     return score
 
-def test_seq_uniform(data, model_name, max_model_token_num, retriever, batch_size):
+def test_seq_uniform(data, inferencer, retriever):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["seq_uniform"]
@@ -176,16 +172,6 @@ def test_seq_uniform(data, model_name, max_model_token_num, retriever, batch_siz
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
-
-    # Define a retriever using the previous `DataLoader`.
-    # `ice_num` stands for the number of data in in-context examples.
-    inferencer = PPLInferencer(model_name=model_name,
-                               labels=list(LABEL_DICT.keys()),
-                               batch_size=batch_size,
-                               task_description=TASK_DESC,
-                               max_model_token_num=max_model_token_num,
-                               use_cache=True)
-
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(
@@ -201,7 +187,7 @@ def test_seq_uniform(data, model_name, max_model_token_num, retriever, batch_siz
 
     return score
 
-def test_sequence(data, model_name, max_model_token_num, retriever, batch_size):
+def test_sequence(data, inferencer, retriever):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["sequence"]
@@ -215,16 +201,6 @@ def test_sequence(data, model_name, max_model_token_num, retriever, batch_size):
     column_token_map = COLUMN_TOKEN_MAP["sequence"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
-
-    # Define a retriever using the previous `DataLoader`.
-    # `ice_num` stands for the number of data in in-context examples.
-    inferencer = PPLInferencer(model_name=model_name,
-                               labels=list(LABEL_DICT.keys()),
-                               batch_size=batch_size,
-                               task_description=TASK_DESC,
-                               max_model_token_num=max_model_token_num,
-                               use_cache=True)
-
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(
@@ -241,7 +217,7 @@ def test_sequence(data, model_name, max_model_token_num, retriever, batch_size):
     return score
 
 
-def test_binning(data, model_name, max_model_token_num, retriever, batch_size):
+def test_binning(data, inferencer, retriever):
 
     # ICL exemplar template
     ice_dict = ICE_DICT["binning"]
@@ -256,15 +232,6 @@ def test_binning(data, model_name, max_model_token_num, retriever, batch_size):
     # Define prompt templates for ice and prompt
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
-
-    # Define a retriever using the previous `DataLoader`.
-    # `ice_num` stands for the number of data in in-context examples.  
-    inferencer = PPLInferencer(model_name=model_name,
-                               labels=list(LABEL_DICT.keys()),
-                               batch_size=batch_size,
-                               task_description=TASK_DESC,
-                               max_model_token_num=max_model_token_num,
-                               use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(
@@ -281,7 +248,7 @@ def test_binning(data, model_name, max_model_token_num, retriever, batch_size):
     return score
 
 
-def test_GT(data, model_name, max_model_token_num, retriever, batch_size):
+def test_GT(data, inferencer, retriever):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -294,15 +261,6 @@ def test_GT(data, model_name, max_model_token_num, retriever, batch_size):
     column_token_map = COLUMN_TOKEN_MAP["GT"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
-
-    # Define a retriever using the previous `DataLoader`.
-    # `ice_num` stands for the number of data in in-context examples.
-    inferencer = PPLInferencer(model_name=model_name,
-                               labels=list(LABEL_DICT.keys()),
-                               batch_size=batch_size,
-                               task_description=TASK_DESC,
-                               max_model_token_num=max_model_token_num,
-                               use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(
@@ -319,7 +277,7 @@ def test_GT(data, model_name, max_model_token_num, retriever, batch_size):
     return score
 
 
-def test_pseudo_GT(data, model_name, max_model_token_num, retriever, batch_size):
+def test_pseudo_GT(data, inferencer, retriever):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -332,15 +290,6 @@ def test_pseudo_GT(data, model_name, max_model_token_num, retriever, batch_size)
     column_token_map = COLUMN_TOKEN_MAP["GT"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
-
-    # Define a retriever using the previous `DataLoader`.
-    # `ice_num` stands for the number of data in in-context examples.
-    inferencer = PPLInferencer(model_name=model_name,
-                               labels=list(LABEL_DICT.keys()),
-                               batch_size=batch_size,
-                               task_description=TASK_DESC,
-                               max_model_token_num=max_model_token_num,
-                               use_cache=True)
 
     # the inferencer requires retriever to collect in-context examples, as well as a template to wrap up these examples.
     predictions = inferencer.inference(
