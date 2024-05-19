@@ -55,11 +55,14 @@ class BaseInferencer:
         self.model.eval()
 
         self.max_model_token_num = max_model_token_num or self.tokenizer.model_max_length
-        if self.tokenizer.model_max_length < self.max_model_token_num  or self.max_model_token_num < 0:
-            raise ValueError(f"max_model_token_num should be less than or equal to tokenizer.model_max_length and > 0, but got {self.max_model_token_num}")
         if not self.max_model_token_num:
             return ValueError("tokenizer.model_max_length is not defined, please provide max_model_token_num")
-    
+        if self.tokenizer.model_max_length:
+            if self.tokenizer.model_max_length < self.max_model_token_num:
+                raise ValueError(f"max_model_token_num should be less than or equal to tokenizer.model_max_length, but got {self.max_model_token_num}")
+        if self.max_model_token_num < 0:
+            raise ValueError(f"max_model_token_num should be greater than or equal to 0, but got {self.max_model_token_num}")
+
         self.batch_size = batch_size
         self.output_json_filepath = output_json_filepath
         self.output_json_filename = output_json_filename
