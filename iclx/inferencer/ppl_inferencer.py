@@ -116,7 +116,7 @@ class PPLInferencer(BaseInferencer):
                 prompt_label = retriever.get_label_and_eos(label, ice_template=ice_template, prompt_template=prompt_template)
                 add_prompt_label = ' ' + prompt_label
                 sub_prompt_label_list = [add_prompt_label] * self.batch_size
-                sub_next_inputs = self._get_inputs(sub_prompt_label_list)
+                sub_next_inputs = self._get_inputs(sub_prompt_label_list, False)
                 sub_prompt_label_list_dict[label] = sub_prompt_label_list
                 sub_next_inputs_dict[label] = sub_next_inputs
 
@@ -196,9 +196,10 @@ class PPLInferencer(BaseInferencer):
         return [sample['prediction'] for sample in output_handler.results_dict.values()]
 
     def _get_inputs(self,
-                    input_texts: List[str]):
+                    input_texts: List[str],
+                    add_special_tokens: bool=True):
         self.tokenizer.padding_side = "right"
-        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True)
+        inputs = self.tokenizer(input_texts, padding=True, return_tensors='pt', truncation=True, add_special_tokens=add_special_tokens)
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
         return inputs
 
