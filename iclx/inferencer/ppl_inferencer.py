@@ -123,14 +123,14 @@ class PPLInferencer(BaseInferencer):
 
             index = 0
             n_labels = len(labels)
+            ppl = [[] for _ in labels]
             for idx in trange(0, len(prompt_wo_label_list), self.batch_size, disable=not self.is_main_process):
                 sub_prompt_wo_label_list = prompt_wo_label_list[idx:idx + self.batch_size]
                 sub_inputs = self._get_inputs(sub_prompt_wo_label_list)
                 with torch.no_grad():
                     sub_caches = self._get_cache(inputs=sub_inputs)
 
-                sub_ppl_list = []
-                for label in labels:
+                for label_idx, label in enumerate(labels):
                     prompt_label = retriever.get_label_and_eos(label, ice_template=ice_template, prompt_template=prompt_template)
                     add_prompt_label = ' ' + prompt_label
 
@@ -139,12 +139,13 @@ class PPLInferencer(BaseInferencer):
                     sub_next_inputs = sub_next_inputs_dict[label]
                     with torch.no_grad():
                         sub_res = self._get_ppl_use_cache(sub_caches, inputs=sub_inputs, next_inputs=sub_next_inputs).tolist()
+
                     for res, prompt_wo_label, _add_prompt_label in zip(sub_res, sub_prompt_wo_label_list, sub_prompt_label_list):
-                        sub_ppl_list.append(res)
+                        ppl[label_idx].append(res)
                         prompt = prompt_wo_label + _add_prompt_label
                         output_handler.save_prompt_and_ppl(label, prompt[len(self.task_description)+len(retriever.ice_separator)+len(ice[idx]):], prompt, res, index//n_labels)
                         index = index + 1
-                ppl.append(sub_ppl_list)
+            ppl = list(zip(*ppl))
         else:
             logger.info("Not using cache for PPL calculation")
             for label in labels:
