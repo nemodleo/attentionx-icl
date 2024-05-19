@@ -142,7 +142,7 @@ class PPLInferencer(BaseInferencer):
                     for res, prompt_wo_label, _add_prompt_label in zip(sub_res, sub_prompt_wo_label_list, sub_prompt_label_list):
                         sub_ppl_list.append(res)
                         prompt = prompt_wo_label + _add_prompt_label
-                        output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index//n_labels)
+                        output_handler.save_prompt_and_ppl(label, prompt[len(self.task_description)+len(retriever.ice_separator)+len(ice[idx]):], prompt, res, index//n_labels)
                         index = index + 1
                 ppl.append(sub_ppl_list)
         else:
@@ -164,7 +164,6 @@ class PPLInferencer(BaseInferencer):
                             prompt = retriever.generate_label_prompt(idx, ice[idx], label, ice_template=ice_template, prompt_template=prompt_template)
                             prompt = self._add_task_description(retriever.ice_separator, prompt)
                             prompt_token_num = self.get_input_token_num(prompt)
-
                     prompt_list.append(prompt)
 
                 # 5.2 Get PPL
@@ -175,7 +174,7 @@ class PPLInferencer(BaseInferencer):
                         sub_res = self._get_ppl(sub_prompt_list).tolist()
                     for res, prompt in zip(sub_res, sub_prompt_list):
                         sub_ppl_list.append(res)
-                        output_handler.save_prompt_and_ppl(label, prompt[len(ice[idx]):], prompt, res, index)
+                        output_handler.save_prompt_and_ppl(label, prompt[len(self.task_description)+len(retriever.ice_separator)+len(ice[idx]):], prompt, res, index)
                         index = index + 1
                 ppl.append(sub_ppl_list)
             ppl = list(zip(*ppl))
