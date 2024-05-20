@@ -91,12 +91,12 @@ def test(
             f.write(f", {binning[-1]}")
             f.flush()
 
-            gt.append(test_GT(data, inferencer, retriever)['accuracy'])
+            gt.append(test_gt(data, inferencer, retriever)['accuracy'])
             logger.info(f"gt for shot {i} done: {gt[-1]}")
             f.write(f", {gt[-1]}")
             f.flush()
 
-            pseudo_gt.append(test_pseudo_GT(data, inferencer, retriever)['accuracy'])
+            pseudo_gt.append(test_pseudo_gt(data, inferencer, retriever)['accuracy'])
             logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
             f.write(f", {pseudo_gt[-1]}")
             f.flush()
@@ -254,7 +254,7 @@ def test_binning(data, inferencer, retriever):
     return score
 
 
-def test_GT(data, inferencer, retriever):
+def test_gt(data, inferencer, retriever):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -264,7 +264,7 @@ def test_GT(data, inferencer, retriever):
     label_dict = LABEL_DICT
 
     # Define prompt templates for ice and prompt
-    column_token_map = COLUMN_TOKEN_MAP["GT"]
+    column_token_map = COLUMN_TOKEN_MAP["gt"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
 
@@ -283,7 +283,7 @@ def test_GT(data, inferencer, retriever):
     return score
 
 
-def test_pseudo_GT(data, inferencer, retriever):
+def test_pseudo_gt(data, inferencer, retriever):
 
     # Inference prompt template
     ice_dict = TP_DICT
@@ -293,7 +293,7 @@ def test_pseudo_GT(data, inferencer, retriever):
     label_dict = LABEL_DICT
 
     # Define prompt templates for ice and prompt
-    column_token_map = COLUMN_TOKEN_MAP["GT"]
+    column_token_map = COLUMN_TOKEN_MAP["pseudo_gt"]
     ice_template = PromptTemplate(ice_dict, column_token_map, label_dict=label_dict, ice_token='</E>')
     prompt_template = PromptTemplate(tp_dict, {'text': '</text>'}, label_dict=label_dict, ice_token='</E>')
 
