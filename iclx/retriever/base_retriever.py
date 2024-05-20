@@ -116,3 +116,27 @@ class BaseRetriever:
             prefix_prompt = ' '.join(
                 list(map(str, [self.test_ds[idx][ctx] for ctx in self.dataset_reader.input_columns])))
             return ice + prefix_prompt + ' ' + str(label) + self.prompt_eos_token
+
+    def generate_label_prompt_wo_label_and_eos(self, idx: int, ice: str, label, ice_template: Optional[PromptTemplate] = None,
+                              prompt_template: Optional[PromptTemplate] = None, remain_sep: Optional[bool] = False) -> str:
+        if prompt_template is not None:
+            return prompt_template.generate_label_prompt_item_wo_label(self.test_ds[idx], ice, label, remain_sep) + self.prompt_eos_token
+        elif ice_template is not None and ice_template.ice_token is not None:
+            return ice_template.generate_label_prompt_item_wo_label(self.test_ds[idx], ice, label, remain_sep) + self.prompt_eos_token
+        else:
+            prefix_prompt = ' '.join(
+                list(map(str, [self.test_ds[idx][ctx] for ctx in self.dataset_reader.input_columns])))
+            return ice + prefix_prompt
+
+    def add_label_and_eos(self, prompt: str, label, ice_template: Optional[PromptTemplate] = None,
+                            prompt_template: Optional[PromptTemplate] = None) -> str:
+        return prompt + ' ' + self.get_label_and_eos(label, ice_template, prompt_template)
+
+    def get_label_and_eos(self, label, ice_template: Optional[PromptTemplate] = None,
+                            prompt_template: Optional[PromptTemplate] = None) -> str:
+        if prompt_template is not None:
+            return prompt_template.get_label(label) + self.prompt_eos_token
+        elif ice_template is not None and ice_template.ice_token is not None:
+            return ice_template.get_label(label) + self.prompt_eos_token
+        else:
+            return str(label) + self.prompt_eos_token

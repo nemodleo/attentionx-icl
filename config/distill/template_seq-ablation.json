@@ -1,9 +1,11 @@
 {   "experiment_name":"trecBERT-topk-gemma2b-seq_ablation",
 
+    "debug": false,
     "batch_size": 2,
     "retriever": "topk",
     "retriever_base": "bert-base-uncased",
     "student": "google/gemma-2b",
+    "max_model_token_num": 8192,
     "shots": [32, 16, 8, 4, 2, 1, 0],
 
     "hf_dataset_name": null,
@@ -17,7 +19,9 @@
     "input_columns": ["text"],
     "output_columns": ["label"]},
 
+    "topk_distance_desc_order": false,
     "topk_index_path": "data/faiss_cache/trecBERT.faiss",
+    "use_inferencer_cache"  : true,
 
     "ice_dict":{
         "sequence": "</E>Text: </text>\nTopic: </Label1> </1>% </Label2> </2>% </Label3> </3>% </Label4> </4>% </Label5> </5>% </Label6> </6>%",
@@ -47,6 +51,7 @@
     "column_token_map": {
         "sequence":{"text": "</text>", "0" : "</1>", "Label1" : "</Label1>", "1" : "</2>", "Label2" : "</Label2>", "2" : "</3>", "Label3" : "</Label3>", "3" : "</4>", "Label4" : "</Label4>", "4" : "</5>", "Label5" : "</Label5>",  "5" : "</6>", "Label6" : "</Label6>" },
         "binning":{"text": "</text>", "Label1" : "</Label1>", "Label2" : "</Label2>", "Label3" : "</Label3>", "Label4" : "</Label4>", "Label5" : "</Label5>", "Label6" : "</Label6>"},
-        "GT": {"text": "</text>"}
+        "gt": {"text": "</text>"},
+        "pseudo_gt": {"text": "</text>"}
     }
 }
