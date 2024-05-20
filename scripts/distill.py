@@ -66,6 +66,8 @@ def test(
     sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform = [], [], [], [], [], []
     with open(f"{FOLDER_NAME}/acc_{EXP_NAME}.txt", 'a') as f:
         f.write("sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform\n")
+        f.flush()
+
         retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0], topk_index_path=topk_index_path)
         inferencer = PPLInferencer(model_name=model_name,
                                labels=list(LABEL_DICT.keys()),
@@ -82,28 +84,32 @@ def test(
             sequence.append(test_sequence(data, inferencer, retriever)['accuracy'])
             logger.info(f"sequence for shot {i} done: {sequence[-1]}")
             f.write(f"{sequence[-1]}")
+            f.flush()
 
             binning.append(test_binning(data, inferencer, retriever)['accuracy'])
             logger.info(f"binning for shot {i} done: {binning[-1]}")
             f.write(f", {binning[-1]}")
+            f.flush()
 
             gt.append(test_GT(data, inferencer, retriever)['accuracy'])
             logger.info(f"gt for shot {i} done: {gt[-1]}")
             f.write(f", {gt[-1]}")
+            f.flush()
 
             pseudo_gt.append(test_pseudo_GT(data, inferencer, retriever)['accuracy'])
             logger.info(f"pseudo_gt for shot {i} done: {pseudo_gt[-1]}")
             f.write(f", {pseudo_gt[-1]}")
+            f.flush()
 
             # sequence ablation
             seq_extreme.append(test_seq_extreme(data, inferencer, retriever)['accuracy'])
             logger.info(f"seq_extreme for shot {i} done: {seq_extreme[-1]}")
             f.write(f", {seq_extreme[-1]}")
+            f.flush()
 
             seq_uniform.append(test_seq_uniform(data, inferencer, retriever)['accuracy'])
             logger.info(f"seq_uniform for shot {i} done: {seq_uniform[-1]}")
             f.write(f", {seq_uniform[-1]}\n")
-
             f.flush()
             logger.info(f"Finished logging accuracies for {i} shot")
 
