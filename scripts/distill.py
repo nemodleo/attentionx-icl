@@ -68,7 +68,12 @@ def test(
         f.write("sequence, binning, gt, pseudo_gt, seq_extreme, seq_uniform\n")
         f.flush()
 
-        retriever = retriever_cls(data, sentence_transformers_model_name=retriever_base, ice_num=shots[0], topk_index_path=topk_index_path)
+        retriever = retriever_cls(
+            data,
+            sentence_transformers_model_name=retriever_base,
+            ice_num=shots[0],
+            topk_distance_desc_order=TOPK_DISTANCE_DESC_ORDER,
+            topk_index_path=topk_index_path)
         inferencer = PPLInferencer(model_name=model_name,
                                labels=list(LABEL_DICT.keys()),
                                batch_size=batch_size,
@@ -351,6 +356,7 @@ if __name__ == '__main__':
 
     os.makedirs(FOLDER_NAME, exist_ok=True)
 
+    TOPK_DISTANCE_DESC_ORDER = setup.get('topk_distance_desc_order', False)
     TOPK_INDEX_PATH = setup.get('topk_index_path', None)
 
     DEBUG = setup.get('debug', False)

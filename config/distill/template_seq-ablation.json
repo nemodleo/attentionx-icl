@@ -19,6 +19,7 @@
     "input_columns": ["text"],
     "output_columns": ["label"]},
 
+    "topk_distance_desc_order": false,
     "topk_index_path": "data/faiss_cache/trecBERT.faiss",
     "use_inferencer_cache"  : true,
 

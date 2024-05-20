@@ -74,6 +74,7 @@ class TopkRetriever(BaseRetriever):
         self.model = self.model.to(self.device)
         self.model.eval()
 
+        self.topk_distance_desc_order = kwargs.get('topk_distance_desc_order', False)
         self.topk_index_path = kwargs.get('topk_index_path', None)
         self.res = None
         self.index = self.create_index()
@@ -114,7 +115,7 @@ class TopkRetriever(BaseRetriever):
 
         res_list = self.forward(dataloader, process_bar=True, information="Creating index for index set...")
         embed_list = np.stack([res['embed'] for res in res_list])
-        index.add(embed_list) #!
+        index.add(embed_list)
 
         logger.info("Index created")
 
@@ -151,7 +152,7 @@ class TopkRetriever(BaseRetriever):
             idx = entry['metadata']['id']
             embed = np.expand_dims(entry['embed'], axis=0)
             near_ids = self.index.search(embed, ice_num)[1][0].tolist()
-            rtr_idx_list[idx] = near_ids #!
+            rtr_idx_list[idx] = near_ids
         return rtr_idx_list
 
     def forward(self, dataloader, process_bar=False, information=''):
@@ -169,4 +170,7 @@ class TopkRetriever(BaseRetriever):
         return res_list
 
     def retrieve(self):
-        return [rtr_idx[:self._ice_num] for rtr_idx in self.rtr_idx_list] #!
+        ice_idx_list = [rtr_idx[:self._ice_num] for rtr_idx in self.rtr_idx_list]
+        if self.topk_distance_desc_order:
+            return [ice_idx_list[idx][::-1] for idx in range(len(ice_idx_list))]
+        return ice_idx_list
