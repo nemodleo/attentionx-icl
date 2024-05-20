@@ -1,5 +1,6 @@
 {   "experiment_name":"trecBERT-topk-gemma2b-seq_ablation",
 
+    "debug": false,
     "batch_size": 2,
     "retriever": "topk",
     "retriever_base": "bert-base-uncased",
